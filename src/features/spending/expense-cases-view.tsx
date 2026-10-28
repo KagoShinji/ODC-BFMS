@@ -38,11 +38,17 @@ export function ExpenseCasesView({ kind }: { kind?: ExpenseKind }) {
       (!kind || item.kind === kind) &&
       `${item.reference} ${item.purpose} ${item.payee}`.toLowerCase().includes(query.toLowerCase()),
   );
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const cents = parseMoney(amount);
     if (cents === null) return;
-    const result = createCase({ kind: formKind, purpose, payee, budgetLineId, amount: cents });
+    const result = await createCase({
+      kind: formKind,
+      purpose,
+      payee,
+      budgetLineId,
+      amount: cents,
+    });
     if (result.ok) {
       setOpen(false);
       setPurpose("");

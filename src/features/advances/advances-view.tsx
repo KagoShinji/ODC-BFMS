@@ -28,12 +28,17 @@ export function AdvancesView() {
   const outstanding = selected
     ? selected.amount - entries.reduce((sum, item) => sum + item.amount, 0)
     : 0;
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selected) return;
     const cents = parseMoney(amount);
     if (cents === null) return;
-    const result = recordLiquidation({ advanceId: selected.id, kind, description, amount: cents });
+    const result = await recordLiquidation({
+      advanceId: selected.id,
+      kind,
+      description,
+      amount: cents,
+    });
     if (result.ok) {
       setDescription("");
       setAmount("");

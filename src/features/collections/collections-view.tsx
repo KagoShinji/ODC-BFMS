@@ -40,11 +40,11 @@ export function CollectionsView() {
       .toLowerCase()
       .includes(query.toLowerCase()),
   );
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const cents = parseMoney(amount);
     if (cents === null) return;
-    const result = createCollection({ payer, purpose, revenueCategory, amount: cents });
+    const result = await createCollection({ payer, purpose, revenueCategory, amount: cents });
     if (result.ok) {
       setOpen(false);
       setPayer("");

@@ -35,9 +35,9 @@ export function DisbursementsView() {
       (status === "all" || item.status === status) &&
       `${item.number} ${item.payee} ${item.purpose}`.toLowerCase().includes(query.toLowerCase()),
   );
-  function pay() {
+  async function pay() {
     if (!selected) return;
-    const result = recordPayment(selected.id, paymentReference);
+    const result = await recordPayment(selected.id, paymentReference);
     if (result.ok) setPaymentReference("");
   }
   return (

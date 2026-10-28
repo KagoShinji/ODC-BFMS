@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeading, SearchField } from "@/components/financial/shared";
 
 export function AuditView() {
-  const { data } = useFinance();
+  const { data, preview } = useFinance();
   const [query, setQuery] = useState("");
   const events = data.audit.filter((item) =>
     `${item.action} ${item.subject} ${item.detail}`.toLowerCase().includes(query.toLowerCase()),
@@ -16,7 +16,11 @@ export function AuditView() {
       <PageHeading
         eyebrow="ACCOUNTABILITY"
         title="Activity & audit trail"
-        description="Follow the history of demo actions and the records they changed."
+        description={
+          preview
+            ? "Follow the history of actions and the records they changed."
+            : "Follow the history of demo actions and the records they changed."
+        }
       />
       <Card>
         <CardHeader className="flex-row flex-wrap items-center justify-between gap-3">
@@ -30,7 +34,7 @@ export function AuditView() {
                 key={item.id}
                 className="flex gap-4 border-b border-[#eff1ef] py-4 last:border-0"
               >
-                <div className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-[#f56618]" />
+                <div className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-brand" />
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-bold text-[#2d4252]">
                     {item.action}{" "}
@@ -56,8 +60,9 @@ export function AuditView() {
         </CardContent>
       </Card>
       <p className="mt-4 text-xs text-[#99a4aa]">
-        Browser demo history is editable by the browser owner. Production audit events require
-        protected database posting.
+        {preview
+          ? "Live activity is recorded by the database. Administrators and auditors see their barangay's events."
+          : "Browser demo history is editable by the browser owner. Production audit events require protected database posting."}
       </p>
     </>
   );

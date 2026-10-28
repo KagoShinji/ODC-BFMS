@@ -39,13 +39,13 @@ export function DepositsView() {
       return next;
     });
   }
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const allocations = allocationEntries.map(([collectionId, amount]) => ({
       collectionId,
       amount: parseMoney(amount) ?? 0,
     }));
-    const result = createDeposit({ kind, bank, reference, allocations });
+    const result = await createDeposit({ kind, bank, reference, allocations });
     if (result.ok) {
       setOpen(false);
       setSelected({});

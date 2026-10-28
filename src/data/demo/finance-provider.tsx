@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import {
   createContext,
   useCallback,
@@ -27,6 +28,8 @@ import { todayManila } from "@/lib/utils";
 
 const STORAGE_KEY = "odc-bfms-demo-v2";
 type Result = { ok: true; id?: string } | { ok: false; error: string };
+/** Demo actions finish immediately; live actions wait for the database. */
+type Outcome = Result | Promise<Result>;
 type NewCase = Pick<ExpenseCase, "kind" | "purpose" | "payee" | "budgetLineId" | "amount">;
 type NewCollection = Pick<Collection, "payer" | "purpose" | "revenueCategory" | "amount">;
 
@@ -34,32 +37,35 @@ interface FinanceContextValue {
   data: FinanceData;
   loaded: boolean;
   preview: boolean;
+  /** Live mode where this account records transactions in Supabase. */
+  liveRecording: boolean;
   notice: string;
   clearNotice(): void;
   resetDemo(): void;
-  createCase(input: NewCase): Result;
-  advanceCase(id: string): Result;
-  createVoucher(caseId: string): Result;
-  submitVoucher(id: string): Result;
-  approveVoucher(id: string): Result;
-  rejectVoucher(id: string): Result;
-  recordPayment(id: string, reference: string): Result;
-  createCollection(input: NewCollection): Result;
-  voidCollection(id: string): Result;
+  recordActivity(action: string, subject: string, detail: string): void;
+  createCase(input: NewCase): Outcome;
+  advanceCase(id: string): Outcome;
+  createVoucher(caseId: string): Outcome;
+  submitVoucher(id: string): Outcome;
+  approveVoucher(id: string): Outcome;
+  rejectVoucher(id: string): Outcome;
+  recordPayment(id: string, reference: string): Outcome;
+  createCollection(input: NewCollection): Outcome;
+  voidCollection(id: string): Outcome;
   createDeposit(input: {
     kind: Deposit["kind"];
     bank: string;
     reference: string;
     allocations: DepositAllocation[];
-  }): Result;
-  openAdvance(voucherId: string): Result;
+  }): Outcome;
+  openAdvance(voucherId: string): Outcome;
   recordLiquidation(input: {
     advanceId: string;
     kind: LiquidationEntry["kind"];
     description: string;
     amount: number;
-  }): Result;
-  addBudgetLine(input: Pick<BudgetLine, "code" | "name" | "category" | "appropriation">): Result;
+  }): Outcome;
+  addBudgetLine(input: Pick<BudgetLine, "code" | "name" | "category" | "appropriation">): Outcome;
 }
 
 const FinanceContext = createContext<FinanceContextValue | null>(null);
@@ -84,11 +90,18 @@ function audit(data: FinanceData, action: string, subject: string, detail: strin
 export function FinanceProvider({
   children,
   preview = false,
+  initialData,
+  liveRecording = false,
 }: {
   children: ReactNode;
+  /** Live mode: shows `initialData`; changes are blocked unless `liveRecording`. */
   preview?: boolean;
+  initialData?: FinanceData;
+  /** Sends changes to the database (super admins only, enforced on the server too). */
+  liveRecording?: boolean;
 }) {
-  const [data, setData] = useState<FinanceData>(seedData);
+  const router = useRouter();
+  const [data, setData] = useState<FinanceData>(initialData ?? seedData);
   const [loaded, setLoaded] = useState(preview);
   const [notice, setNotice] = useState("");
 
@@ -129,11 +142,15 @@ export function FinanceProvider({
       data,
       loaded,
       preview,
+      liveRecording: false,
       notice,
       clearNotice: () => setNotice(""),
       resetDemo: () => {
         setData(seedData);
         setNotice("Demo data restored.");
+      },
+      recordActivity(action, subject, detail) {
+        setData((current) => audit(current, action, subject, detail));
       },
       createCase(input) {
         if (!input.purpose.trim() || !input.payee.trim()) return fail("Enter a purpose and payee.");
@@ -506,27 +523,69 @@ export function FinanceProvider({
 
   const providerValue = useMemo<FinanceContextValue>(() => {
     if (!preview) return value;
+    const live = initialData ?? value.data;
     const blocked = (): Result =>
-      fail("Preview only: financial changes are not saved to Supabase.");
+      fail("Read-only: recording transactions in Supabase is not enabled for your account.");
+    const record =
+      <A extends unknown[]>(action: string, message: string, toArgs: (...input: A) => object) =>
+      async (...input: A): Promise<Result> => {
+        if (!liveRecording) return blocked();
+        try {
+          const response = await fetch("/api/finance", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action, args: toArgs(...input) }),
+          });
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok) return fail(result.error || "The transaction could not be recorded.");
+          router.refresh();
+          return success(message, result.id);
+        } catch {
+          return fail("The server could not be reached. Try again.");
+        }
+      };
+    const version = (id: string) => live.vouchers.find((voucher) => voucher.id === id)?.version;
     return {
       ...value,
+      data: live,
       loaded: true,
-      resetDemo: () => setNotice("Preview data is already at its starting state."),
-      createCase: blocked,
-      advanceCase: blocked,
-      createVoucher: blocked,
-      submitVoucher: blocked,
-      approveVoucher: blocked,
-      rejectVoucher: blocked,
-      recordPayment: blocked,
-      createCollection: blocked,
-      voidCollection: blocked,
-      createDeposit: blocked,
-      openAdvance: blocked,
-      recordLiquidation: blocked,
-      addBudgetLine: blocked,
+      liveRecording,
+      resetDemo: () => setNotice("Live records cannot be reset from the workspace."),
+      recordActivity: () => {},
+      addBudgetLine: record("addBudgetLine", "Budget line added.", (input) => input),
+      createCase: record("createCase", "Expense case created.", (input) => input),
+      advanceCase: record("advanceCase", "Moved to the next stage.", (id: string) => ({ id })),
+      createVoucher: record("createVoucher", "Voucher drafted.", (id: string) => ({ id })),
+      submitVoucher: record("submitVoucher", "Voucher submitted for approval.", (id: string) => ({
+        id,
+        version: version(id),
+      })),
+      approveVoucher: record("approveVoucher", "Voucher approved.", (id: string) => ({
+        id,
+        version: version(id),
+      })),
+      rejectVoucher: record("rejectVoucher", "Voucher rejected.", (id: string) => ({
+        id,
+        version: version(id),
+      })),
+      recordPayment: record(
+        "recordPayment",
+        "Payment recorded.",
+        (id: string, reference: string) => ({ id, version: version(id), reference }),
+      ),
+      createCollection: record("createCollection", "Receipt issued.", (input) => input),
+      voidCollection: record("voidCollection", "Receipt voided.", (id: string) => ({ id })),
+      createDeposit: record("createDeposit", "Deposit or remittance confirmed.", (input) => input),
+      openAdvance: record("openAdvance", "Cash advance opened.", (voucherId: string) => ({
+        voucherId,
+      })),
+      recordLiquidation: record(
+        "recordLiquidation",
+        "Liquidation entry recorded.",
+        (input) => input,
+      ),
     };
-  }, [value, preview, fail]);
+  }, [value, preview, fail, success, initialData, liveRecording, router]);
 
   return <FinanceContext.Provider value={providerValue}>{children}</FinanceContext.Provider>;
 }

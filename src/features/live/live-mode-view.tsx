@@ -1,4 +1,5 @@
 import { CircleAlert, Database, LockKeyhole, LogOut } from "lucide-react";
+import { BrandLockup } from "@/components/layout/brand";
 
 type State = "missing-config" | "migration-pending" | "membership-pending";
 const content: Record<State, { title: string; description: string; icon: typeof Database }> = {
@@ -28,24 +29,14 @@ export function LiveModeView({ state, email }: { state: State; email?: string })
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#f7f6f2] p-5">
       <div className="w-full max-w-lg">
-        <div className="mb-7 flex items-center gap-3">
-          <div className="odc-mark odc-mark--large" aria-hidden="true">
-            ODC
-          </div>
-          <div>
-            <div className="text-lg font-bold leading-tight text-[#172a3b]">
-              Barangay Financial
-              <br />
-              Management System
-            </div>
-            <div className="mt-1 text-xs font-bold text-[#ed6c27]">by ODC</div>
-          </div>
+        <div className="mb-7">
+          <BrandLockup large />
         </div>
         <div className="rounded-2xl border border-[#e6e8e5] bg-white p-7 shadow-[0_15px_40px_rgba(21,42,60,.08)]">
-          <div className="mb-5 grid h-12 w-12 place-items-center rounded-xl bg-[#fff0e5] text-[#eb6b22]">
+          <div className="mb-5 grid h-12 w-12 place-items-center rounded-xl bg-brand-soft text-brand">
             <Icon size={24} />
           </div>
-          <div className="text-[11px] font-bold uppercase tracking-[.17em] text-[#e6712d]">
+          <div className="text-[11px] font-bold uppercase tracking-[.17em] text-brand">
             LIVE CONNECTION
           </div>
           <h1 className="mt-2 text-2xl font-bold text-[#172a3b]">{item.title}</h1>
@@ -56,8 +47,8 @@ export function LiveModeView({ state, email }: { state: State; email?: string })
             </p>
           )}
           <div className="mt-6 border-t border-[#eff0ec] pt-5 text-xs leading-5 text-[#9aa6ab]">
-            Authorized users can open a sample-data preview. Live financial posting remains disabled
-            until the controls and workflows pass staging verification.
+            Authorized users can view their barangay&apos;s records read-only. Live financial
+            posting remains disabled until the controls and workflows pass staging verification.
           </div>
           {email && (
             <form action="/auth/signout" method="post" className="mt-5">

@@ -13,19 +13,34 @@ import {
   Wallet,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { accessLabel, accessLevels, type AccessLevel } from "@/lib/auth/roles";
+import { brandTitle } from "@/lib/branding";
+import { cn } from "@/lib/utils";
+import { BrandLockup, useBranding } from "@/components/layout/brand";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
+const levelHint: Record<AccessLevel, string> = {
+  superadmin: "All barangays, staff, and white label",
+  admin: "Barangay finance and staff accounts",
+  staff: "Day-to-day finance work",
+};
 
 type LoginViewProps = {
   mode: "demo" | "supabase";
   demoHint: { email: string; password: string } | null;
   supabaseConfigured: boolean;
+  /** Set when opened from a barangay sign-in link. */
+  barangayName?: string;
 };
 
-export function LoginView({ mode, demoHint, supabaseConfigured }: LoginViewProps) {
+export function LoginView({ mode, demoHint, supabaseConfigured, barangayName }: LoginViewProps) {
   const [email, setEmail] = useState(mode === "demo" ? (demoHint?.email ?? "") : "");
   const [password, setPassword] = useState("");
+  const [level, setLevel] = useState<AccessLevel>("superadmin");
   const [showPassword, setShowPassword] = useState(false);
+  const branding = useBranding();
+  const title = brandTitle(branding);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -38,7 +53,7 @@ export function LoginView({ mode, demoHint, supabaseConfigured }: LoginViewProps
         const response = await fetch("/api/demo-auth/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ email, password, level }),
         });
         if (!response.ok) {
           const result = await response.json();
@@ -66,28 +81,18 @@ export function LoginView({ mode, demoHint, supabaseConfigured }: LoginViewProps
       <section className="relative hidden min-h-screen overflow-hidden bg-[#172a3b] px-12 py-10 text-white lg:flex lg:flex-col lg:justify-between xl:px-16">
         <div className="pointer-events-none absolute -right-40 -top-36 h-[560px] w-[560px] rounded-full border border-white/8" />
         <div className="pointer-events-none absolute -right-24 -top-20 h-[400px] w-[400px] rounded-full border border-white/8" />
-        <div className="pointer-events-none absolute -bottom-36 -left-28 h-[360px] w-[360px] rounded-full bg-[#f56618]/10 blur-3xl" />
-        <div className="relative flex items-center gap-3">
-          <div className="odc-mark odc-mark--large" aria-hidden="true">
-            ODC
-          </div>
-          <div>
-            <div className="text-sm font-extrabold leading-tight">
-              Barangay Financial
-              <br />
-              Management System
-            </div>
-            <div className="mt-1 text-xs font-bold text-[#ff9c61]">by ODC</div>
-          </div>
+        <div className="pointer-events-none absolute -bottom-36 -left-28 h-[360px] w-[360px] rounded-full bg-brand/10 blur-3xl" />
+        <div className="relative">
+          <BrandLockup large tone="dark" />
         </div>
         <div className="relative max-w-xl pb-6">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/8 px-3 py-1.5 text-[11px] font-semibold text-[#ffc096]">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#ff7624]" /> Finance, made clear
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/8 px-3 py-1.5 text-[11px] font-semibold text-brand-light">
+            <span className="h-1.5 w-1.5 rounded-full bg-brand" /> Finance, made clear
           </div>
           <h1 className="max-w-[560px] text-[44px] font-bold leading-[1.12] tracking-tight xl:text-[54px]">
             Every peso has
             <br />
-            <span className="text-[#ff8a44]">a clear purpose.</span>
+            <span className="text-brand-light">a clear purpose.</span>
           </h1>
           <p className="mt-5 max-w-md text-[15px] leading-7 text-[#b4c3cd]">
             One organized workspace for your barangay budget, spending, collections and reports.
@@ -99,7 +104,7 @@ export function LoginView({ mode, demoHint, supabaseConfigured }: LoginViewProps
               { icon: ChartNoAxesCombined, title: "Report clearly", detail: "Traceable records" },
             ].map(({ icon: Icon, title, detail }) => (
               <div key={title} className="rounded-xl border border-white/10 bg-white/5 p-3.5">
-                <Icon size={19} className="text-[#ff9355]" />
+                <Icon size={19} className="text-brand-light" />
                 <div className="mt-4 text-xs font-bold">{title}</div>
                 <div className="mt-1 text-[10px] text-[#9eb1be]">{detail}</div>
               </div>
@@ -107,37 +112,60 @@ export function LoginView({ mode, demoHint, supabaseConfigured }: LoginViewProps
           </div>
         </div>
         <div className="relative flex items-center gap-2 border-t border-white/10 pt-5 text-[11px] text-[#97acba]">
-          <ShieldCheck size={14} /> Barangay Financial Management System by ODC
+          <ShieldCheck size={14} /> {title}
         </div>
       </section>
 
       <section className="flex min-h-screen items-center justify-center px-5 py-12 sm:px-10 lg:px-12 xl:px-20">
         <div className="w-full max-w-[430px]">
-          <div className="mb-9 flex items-center gap-3 lg:hidden">
-            <div className="odc-mark odc-mark--large" aria-hidden="true">
-              ODC
-            </div>
-            <div>
-              <div className="text-sm font-extrabold leading-tight text-[#172a3b]">
-                Barangay Financial
-                <br />
-                Management System
-              </div>
-              <div className="mt-1 text-xs font-bold text-[#e76825]">by ODC</div>
-            </div>
+          <div className="mb-9 lg:hidden">
+            <BrandLockup large />
           </div>
           <div className="mb-8">
-            <div className="mb-3 inline-flex rounded-full border border-[#fbd6bf] bg-[#fff1e8] px-3 py-1 text-[10px] font-bold uppercase tracking-[.14em] text-[#c65f24]">
+            <div className="mb-3 inline-flex rounded-full border border-brand/25 bg-brand-soft px-3 py-1 text-[10px] font-bold uppercase tracking-[.14em] text-brand-strong">
               {mode === "demo" ? "Demo workspace" : "Authorized access"}
             </div>
             <h2 className="text-[30px] font-bold tracking-tight text-[#172a3b] sm:text-[34px]">
               Welcome back
             </h2>
             <p className="mt-2 text-sm leading-6 text-[#81909a]">
-              Sign in to access your financial workspace.
+              {barangayName
+                ? `Sign in to the ${barangayName} financial workspace.`
+                : "Sign in to access your financial workspace."}
             </p>
           </div>
           <form onSubmit={submit} className="space-y-5">
+            {mode === "demo" && (
+              <fieldset>
+                <legend className="text-xs font-bold text-[#344b5a]">Sign in as</legend>
+                <div className="mt-2 grid grid-cols-3 gap-2">
+                  {accessLevels.map((option) => (
+                    <label
+                      key={option}
+                      className={cn(
+                        "cursor-pointer rounded-xl border bg-white px-3 py-2.5 text-xs transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand",
+                        level === option
+                          ? "border-brand bg-brand-soft"
+                          : "border-[#e2e6e4] hover:border-[#cfd6d4]",
+                      )}
+                    >
+                      <input
+                        type="radio"
+                        name="level"
+                        value={option}
+                        checked={level === option}
+                        onChange={() => setLevel(option)}
+                        className="sr-only"
+                      />
+                      <span className="block font-bold text-[#22343f]">{accessLabel[option]}</span>
+                      <span className="mt-0.5 block text-[10px] leading-4 text-[#81909a]">
+                        {levelHint[option]}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            )}
             <label className="block text-xs font-bold text-[#344b5a]">
               Email address
               <div className="relative mt-2">
@@ -209,18 +237,19 @@ export function LoginView({ mode, demoHint, supabaseConfigured }: LoginViewProps
           </form>
           {mode === "demo" && demoHint && (
             <div className="mt-7 rounded-xl border border-[#e9e9e4] bg-white px-4 py-3.5">
-              <div className="text-[11px] font-bold uppercase tracking-[.12em] text-[#e36a27]">
+              <div className="text-[11px] font-bold uppercase tracking-[.12em] text-brand">
                 Demo access
               </div>
               <p className="mt-1 text-xs leading-5 text-[#71828c]">
                 Email: <span className="font-semibold text-[#314858]">{demoHint.email}</span> ·
                 Password: <span className="font-semibold text-[#314858]">{demoHint.password}</span>
               </p>
+              <p className="mt-1 text-xs leading-5 text-[#71828c]">
+                The same login opens any access level chosen above.
+              </p>
             </div>
           )}
-          <p className="mt-8 text-center text-[11px] text-[#9ba6ac]">
-            Barangay Financial Management System by ODC
-          </p>
+          <p className="mt-8 text-center text-[11px] text-[#9ba6ac]">{title}</p>
         </div>
       </section>
     </main>

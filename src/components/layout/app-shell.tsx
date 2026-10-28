@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -9,6 +9,9 @@ import {
   Bell,
   BookOpen,
   Boxes,
+  Building2,
+  Check,
+  ChevronDown,
   ClipboardCheck,
   FileBarChart2,
   FileText,
@@ -16,6 +19,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  Palette,
   Plane,
   Plus,
   ReceiptText,
@@ -23,12 +27,17 @@ import {
   Search,
   Settings2,
   ShieldCheck,
+  UserCog,
   Users,
   Wallet,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useFinance } from "@/data/demo/finance-provider";
+import type { BarangayOption } from "@/lib/auth/active-barangay";
+import type { WorkspaceAccount } from "@/lib/auth/session";
+import { accessLabel, canManageBranding, canManageStaff, type AccessLevel } from "@/lib/auth/roles";
+import { BrandLockup } from "@/components/layout/brand";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
@@ -49,7 +58,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const groups = [
+type NavLink = {
+  href: string;
+  label: string;
+  icon: typeof Wallet;
+  allow?: (level: AccessLevel) => boolean;
+};
+
+const allGroups: { label: string; links: NavLink[] }[] = [
   {
     label: "Workspace",
     links: [
@@ -82,27 +98,144 @@ const groups = [
     links: [
       { href: "/reports", label: "Reports", icon: FileBarChart2 },
       { href: "/audit", label: "Audit trail", icon: ShieldCheck },
+      { href: "/staff", label: "Staff & access", icon: UserCog, allow: canManageStaff },
       { href: "/settings", label: "Settings", icon: Settings2 },
     ],
   },
+  {
+    label: "System",
+    links: [{ href: "/branding", label: "White label", icon: Palette, allow: canManageBranding }],
+  },
 ];
 
-function Sidebar({ close, preview = false }: { close?: () => void; preview?: boolean }) {
+function groupsFor(level: AccessLevel) {
+  return allGroups
+    .map((group) => ({
+      ...group,
+      links: group.links.filter((link) => !link.allow || link.allow(level)),
+    }))
+    .filter((group) => group.links.length);
+}
+
+const initials: Record<AccessLevel, string> = { superadmin: "SA", admin: "AD", staff: "ST" };
+
+/** Live mode: the barangays this account can view and the one being shown. */
+export interface LiveWorkspace {
+  barangays: BarangayOption[];
+  activeId: string | null;
+  /** Opened on a barangay subdomain, which fixes the barangay. */
+  locked: boolean;
+  loadError?: string;
+}
+
+function BarangaySwitcher({
+  workspace,
+  canOnboard,
+}: {
+  workspace: LiveWorkspace;
+  canOnboard: boolean;
+}) {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  const active = workspace.barangays.find((item) => item.id === workspace.activeId);
+  const chip =
+    "inline-flex h-9 max-w-[240px] items-center gap-2 rounded-full border border-[#e3e7e5] bg-white px-3 text-xs font-semibold text-[#2d4252]";
+  const canSwitch = !workspace.locked && (workspace.barangays.length > 1 || canOnboard);
+  if (!canSwitch)
+    return active ? (
+      <span className={chip} title={workspace.locked ? "Fixed by this address" : "Barangay shown"}>
+        <Building2 size={14} className="shrink-0 text-brand" />
+        <span className="truncate">{active.name}</span>
+      </span>
+    ) : null;
+
+  async function open(id: string) {
+    if (id === active?.id) return;
+    setBusy(true);
+    await fetch("/api/workspace/barangay", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    }).catch(() => undefined);
+    router.refresh();
+    setBusy(false);
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          className={`${chip} hover:border-[#cfd6d4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand`}
+          aria-label="Switch barangay"
+          disabled={busy}
+        >
+          <Building2 size={14} className="shrink-0 text-brand" />
+          <span className="truncate">
+            {busy ? "Switching…" : (active?.name ?? "Choose barangay")}
+          </span>
+          <ChevronDown size={14} className="shrink-0 text-[#8a979e]" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="start"
+        className="max-h-[60vh] w-64 overflow-y-auto rounded-2xl border-[#e8ebe8] bg-white p-2 shadow-xl"
+      >
+        <DropdownMenuLabel className="px-3 text-xs text-[#8d999e]">View barangay</DropdownMenuLabel>
+        <DropdownMenuSeparator className="bg-[#edf0ec]" />
+        {workspace.barangays.map((item) => (
+          <DropdownMenuItem
+            key={item.id}
+            className="rounded-xl px-3 py-2.5"
+            onSelect={() => open(item.id)}
+          >
+            <Check
+              size={15}
+              className={item.id === active?.id ? "text-brand" : "invisible"}
+              aria-hidden="true"
+            />
+            <span className="truncate">{item.name}</span>
+          </DropdownMenuItem>
+        ))}
+        {canOnboard && (
+          <>
+            <DropdownMenuSeparator className="bg-[#edf0ec]" />
+            <DropdownMenuItem asChild className="rounded-xl px-3 py-2.5">
+              <Link href="/branding">
+                <Plus size={15} /> Onboard a barangay
+              </Link>
+            </DropdownMenuItem>
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function Sidebar({
+  groups,
+  close,
+  preview = false,
+  workspace,
+  canOnboard = false,
+}: {
+  groups: ReturnType<typeof groupsFor>;
+  close?: () => void;
+  preview?: boolean;
+  workspace?: LiveWorkspace;
+  canOnboard?: boolean;
+}) {
   const pathname = usePathname();
 
   return (
     <div className="flex h-full flex-col bg-[#f2f3f1] text-[#252a2c]">
-      <div className="flex h-[94px] shrink-0 items-center gap-3 px-5">
-        <div className="odc-mark" aria-hidden="true">
-          ODC
-        </div>
-        <div className="min-w-0">
-          <div className="truncate text-[13px] font-bold leading-tight">Barangay Financial</div>
-          <div className="text-[11px] font-medium text-[#92999b]">
-            Management System <span className="font-bold text-[#e86a25]">by ODC</span>
-          </div>
-        </div>
+      <div className="flex h-[94px] shrink-0 items-center px-5">
+        <BrandLockup />
       </div>
+      {workspace && (
+        <div className="px-5 pb-4 md:hidden">
+          <BarangaySwitcher workspace={workspace} canOnboard={canOnboard} />
+        </div>
+      )}
       <nav aria-label="Main navigation" className="odc-scrollbar flex-1 overflow-y-auto px-3 pb-5">
         {groups.map((group) => (
           <div className="mb-5" key={group.label}>
@@ -119,7 +252,7 @@ function Sidebar({ close, preview = false }: { close?: () => void; preview?: boo
                     href={href}
                     aria-current={active ? "page" : undefined}
                     className={cn(
-                      "flex min-h-10 items-center gap-3 rounded-[13px] px-3 text-[12px] font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f56618]",
+                      "flex min-h-10 items-center gap-3 rounded-[13px] px-3 text-[12px] font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand",
                       active
                         ? "bg-white text-[#1f262a] shadow-[0_2px_7px_rgba(24,35,40,.07)]"
                         : "text-[#838d91] hover:bg-white/75 hover:text-[#29323a]",
@@ -129,7 +262,7 @@ function Sidebar({ close, preview = false }: { close?: () => void; preview?: boo
                       aria-hidden="true"
                       size={17}
                       strokeWidth={active ? 2.2 : 1.8}
-                      className={active ? "text-[#e96e2b]" : ""}
+                      className={active ? "text-brand" : ""}
                     />
                     <span className="truncate">{label}</span>
                   </Link>
@@ -143,19 +276,19 @@ function Sidebar({ close, preview = false }: { close?: () => void; preview?: boo
         <div className="rounded-2xl bg-white p-3.5 shadow-[0_1px_8px_rgba(24,35,40,.035)]">
           <div className="flex items-center justify-between gap-2">
             <div className="text-[11px] font-bold text-[#283238]">
-              {preview ? "Supabase preview" : "Demo workspace"}
+              {preview ? "Live workspace" : "Demo workspace"}
             </div>
-            <span className="h-2 w-2 rounded-full bg-[#f56618]" />
+            <span className="h-2 w-2 rounded-full bg-brand" />
           </div>
           <p className="mt-1 text-[10px] leading-4 text-[#9aa4a5]">
             {preview
-              ? "Signed in with Supabase. Financial records shown here are sample data."
+              ? "Records come from Supabase for the barangay shown."
               : "Sample financial records for walkthroughs."}
           </p>
           <Link
             href="/settings"
             onClick={close}
-            className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold text-[#df6728] hover:underline"
+            className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold text-brand hover:underline"
           >
             Workspace settings <ArrowUpRight size={11} />
           </Link>
@@ -168,19 +301,21 @@ function Sidebar({ close, preview = false }: { close?: () => void; preview?: boo
 export function AppShell({
   children,
   preview = false,
-  accountEmail,
-  isSystemAdmin = false,
+  account,
+  workspace,
 }: {
   children: React.ReactNode;
   preview?: boolean;
-  accountEmail?: string;
-  isSystemAdmin?: boolean;
+  account: WorkspaceAccount;
+  workspace?: LiveWorkspace;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const { data, notice, clearNotice } = useFinance();
+  const signOutForm = useRef<HTMLFormElement>(null);
+  const { data, notice, clearNotice, liveRecording } = useFinance();
   const pathname = usePathname();
   const router = useRouter();
+  const groups = groupsFor(account.level);
   const current = groups.flatMap((group) => group.links).find((link) => link.href === pathname);
   const pendingCount = data.vouchers.filter((voucher) => voucher.status === "submitted").length;
 
@@ -199,12 +334,18 @@ export function AppShell({
     <div className="workspace-root h-dvh w-full bg-[#f7f8f6]">
       <div className="app-frame flex h-full w-full overflow-hidden bg-[#f7f8f6]">
         <aside className="hidden h-full w-[244px] shrink-0 border-r border-[#e8eae7] lg:block">
-          <Sidebar preview={preview} />
+          <Sidebar groups={groups} preview={preview} />
         </aside>
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetContent className="lg:hidden">
             <SheetTitle className="sr-only">Main navigation</SheetTitle>
-            <Sidebar close={() => setMobileOpen(false)} preview={preview} />
+            <Sidebar
+              groups={groups}
+              close={() => setMobileOpen(false)}
+              preview={preview}
+              workspace={workspace}
+              canOnboard={account.level === "superadmin"}
+            />
           </SheetContent>
         </Sheet>
 
@@ -221,14 +362,22 @@ export function AppShell({
               <h1 className="truncate text-[23px] font-bold tracking-tight text-[#181e22] sm:text-[28px]">
                 {current?.label ?? "Dashboard"}
               </h1>
-              <span className="hidden rounded-full bg-[#fff0e8] px-2 py-1 text-[9px] font-bold uppercase tracking-[.12em] text-[#df6d2b] sm:inline-flex">
-                {preview ? "Preview" : "Demo"}
+              <span className="hidden rounded-full bg-brand-soft px-2 py-1 text-[9px] font-bold uppercase tracking-[.12em] text-brand sm:inline-flex">
+                {liveRecording ? "Live" : preview ? "Read-only" : "Demo"}
               </span>
+              {workspace && (
+                <div className="hidden md:block">
+                  <BarangaySwitcher
+                    workspace={workspace}
+                    canOnboard={account.level === "superadmin"}
+                  />
+                </div>
+              )}
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
               <button
                 onClick={() => setSearchOpen(true)}
-                className="hidden h-11 w-[190px] items-center gap-2 rounded-full bg-white px-4 text-left text-xs text-[#929b9f] shadow-[0_1px_8px_rgba(24,35,40,.025)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f56618] md:flex xl:w-[280px]"
+                className="hidden h-11 w-[190px] items-center gap-2 rounded-full bg-white px-4 text-left text-xs text-[#929b9f] shadow-[0_1px_8px_rgba(24,35,40,.025)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand md:flex xl:w-[280px]"
                 aria-label="Search workspace"
               >
                 <Search size={17} /> <span className="flex-1">Search anything...</span>
@@ -244,7 +393,7 @@ export function AppShell({
                 <Search size={18} />
               </button>
 
-              {!preview && (
+              {(!preview || liveRecording) && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button className="h-11 rounded-full px-4 text-xs sm:px-5">
@@ -286,7 +435,7 @@ export function AppShell({
               >
                 <Bell size={18} />
                 {pendingCount > 0 && (
-                  <span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-[#f56618]" />
+                  <span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-brand" />
                 )}
               </Link>
               <Link
@@ -301,12 +450,12 @@ export function AppShell({
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
-                    className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f56618]"
+                    className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                     aria-label="Open account menu"
                   >
                     <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
                       <AvatarFallback className="bg-[#e2e7e5] text-xs font-extrabold text-[#263b46]">
-                        {isSystemAdmin ? "SA" : preview ? "BM" : "DU"}
+                        {initials[account.level]}
                       </AvatarFallback>
                     </Avatar>
                   </button>
@@ -317,37 +466,70 @@ export function AppShell({
                 >
                   <DropdownMenuLabel className="px-3 py-2">
                     <div className="truncate text-xs font-bold text-[#26363e]">
-                      {accountEmail ?? "Demo user"}
+                      {account.email ?? "Demo user"}
                     </div>
                     <div className="mt-1 text-[10px] font-normal text-[#9aa6a9]">
-                      {isSystemAdmin ? "Super admin" : data.barangay}
+                      {workspace && !workspace.activeId
+                        ? accessLabel[account.level]
+                        : `${accessLabel[account.level]} · ${data.barangay}`}
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-[#edf0ec]" />
+                  {canManageStaff(account.level) && (
+                    <DropdownMenuItem asChild className="rounded-xl px-3 py-2.5">
+                      <Link href="/staff">
+                        <UserCog size={16} /> Staff & access
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  {canManageBranding(account.level) && (
+                    <DropdownMenuItem asChild className="rounded-xl px-3 py-2.5">
+                      <Link href="/branding">
+                        <Palette size={16} /> White label
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem asChild className="rounded-xl px-3 py-2.5">
                     <Link href="/settings">
                       <Settings2 size={16} /> Settings
                     </Link>
                   </DropdownMenuItem>
-                  <form action="/auth/signout" method="post">
-                    <DropdownMenuItem asChild className="rounded-xl px-3 py-2.5">
-                      <button type="submit" className="w-full text-left">
-                        <LogOut size={16} /> Sign out
-                      </button>
-                    </DropdownMenuItem>
-                  </form>
+                  <DropdownMenuItem
+                    className="rounded-xl px-3 py-2.5"
+                    onSelect={() => signOutForm.current?.requestSubmit()}
+                  >
+                    <LogOut size={16} /> Sign out
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              {/* Kept outside the menu: closing the menu unmounts its content before a nested form could submit. */}
+              <form ref={signOutForm} action="/auth/signout" method="post" hidden />
             </div>
           </header>
 
-          {preview && (
+          {workspace && (
             <div
               role="status"
               className="mx-5 mb-4 rounded-2xl border border-[#fbd6bf] bg-[#fff4eb] px-4 py-3 text-xs font-medium leading-5 text-[#9b5327] sm:mx-7 xl:mx-9"
             >
-              Supabase sign-in is active. These are sample financial records for preview only;
-              financial actions are disabled and nothing here is posted to Supabase.
+              {workspace.activeId ? (
+                <>
+                  {liveRecording
+                    ? `Showing ${data.barangay}'s live records. As super admin you can record transactions here; they are saved to the database and audited. Approving a voucher still needs someone other than its creator.`
+                    : `Showing ${data.barangay}'s records from Supabase, read-only. Recording transactions here is not enabled until live posting passes verification.`}
+                  {workspace.loadError && ` ${workspace.loadError}`}
+                </>
+              ) : account.level === "superadmin" ? (
+                <>
+                  No barangay has been onboarded yet.{" "}
+                  <Link href="/branding" className="font-bold underline">
+                    Onboard one under White label
+                  </Link>{" "}
+                  to see its records here.
+                </>
+              ) : (
+                "Your account is not linked to an active barangay."
+              )}
             </div>
           )}
 
@@ -381,7 +563,7 @@ export function AppShell({
                 <CommandItem
                   key={href}
                   value={`${group.label} ${label}`}
-                  className="rounded-xl px-3 py-2.5 data-[selected=true]:bg-[#fff2e9] data-[selected=true]:text-[#b95c24]"
+                  className="rounded-xl px-3 py-2.5 data-[selected=true]:bg-brand-soft data-[selected=true]:text-brand-strong"
                   onSelect={() => {
                     setSearchOpen(false);
                     router.push(href);

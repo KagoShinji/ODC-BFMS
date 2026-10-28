@@ -29,11 +29,11 @@ export function BudgetView() {
   const filtered = data.budgetLines.filter((line) =>
     `${line.code} ${line.name} ${line.category}`.toLowerCase().includes(query.toLowerCase()),
   );
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const centavos = parseMoney(amount);
     if (centavos === null) return;
-    const result = addBudgetLine({ code, name, category, appropriation: centavos });
+    const result = await addBudgetLine({ code, name, category, appropriation: centavos });
     if (result.ok) {
       setOpen(false);
       setCode("");
@@ -64,7 +64,7 @@ export function BudgetView() {
           {
             label: "Obligated",
             value: totals.obligated,
-            sub: `${Math.round((totals.obligated / totals.appropriation) * 100)}% of total budget`,
+            sub: `${totals.appropriation ? Math.round((totals.obligated / totals.appropriation) * 100) : 0}% of total budget`,
             color: "#54758d",
           },
           {
@@ -185,7 +185,9 @@ export function BudgetView() {
             <tbody>
               {filtered.map((line) => {
                 const committed = committedForLine(data, line.id);
-                const usage = Math.min(100, (committed / line.appropriation) * 100);
+                const usage = line.appropriation
+                  ? Math.min(100, (committed / line.appropriation) * 100)
+                  : 0;
                 return (
                   <tr key={line.id} className="hover:bg-[#fdfaf7]">
                     <td className={tdClass}>

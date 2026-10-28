@@ -18,7 +18,7 @@ export function PageHeading({
     <div className="mb-6 flex flex-col gap-4 px-1 sm:flex-row sm:items-start sm:justify-between">
       <div className="min-w-0">
         {eyebrow && (
-          <div className="mb-2 text-[11px] font-bold uppercase tracking-[.18em] text-[#ee6c24]">
+          <div className="mb-2 text-[11px] font-bold uppercase tracking-[.18em] text-brand">
             {eyebrow}
           </div>
         )}
@@ -43,6 +43,8 @@ const statusColors: Record<string, string> = {
   issued: "bg-[#e3f4eb] text-[#397758]",
   confirmed: "bg-[#e3f4eb] text-[#397758]",
   voided: "bg-[#fbe9e8] text-[#af4d46]",
+  active: "bg-[#e3f4eb] text-[#397758]",
+  inactive: "bg-[#eff1f3] text-[#667785]",
 };
 export function StatusBadge({ status }: { status: string }) {
   return (
