@@ -30,7 +30,7 @@ import {
 import { StatusBadge } from "@/components/financial/shared";
 
 const chartConfig = {
-  appropriation: { label: "Approved budget", color: "#f56618" },
+  appropriation: { label: "Approved budget", color: "var(--brand)" },
 } satisfies ChartConfig;
 
 export function DashboardView() {
@@ -66,28 +66,28 @@ export function DashboardView() {
       icon: FileClock,
       count: pendingVouchers.length,
       label: "For review",
-      tint: "bg-[#fff0e6] text-[#e36d29]",
+      tint: "bg-brand-soft text-brand-ink",
     },
     {
       href: "/disbursements",
       icon: CheckCheck,
       count: readyToPay.length,
       label: "Ready to pay",
-      tint: "bg-[#e9f4ed] text-[#4f9269]",
+      tint: "bg-success-soft text-success",
     },
     {
       href: "/deposits",
       icon: ReceiptText,
       count: unmatchedReceipts.length,
       label: "Unmatched",
-      tint: "bg-[#eaf0f6] text-[#6086a5]",
+      tint: "bg-info-soft text-info",
     },
     {
       href: "/advances",
       icon: BookOpen,
       count: openAdvances.length,
       label: "Advances",
-      tint: "bg-[#f2edf7] text-[#8a6da2]",
+      tint: "bg-violet-soft text-violet",
     },
   ];
 
@@ -95,12 +95,12 @@ export function DashboardView() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3 px-1 pb-1">
         <div>
-          <p className="text-sm font-semibold text-[#30373a]">Good day, {data.barangay}</p>
-          <p className="mt-1 text-xs text-[#9aa3a6]">
+          <p className="text-sm font-semibold text-foreground">Good day, {data.barangay}</p>
+          <p className="mt-1 text-xs text-muted-foreground">
             Here is your finance snapshot for {displayDate(todayManila())}.
           </p>
         </div>
-        <Badge className="border border-[#e5e8e5] bg-white px-3 py-1.5 text-[10px] font-semibold text-[#727d81]">
+        <Badge className="border border-border bg-card px-3 py-1.5 text-[10px] font-semibold text-muted-foreground">
           FY {data.fiscalYear} · General Fund
         </Badge>
       </div>
@@ -110,38 +110,40 @@ export function DashboardView() {
           <Card className="overflow-hidden border-0 shadow-[0_4px_24px_rgba(18,29,35,.03)]">
             <CardHeader className="flex-row items-center justify-between gap-3 pb-4">
               <div>
-                <CardTitle className="text-[20px] font-bold text-[#1b2226]">Overview</CardTitle>
-                <p className="mt-1 text-xs text-[#9aa4a7]">The key numbers for your barangay</p>
+                <CardTitle className="text-[20px] font-bold text-foreground">Overview</CardTitle>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  The key numbers for your barangay
+                </p>
               </div>
-              <span className="rounded-full border border-[#e5e8e6] bg-white px-3 py-2 text-[11px] font-semibold text-[#7f8b90]">
+              <span className="rounded-full border border-border bg-card px-3 py-2 text-[11px] font-semibold text-muted-foreground">
                 Fiscal year {data.fiscalYear}
               </span>
             </CardHeader>
             <CardContent>
-              <div className="grid rounded-[25px] border border-[#eceeed] bg-[#f8f9f8] p-1.5 md:grid-cols-2">
-                <div className="rounded-[21px] bg-white px-6 py-6 shadow-[0_2px_14px_rgba(28,38,43,.05)] sm:px-7">
-                  <div className="flex items-center gap-2.5 text-[13px] font-semibold text-[#626d73]">
-                    <Wallet size={18} className="text-[#e66c28]" /> Available budget
+              <div className="grid rounded-[25px] border border-border bg-muted p-1.5 md:grid-cols-2">
+                <div className="rounded-[21px] bg-card px-6 py-6 shadow-[0_2px_14px_rgba(28,38,43,.05)] sm:px-7">
+                  <div className="flex items-center gap-2.5 text-[13px] font-semibold text-secondary">
+                    <Wallet size={18} className="text-brand-ink" /> Available budget
                   </div>
-                  <div className="money mt-5 text-[31px] font-semibold tracking-[-.045em] text-[#1c2225] sm:text-[38px]">
+                  <div className="money mt-5 text-[31px] font-semibold tracking-[-.045em] text-foreground sm:text-[38px]">
                     {formatMoney(totals.available)}
                   </div>
-                  <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-[#9aa4a7]">
-                    <span className="rounded-lg bg-[#eaf5ee] px-2 py-1 font-bold text-[#4e9b6a]">
+                  <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                    <span className="rounded-lg bg-success-soft px-2 py-1 font-bold text-success">
                       {availablePercent}% remaining
                     </span>
                     <span>of {formatMoney(totals.appropriation)} approved</span>
                   </div>
                 </div>
                 <div className="px-6 py-6 sm:px-7">
-                  <div className="flex items-center gap-2.5 text-[13px] font-semibold text-[#727c81]">
+                  <div className="flex items-center gap-2.5 text-[13px] font-semibold text-muted-foreground">
                     <Landmark size={18} /> Cash in bank
                   </div>
-                  <div className="money mt-5 text-[31px] font-semibold tracking-[-.045em] text-[#1c2225] sm:text-[38px]">
+                  <div className="money mt-5 text-[31px] font-semibold tracking-[-.045em] text-foreground sm:text-[38px]">
                     {formatMoney(totals.bank)}
                   </div>
-                  <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-[#9aa4a7]">
-                    <span className="rounded-lg bg-[#fff1e7] px-2 py-1 font-bold text-[#d16a2e]">
+                  <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                    <span className="rounded-lg bg-brand-soft px-2 py-1 font-bold text-brand-ink">
                       {formatMoney(totals.paid)} paid
                     </span>
                     <span>to date in this demo</span>
@@ -151,14 +153,14 @@ export function DashboardView() {
 
               <div className="mt-8 flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <h3 className="text-[15px] font-bold text-[#262d31]">Needs your attention</h3>
-                  <p className="mt-1 text-xs text-[#9aa4a7]">
+                  <h3 className="text-[15px] font-bold text-foreground">Needs your attention</h3>
+                  <p className="mt-1 text-xs text-muted-foreground">
                     Jump to the records that need a next step.
                   </p>
                 </div>
                 <Link
                   href="/audit"
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-[#e46728] hover:underline"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-brand-ink hover:underline"
                 >
                   Activity <ArrowUpRight size={13} />
                 </Link>
@@ -168,15 +170,17 @@ export function DashboardView() {
                   <Link
                     key={label}
                     href={href}
-                    className="group flex flex-col items-center rounded-2xl px-2 py-3 text-center transition-colors hover:bg-[#f7f8f6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f56618]"
+                    className="group flex flex-col items-center rounded-2xl px-2 py-3 text-center transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                   >
                     <div
                       className={`grid h-14 w-14 place-items-center rounded-full ${tint} transition-transform group-hover:-translate-y-0.5`}
                     >
                       <Icon size={22} />
                     </div>
-                    <div className="money mt-3 text-[19px] font-bold text-[#293135]">{count}</div>
-                    <div className="mt-0.5 text-[11px] font-medium text-[#8d989c]">{label}</div>
+                    <div className="money mt-3 text-[19px] font-bold text-foreground">{count}</div>
+                    <div className="mt-0.5 text-[11px] font-medium text-muted-foreground">
+                      {label}
+                    </div>
                   </Link>
                 ))}
               </div>
@@ -186,14 +190,16 @@ export function DashboardView() {
           <Card className="overflow-hidden border-0 shadow-[0_4px_24px_rgba(18,29,35,.03)]">
             <CardHeader className="flex-row flex-wrap items-start justify-between gap-3 pb-2">
               <div>
-                <CardTitle className="text-[20px] font-bold text-[#1b2226]">
+                <CardTitle className="text-[20px] font-bold text-foreground">
                   Budget allocation
                 </CardTitle>
-                <p className="mt-1 text-xs text-[#9aa4a7]">Approved appropriation by budget line</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Approved appropriation by budget line
+                </p>
               </div>
               <Link
                 href="/budget"
-                className="inline-flex items-center gap-1 rounded-full border border-[#e8ebe8] px-3 py-2 text-[11px] font-semibold text-[#6b777d] hover:bg-[#f8f9f8]"
+                className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-2 text-[11px] font-semibold text-secondary hover:bg-muted"
               >
                 View budget <ArrowRight size={13} />
               </Link>
@@ -206,22 +212,22 @@ export function DashboardView() {
                     data={chartData}
                     margin={{ top: 12, right: 8, left: 8, bottom: 0 }}
                   >
-                    <CartesianGrid vertical={false} stroke="#f0f1ef" />
+                    <CartesianGrid vertical={false} stroke="var(--border)" />
                     <XAxis
                       dataKey="label"
                       axisLine={false}
                       tickLine={false}
                       tickMargin={12}
-                      tick={{ fill: "#9aa4a7", fontSize: 10 }}
+                      tick={{ fill: "var(--muted-foreground)", fontSize: 10 }}
                     />
                     <ChartTooltip
-                      cursor={{ fill: "#f7f8f6" }}
+                      cursor={{ fill: "var(--muted)" }}
                       content={
                         <ChartTooltipContent
-                          className="rounded-xl border-[#e8eae8] bg-white"
+                          className="rounded-xl border-border bg-card"
                           labelFormatter={(_value, payload) => payload[0]?.payload?.fullName ?? ""}
                           formatter={(value) => (
-                            <span className="money font-semibold text-[#2d373b]">
+                            <span className="money font-semibold text-foreground">
                               {formatMoney(Number(value))}
                             </span>
                           )}
@@ -237,21 +243,27 @@ export function DashboardView() {
                       {chartData.map((item, index) => (
                         <Cell
                           key={index}
-                          fill={item.appropriation === largestAllocation ? "#f56618" : "#e2e5e3"}
+                          fill={
+                            item.appropriation === largestAllocation
+                              ? "var(--brand)"
+                              : "var(--chart-muted)"
+                          }
                         />
                       ))}
                     </Bar>
                   </BarChart>
                 </ChartContainer>
               ) : (
-                <p className="py-16 text-center text-sm text-[#9aa4a7]">No budget lines yet.</p>
+                <p className="py-16 text-center text-sm text-muted-foreground">
+                  No budget lines yet.
+                </p>
               )}
-              <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-[#f0f1ef] pt-4">
-                <div className="text-xs text-[#919da0]">
-                  <span className="mr-2 inline-block h-2.5 w-2.5 rounded-full bg-[#f56618]" />
+              <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
+                <div className="text-xs text-muted-foreground">
+                  <span className="mr-2 inline-block h-2.5 w-2.5 rounded-full bg-brand" />
                   Largest allocation highlighted
                 </div>
-                <span className="money text-xs font-semibold text-[#47545b]">
+                <span className="money text-xs font-semibold text-secondary">
                   Total {formatMoney(totals.appropriation)}
                 </span>
               </div>
@@ -262,10 +274,10 @@ export function DashboardView() {
         <div className="min-w-0 space-y-4">
           <Card className="border-0 shadow-[0_4px_24px_rgba(18,29,35,.03)]">
             <CardHeader className="flex-row items-center justify-between pb-3">
-              <CardTitle className="text-[20px] font-bold text-[#1b2226]">
+              <CardTitle className="text-[20px] font-bold text-foreground">
                 Recent vouchers
               </CardTitle>
-              <Badge className="bg-[#f5f6f4] px-2.5 py-1 text-[10px] text-[#788489]">
+              <Badge className="bg-muted px-2.5 py-1 text-[10px] text-muted-foreground">
                 {data.vouchers.length} total
               </Badge>
             </CardHeader>
@@ -274,23 +286,23 @@ export function DashboardView() {
                 <Link
                   key={voucher.id}
                   href={`/disbursements?selected=${voucher.id}`}
-                  className="flex items-center gap-3 rounded-2xl px-2 py-3 transition-colors hover:bg-[#f7f8f6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f56618]"
+                  className="flex items-center gap-3 rounded-2xl px-2 py-3 transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                 >
                   <div
-                    className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ${["bg-[#e9f0e8] text-[#5f8c70]", "bg-[#e9edf4] text-[#6282a5]", "bg-[#fff0e7] text-[#dc7540]", "bg-[#f1eaf4] text-[#9a7da5]", "bg-[#eef0eb] text-[#7e8a72]"][index % 5]}`}
+                    className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ${["bg-success-soft text-success", "bg-info-soft text-info", "bg-brand-soft text-brand-ink", "bg-violet-soft text-violet", "bg-muted text-muted-foreground"][index % 5]}`}
                   >
                     <FileText size={20} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-[12px] font-bold text-[#283136]">
+                    <div className="truncate text-[12px] font-bold text-foreground">
                       {voucher.payee}
                     </div>
-                    <div className="mt-1 truncate text-[10px] text-[#9aa4a7]">
+                    <div className="mt-1 truncate text-[10px] text-muted-foreground">
                       {voucher.number} · {voucher.purpose}
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="money whitespace-nowrap text-[12px] font-bold text-[#30393e]">
+                    <div className="money whitespace-nowrap text-[12px] font-bold text-foreground">
                       {formatMoney(voucher.amount)}
                     </div>
                     <div className="mt-1">
@@ -302,7 +314,7 @@ export function DashboardView() {
               <Button
                 asChild
                 variant="outline"
-                className="mt-3 w-full rounded-full border-[#e5e9e6] text-xs font-semibold text-[#667277]"
+                className="mt-3 w-full rounded-full border-border text-xs font-semibold text-secondary"
               >
                 <Link href="/disbursements">
                   All vouchers <ArrowRight size={14} />
@@ -313,23 +325,20 @@ export function DashboardView() {
 
           <Card className="border-0 shadow-[0_4px_24px_rgba(18,29,35,.03)]">
             <CardHeader className="pb-3">
-              <CardTitle className="text-[20px] font-bold text-[#1b2226]">Budget health</CardTitle>
-              <p className="mt-1 text-xs text-[#9aa4a7]">
+              <CardTitle className="text-[20px] font-bold text-foreground">Budget health</CardTitle>
+              <p className="mt-1 text-xs text-muted-foreground">
                 How much of the appropriation is committed
               </p>
             </CardHeader>
             <CardContent>
               <div className="flex items-end justify-between">
-                <span className="money text-[38px] font-semibold tracking-tight text-[#252d30]">
+                <span className="money text-[38px] font-semibold tracking-tight text-foreground">
                   {utilization}%
                 </span>
-                <span className="mb-1 text-xs font-semibold text-[#8c989c]">utilized</span>
+                <span className="mb-1 text-xs font-semibold text-muted-foreground">utilized</span>
               </div>
-              <Progress
-                value={utilization}
-                className="mt-3 h-2.5 bg-[#ecefed] [&>div]:bg-[#f56618]"
-              />
-              <div className="mt-4 flex justify-between text-[11px] text-[#8e9a9e]">
+              <Progress value={utilization} className="mt-3 h-2.5 bg-muted [&>div]:bg-brand" />
+              <div className="mt-4 flex justify-between text-[11px] text-muted-foreground">
                 <span>Committed {formatMoney(totals.obligated)}</span>
                 <span>{formatMoney(totals.available)} available</span>
               </div>
@@ -338,13 +347,13 @@ export function DashboardView() {
 
           <Card className="border-0 shadow-[0_4px_24px_rgba(18,29,35,.03)]">
             <CardHeader className="flex-row items-center justify-between pb-2">
-              <CardTitle className="text-[20px] font-bold text-[#1b2226]">
+              <CardTitle className="text-[20px] font-bold text-foreground">
                 Latest activity
               </CardTitle>
               <Link
                 href="/audit"
                 aria-label="View all activity"
-                className="rounded-full border border-[#e8ebe8] p-2 text-[#829096] hover:bg-[#f7f8f6]"
+                className="rounded-full border border-border p-2 text-muted-foreground hover:bg-background"
               >
                 <ArrowUpRight size={15} />
               </Link>
@@ -353,14 +362,14 @@ export function DashboardView() {
               {data.audit.slice(0, 3).map((event) => (
                 <div
                   key={event.id}
-                  className="flex gap-3 border-b border-[#f0f2ef] py-3 last:border-0"
+                  className="flex gap-3 border-b border-border py-3 last:border-0"
                 >
-                  <div className="mt-1 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#f6f2ec] text-[#d47a45]">
+                  <div className="mt-1 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-accent text-brand-ink">
                     <CircleDollarSign size={15} />
                   </div>
                   <div className="min-w-0">
-                    <div className="text-[11px] font-bold text-[#3d4a50]">{event.action}</div>
-                    <div className="mt-1 text-[10px] leading-4 text-[#9aa4a7]">
+                    <div className="text-[11px] font-bold text-foreground">{event.action}</div>
+                    <div className="mt-1 text-[10px] leading-4 text-muted-foreground">
                       {event.subject} · {event.detail}
                     </div>
                   </div>

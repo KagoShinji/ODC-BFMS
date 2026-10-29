@@ -6,6 +6,9 @@ import { ArrowRight, Plus, ReceiptText, X } from "lucide-react";
 import { useFinance } from "@/data/demo/finance-provider";
 import { dashboardTotals, parseMoney, receiptUnmatched } from "@/domain/finance";
 import { displayDate, formatMoney } from "@/lib/utils";
+import { useConfirm } from "@/components/layout/confirm-provider";
+import { usePendingAction } from "@/hooks/use-pending-action";
+import { ActionError, Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -27,6 +30,8 @@ const categories = [
 ];
 
 export function CollectionsView() {
+  const confirm = useConfirm();
+  const actions = usePendingAction();
   const { data, createCollection, voidCollection } = useFinance();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -64,22 +69,26 @@ export function CollectionsView() {
           </Button>
         }
       />
+      <ActionError error={actions.error} />
       <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
-          { label: "Collected to date", value: totals.collected, color: "#f56618" },
-          { label: "Deposited", value: totals.deposited, color: "#5b8d72" },
-          { label: "Remitted", value: totals.remitted, color: "#796a9e" },
-          { label: "Awaiting matching", value: totals.undeposited, color: "#5b829b" },
+          { label: "Collected to date", value: totals.collected, color: "var(--brand-ink)" },
+          { label: "Deposited", value: totals.deposited, color: "var(--success)" },
+          { label: "Remitted", value: totals.remitted, color: "var(--violet)" },
+          { label: "Awaiting matching", value: totals.undeposited, color: "var(--info)" },
         ].map((item) => (
           <Card key={item.label}>
             <CardContent className="flex items-start justify-between p-5">
               <div>
-                <div className="text-xs font-semibold text-[#85939c]">{item.label}</div>
-                <div className="money mt-2 text-[23px] font-bold text-[#203747]">
+                <div className="text-xs font-semibold text-muted-foreground">{item.label}</div>
+                <div className="money mt-2 text-[23px] font-bold text-foreground">
                   {formatMoney(item.value)}
                 </div>
               </div>
-              <div className="h-9 w-9 rounded-lg" style={{ background: `${item.color}20` }}>
+              <div
+                className="h-9 w-9 rounded-lg"
+                style={{ background: `color-mix(in srgb, ${item.color} 12%, transparent)` }}
+              >
                 <ReceiptText size={17} className="m-[10px]" style={{ color: item.color }} />
               </div>
             </CardContent>
@@ -87,7 +96,7 @@ export function CollectionsView() {
         ))}
       </div>
       {open && (
-        <Card className="mb-6 border-[#ffc59d]">
+        <Card className="mb-6 border-warning/30">
           <CardHeader className="flex-row items-center justify-between">
             <CardTitle>New collection</CardTitle>
             <Button
@@ -100,8 +109,12 @@ export function CollectionsView() {
             </Button>
           </CardHeader>
           <CardContent>
-            <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              <label className="text-xs font-semibold text-[#526575]">
+            <Form
+              pendingLabel="Issuing receipt…"
+              onSubmit={submit}
+              className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
+            >
+              <label className="text-xs font-semibold text-secondary">
                 Payer
                 <Input
                   className="mt-1.5"
@@ -111,10 +124,10 @@ export function CollectionsView() {
                   required
                 />
               </label>
-              <label className="text-xs font-semibold text-[#526575]">
+              <label className="text-xs font-semibold text-secondary">
                 Revenue category
                 <select
-                  className="mt-1.5 h-10 w-full rounded-lg border border-[#d9dedf] bg-white px-3 text-sm"
+                  className="mt-1.5 h-10 w-full rounded-lg border border-border bg-card px-3 text-sm"
                   value={revenueCategory}
                   onChange={(event) => setRevenueCategory(event.target.value)}
                 >
@@ -123,7 +136,7 @@ export function CollectionsView() {
                   ))}
                 </select>
               </label>
-              <label className="text-xs font-semibold text-[#526575]">
+              <label className="text-xs font-semibold text-secondary">
                 Amount (₱)
                 <Input
                   className="mt-1.5"
@@ -136,7 +149,7 @@ export function CollectionsView() {
                   required
                 />
               </label>
-              <label className="text-xs font-semibold text-[#526575] sm:col-span-2 xl:col-span-3">
+              <label className="text-xs font-semibold text-secondary sm:col-span-2 xl:col-span-3">
                 Purpose / particulars
                 <Input
                   className="mt-1.5"
@@ -151,8 +164,8 @@ export function CollectionsView() {
                   Issue demo receipt
                 </Button>
               </div>
-            </form>
-            <p className="mt-3 text-xs text-[#9aa5aa]">
+            </Form>
+            <p className="mt-3 text-xs text-muted-foreground">
               Official receipt series, accountable forms and collector permissions are configured in
               the live workflow.
             </p>
@@ -163,7 +176,7 @@ export function CollectionsView() {
         <CardHeader className="flex-row flex-wrap items-center justify-between gap-3">
           <div>
             <CardTitle>Receipt register</CardTitle>
-            <p className="mt-1 text-xs text-[#96a1a7]">
+            <p className="mt-1 text-xs text-muted-foreground">
               Issued and voided receipts remain visible.
             </p>
           </div>
@@ -185,10 +198,10 @@ export function CollectionsView() {
             </thead>
             <tbody>
               {rows.map((item) => (
-                <tr key={item.id} className="hover:bg-[#fdfaf7]">
+                <tr key={item.id} className="hover:bg-accent">
                   <td className={tdClass}>
-                    <div className="font-bold text-[#2d4352]">{item.receiptNumber}</div>
-                    <div className="mt-0.5 text-[11px] text-[#91a0a7]">{item.payer}</div>
+                    <div className="font-bold text-foreground">{item.receiptNumber}</div>
+                    <div className="mt-0.5 text-[11px] text-muted-foreground">{item.payer}</div>
                   </td>
                   <td className={tdClass}>{item.purpose}</td>
                   <td className={tdClass}>{item.revenueCategory}</td>
@@ -208,10 +221,20 @@ export function CollectionsView() {
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="text-[#ad5a4d]"
-                          onClick={() => {
-                            if (window.confirm(`Void demo receipt ${item.receiptNumber}?`))
-                              voidCollection(item.id);
+                          className="text-danger"
+                          loading={actions.pending === item.id}
+                          loadingText="Voiding…"
+                          disabled={actions.pending !== null}
+                          onClick={async () => {
+                            if (
+                              await confirm({
+                                title: "Void receipt?",
+                                description: `Void receipt ${item.receiptNumber}?`,
+                                confirmLabel: "Void receipt",
+                                destructive: true,
+                              })
+                            )
+                              await actions.run(item.id, () => voidCollection(item.id));
                           }}
                         >
                           Void
@@ -223,10 +246,12 @@ export function CollectionsView() {
             </tbody>
           </table>
           {!rows.length && (
-            <p className="p-8 text-center text-sm text-[#8d999f]">No receipts match your search.</p>
+            <p className="p-8 text-center text-sm text-muted-foreground">
+              No receipts match your search.
+            </p>
           )}
         </div>
-        <div className="flex justify-end border-t border-[#edf0ee] p-4">
+        <div className="flex justify-end border-t border-border p-4">
           <Button asChild variant="outline" size="sm">
             <Link href="/deposits">
               Match deposits <ArrowRight size={14} />

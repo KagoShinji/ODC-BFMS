@@ -7,6 +7,8 @@ import { useFinance } from "@/data/demo/finance-provider";
 import { availableForLine, parseMoney } from "@/domain/finance";
 import { expenseKinds, kindLabel, type ExpenseKind } from "@/domain/types";
 import { displayDate, formatMoney } from "@/lib/utils";
+import { usePendingAction } from "@/hooks/use-pending-action";
+import { ActionError, Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -23,6 +25,7 @@ const stages = ["PR", "RFQ", "PO", "AIR", "Ready for DV"] as const;
 
 export function ExpenseCasesView({ kind }: { kind?: ExpenseKind }) {
   const { data, createCase, advanceCase, createVoucher } = useFinance();
+  const actions = usePendingAction();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [formKind, setFormKind] = useState<ExpenseKind>(kind ?? "procurement");
@@ -72,25 +75,26 @@ export function ExpenseCasesView({ kind }: { kind?: ExpenseKind }) {
           </Button>
         }
       />
+      <ActionError error={actions.error} />
       {kind === "procurement" && (
-        <Card className="mb-6 border-[#e9e0d6] bg-[#fffaf4]">
+        <Card className="mb-6 border-border bg-brand-soft">
           <CardContent className="p-4 sm:p-5">
-            <div className="mb-3 text-xs font-bold uppercase tracking-wider text-[#ad6d3d]">
+            <div className="mb-3 text-xs font-bold uppercase tracking-wider text-warning">
               Procurement document path
             </div>
             <div className="flex flex-wrap items-center gap-2">
               {stages.map((stage, index) => (
                 <div key={stage} className="flex items-center gap-2">
-                  <span className="rounded-lg border border-[#f4ddc8] bg-white px-3 py-2 text-xs font-bold text-[#425665]">
+                  <span className="rounded-lg border border-warning/30 bg-card px-3 py-2 text-xs font-bold text-secondary">
                     {stage}
                   </span>
                   {index < stages.length - 1 && (
-                    <ChevronRight size={14} className="text-[#d09c75]" />
+                    <ChevronRight size={14} className="text-brand-ink" />
                   )}
                 </div>
               ))}
             </div>
-            <p className="mt-3 text-[11px] text-[#9b8978]">
+            <p className="mt-3 text-[11px] text-muted-foreground">
               This demo advances document stages. Required quotations, approvals, and inspection
               evidence are specified in the implementation plan for the live workflow.
             </p>
@@ -98,7 +102,7 @@ export function ExpenseCasesView({ kind }: { kind?: ExpenseKind }) {
         </Card>
       )}
       {open && (
-        <Card className="mb-6 border-[#ffc59d]">
+        <Card className="mb-6 border-warning/30">
           <CardHeader className="flex-row items-center justify-between">
             <CardTitle>Create expense case</CardTitle>
             <Button
@@ -111,14 +115,18 @@ export function ExpenseCasesView({ kind }: { kind?: ExpenseKind }) {
             </Button>
           </CardHeader>
           <CardContent>
-            <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              <label className="text-xs font-semibold text-[#526575]">
+            <Form
+              pendingLabel="Creating expense case…"
+              onSubmit={submit}
+              className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
+            >
+              <label className="text-xs font-semibold text-secondary">
                 Expense type
                 <select
                   value={formKind}
                   disabled={!!kind}
                   onChange={(event) => setFormKind(event.target.value as ExpenseKind)}
-                  className="mt-1.5 h-10 w-full rounded-lg border border-[#d9dedf] bg-white px-3 text-sm disabled:bg-[#f2f3f2]"
+                  className="mt-1.5 h-10 w-full rounded-lg border border-border bg-card px-3 text-sm disabled:bg-muted"
                 >
                   {expenseKinds.map((item) => (
                     <option key={item} value={item}>
@@ -127,7 +135,7 @@ export function ExpenseCasesView({ kind }: { kind?: ExpenseKind }) {
                   ))}
                 </select>
               </label>
-              <label className="text-xs font-semibold text-[#526575]">
+              <label className="text-xs font-semibold text-secondary">
                 Payee / recipient
                 <Input
                   className="mt-1.5"
@@ -137,7 +145,7 @@ export function ExpenseCasesView({ kind }: { kind?: ExpenseKind }) {
                   required
                 />
               </label>
-              <label className="text-xs font-semibold text-[#526575]">
+              <label className="text-xs font-semibold text-secondary">
                 Amount (₱)
                 <Input
                   className="mt-1.5"
@@ -150,7 +158,7 @@ export function ExpenseCasesView({ kind }: { kind?: ExpenseKind }) {
                   required
                 />
               </label>
-              <label className="text-xs font-semibold text-[#526575] sm:col-span-2">
+              <label className="text-xs font-semibold text-secondary sm:col-span-2">
                 Purpose
                 <Input
                   className="mt-1.5"
@@ -160,12 +168,12 @@ export function ExpenseCasesView({ kind }: { kind?: ExpenseKind }) {
                   required
                 />
               </label>
-              <label className="text-xs font-semibold text-[#526575]">
+              <label className="text-xs font-semibold text-secondary">
                 Budget line
                 <select
                   value={budgetLineId}
                   onChange={(event) => setBudgetLineId(event.target.value)}
-                  className="mt-1.5 h-10 w-full rounded-lg border border-[#d9dedf] bg-white px-3 text-sm"
+                  className="mt-1.5 h-10 w-full rounded-lg border border-border bg-card px-3 text-sm"
                 >
                   {data.budgetLines.map((line) => (
                     <option value={line.id} key={line.id}>
@@ -173,7 +181,7 @@ export function ExpenseCasesView({ kind }: { kind?: ExpenseKind }) {
                     </option>
                   ))}
                 </select>
-                <span className="mt-1 block text-[11px] font-normal text-[#9aa5aa]">
+                <span className="mt-1 block text-[11px] font-normal text-muted-foreground">
                   Available: {formatMoney(availableForLine(data, budgetLineId))}
                 </span>
               </label>
@@ -182,7 +190,7 @@ export function ExpenseCasesView({ kind }: { kind?: ExpenseKind }) {
                   Create case
                 </Button>
               </div>
-            </form>
+            </Form>
           </CardContent>
         </Card>
       )}
@@ -190,7 +198,7 @@ export function ExpenseCasesView({ kind }: { kind?: ExpenseKind }) {
         <CardHeader className="flex-row flex-wrap items-center justify-between gap-3">
           <div>
             <CardTitle>{kind ? `${kindLabel[kind]} records` : "All expense cases"}</CardTitle>
-            <p className="mt-1 text-xs text-[#96a1a7]">
+            <p className="mt-1 text-xs text-muted-foreground">
               {cases.length} records · FY {data.fiscalYear}
             </p>
           </div>
@@ -215,10 +223,10 @@ export function ExpenseCasesView({ kind }: { kind?: ExpenseKind }) {
             </thead>
             <tbody>
               {cases.map((item) => (
-                <tr key={item.id} className="hover:bg-[#fdfaf7]">
+                <tr key={item.id} className="hover:bg-accent">
                   <td className={tdClass}>
-                    <div className="font-bold text-[#2d4352]">{item.reference}</div>
-                    <div className="mt-0.5 max-w-[220px] truncate text-[11px] text-[#89969f]">
+                    <div className="font-bold text-foreground">{item.reference}</div>
+                    <div className="mt-0.5 max-w-[220px] truncate text-[11px] text-muted-foreground">
                       {item.purpose}
                     </div>
                   </td>
@@ -228,23 +236,41 @@ export function ExpenseCasesView({ kind }: { kind?: ExpenseKind }) {
                   <td className={tdClass}>
                     <StatusBadge status={item.step} />
                   </td>
-                  <td className={`${tdClass} money text-right font-bold text-[#2d4352]`}>
+                  <td className={`${tdClass} money text-right font-bold text-foreground`}>
                     {formatMoney(item.amount)}
                   </td>
                   <td className={`${tdClass} text-right`}>
                     {item.voucherId ? (
                       <Link
-                        className="inline-flex items-center gap-1 font-bold text-[#e56a27] hover:underline"
+                        className="inline-flex items-center gap-1 font-bold text-brand-ink hover:underline"
                         href="/disbursements"
                       >
                         View DV <ArrowRight size={13} />
                       </Link>
                     ) : item.step === "Ready for DV" ? (
-                      <Button size="sm" variant="outline" onClick={() => createVoucher(item.id)}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        loading={actions.pending === `voucher:${item.id}`}
+                        loadingText="Creating…"
+                        disabled={actions.pending !== null}
+                        onClick={() =>
+                          actions.run(`voucher:${item.id}`, () => createVoucher(item.id))
+                        }
+                      >
                         Create DV
                       </Button>
                     ) : (
-                      <Button size="sm" variant="outline" onClick={() => advanceCase(item.id)}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        loading={actions.pending === `advance:${item.id}`}
+                        loadingText="Updating…"
+                        disabled={actions.pending !== null}
+                        onClick={() =>
+                          actions.run(`advance:${item.id}`, () => advanceCase(item.id))
+                        }
+                      >
                         Complete {item.step} <Check size={13} />
                       </Button>
                     )}
@@ -254,7 +280,7 @@ export function ExpenseCasesView({ kind }: { kind?: ExpenseKind }) {
             </tbody>
           </table>
           {!cases.length && (
-            <p className="p-8 text-center text-sm text-[#8d999f]">
+            <p className="p-8 text-center text-sm text-muted-foreground">
               No expense cases match this view.
             </p>
           )}

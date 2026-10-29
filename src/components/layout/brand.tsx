@@ -52,7 +52,7 @@ export function BrandLockup({
           className={cn(
             "line-clamp-2 leading-tight",
             large ? "max-w-[210px] text-sm font-extrabold" : "text-[13px] font-bold",
-            tone === "dark" ? "text-white" : "text-[#1f2a31]",
+            tone === "dark" ? "text-white" : "text-foreground",
           )}
         >
           {value.appName}
@@ -62,7 +62,7 @@ export function BrandLockup({
             className={cn(
               "truncate font-bold",
               large ? "mt-1 text-xs" : "mt-0.5 text-[11px]",
-              tone === "dark" ? "text-brand-light" : "text-brand",
+              tone === "dark" ? "text-brand-light" : "text-brand-ink",
             )}
           >
             by {value.organizationName}

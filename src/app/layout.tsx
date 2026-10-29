@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import type { CSSProperties } from "react";
+import { cookies } from "next/headers";
 import { BrandingProvider } from "@/components/layout/brand";
+import { ConfirmProvider } from "@/components/layout/confirm-provider";
+import { ThemeProvider } from "@/components/layout/theme-provider";
 import { brandPalette, brandTitle } from "@/lib/branding";
 import { getBranding } from "@/lib/branding-server";
 import "./globals.css";
@@ -15,11 +18,21 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const branding = await getBranding();
+  const [branding, cookieStore] = await Promise.all([getBranding(), cookies()]);
+  const theme = cookieStore.get("odc_theme")?.value === "dark" ? "dark" : "light";
   return (
-    <html lang="en" style={brandPalette(branding.accentColor) as CSSProperties}>
+    <html
+      lang="en"
+      className={theme === "dark" ? "dark" : undefined}
+      data-theme={theme}
+      style={brandPalette(branding.accentColor) as CSSProperties}
+    >
       <body>
-        <BrandingProvider value={branding}>{children}</BrandingProvider>
+        <ThemeProvider initialTheme={theme}>
+          <BrandingProvider value={branding}>
+            <ConfirmProvider>{children}</ConfirmProvider>
+          </BrandingProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -30,18 +30,15 @@ export function AuditView() {
         <CardContent>
           {events.length ? (
             events.map((item) => (
-              <div
-                key={item.id}
-                className="flex gap-4 border-b border-[#eff1ef] py-4 last:border-0"
-              >
+              <div key={item.id} className="flex gap-4 border-b border-border py-4 last:border-0">
                 <div className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-brand" />
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-bold text-[#2d4252]">
+                  <div className="text-sm font-bold text-foreground">
                     {item.action}{" "}
-                    <span className="font-normal text-[#8c99a1]">· {item.subject}</span>
+                    <span className="font-normal text-muted-foreground">· {item.subject}</span>
                   </div>
-                  <div className="mt-1 text-xs text-[#70818d]">{item.detail}</div>
-                  <div className="mt-2 text-[11px] text-[#9da8ad]">
+                  <div className="mt-1 text-xs text-muted-foreground">{item.detail}</div>
+                  <div className="mt-2 text-[11px] text-muted-foreground">
                     {item.actor} ·{" "}
                     {new Date(item.at).toLocaleString("en-PH", {
                       timeZone: "Asia/Manila",
@@ -53,13 +50,13 @@ export function AuditView() {
               </div>
             ))
           ) : (
-            <p className="p-8 text-center text-sm text-[#8e9ba1]">
+            <p className="p-8 text-center text-sm text-muted-foreground">
               No activity matches your search.
             </p>
           )}
         </CardContent>
       </Card>
-      <p className="mt-4 text-xs text-[#99a4aa]">
+      <p className="mt-4 text-xs text-muted-foreground">
         {preview
           ? "Live activity is recorded by the database. Administrators and auditors see their barangay's events."
           : "Browser demo history is editable by the browser owner. Production audit events require protected database posting."}

@@ -40,14 +40,14 @@ export function ReportsView() {
         <Card className="h-fit">
           <CardHeader>
             <CardTitle>Available reports</CardTitle>
-            <p className="mt-1 text-xs text-[#98a2a7]">{reports.length} report types</p>
+            <p className="mt-1 text-xs text-muted-foreground">{reports.length} report types</p>
           </CardHeader>
           <CardContent className="space-y-1">
             {reports.map((item) => (
               <button
                 key={item.id}
                 onClick={() => setSelectedId(item.id)}
-                className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${selectedId === item.id ? "bg-[#fff0e4] text-[#c65c20]" : "text-[#5a6e7b] hover:bg-[#f6f7f4]"}`}
+                className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${selectedId === item.id ? "bg-brand-soft text-brand-ink" : "text-secondary hover:bg-muted"}`}
               >
                 <FileBarChart2 size={17} className="shrink-0" />
                 <div className="min-w-0">
@@ -62,12 +62,12 @@ export function ReportsView() {
           <CardHeader className="flex-row flex-wrap items-start justify-between gap-3">
             <div>
               <div
-                className={`mb-2 inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${selected.status === "preview" ? "bg-[#fff1e4] text-[#ce6325]" : "bg-[#eef0f2] text-[#72808b]"}`}
+                className={`mb-2 inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${selected.status === "preview" ? "bg-brand-soft text-brand-ink" : "bg-muted text-muted-foreground"}`}
               >
                 {selected.status}
               </div>
               <CardTitle className="text-lg">{selected.title}</CardTitle>
-              <p className="mt-1 text-xs text-[#91a0a7]">
+              <p className="mt-1 text-xs text-muted-foreground">
                 {selected.description} · FY {data.fiscalYear}
               </p>
             </div>
@@ -92,7 +92,7 @@ export function ReportsView() {
           </CardHeader>
           <CardContent>
             {selected.columns.length ? (
-              <div className="odc-scrollbar overflow-x-auto rounded-lg border border-[#e7eae6]">
+              <div className="odc-scrollbar overflow-x-auto rounded-lg border border-border">
                 <table className={tableClass}>
                   <thead>
                     <tr>
@@ -116,20 +116,22 @@ export function ReportsView() {
                   </tbody>
                 </table>
                 {!selected.rows.length && (
-                  <p className="p-8 text-center text-sm text-[#8f9ba0]">
+                  <p className="p-8 text-center text-sm text-muted-foreground">
                     No records for this report yet.
                   </p>
                 )}
               </div>
             ) : (
-              <div className="flex min-h-64 flex-col items-center justify-center rounded-xl border border-dashed border-[#e4e8e4] bg-[#fafaf8] p-6 text-center">
-                <FileBarChart2 size={27} className="text-[#b5c0c1]" />
-                <div className="mt-3 text-sm font-bold text-[#334956]">Report template pending</div>
-                <p className="mt-1 max-w-sm text-xs leading-5 text-[#94a0a5]">{selected.note}</p>
+              <div className="flex min-h-64 flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted p-6 text-center">
+                <FileBarChart2 size={27} className="text-muted-foreground" />
+                <div className="mt-3 text-sm font-bold text-secondary">Report template pending</div>
+                <p className="mt-1 max-w-sm text-xs leading-5 text-muted-foreground">
+                  {selected.note}
+                </p>
               </div>
             )}
             {selected.columns.length && (
-              <p className="mt-4 rounded-lg bg-[#fff7ee] px-3 py-2.5 text-xs leading-5 text-[#98663e]">
+              <p className="mt-4 rounded-lg bg-brand-soft px-3 py-2.5 text-xs leading-5 text-warning">
                 {selected.note}
               </p>
             )}

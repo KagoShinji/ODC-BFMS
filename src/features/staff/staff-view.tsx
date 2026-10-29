@@ -18,6 +18,9 @@ import {
 import { displayDate } from "@/lib/utils";
 import { PortalLink } from "@/components/layout/portal-link";
 import { Badge } from "@/components/ui/badge";
+import { useConfirm } from "@/components/layout/confirm-provider";
+import { usePendingAction } from "@/hooks/use-pending-action";
+import { ActionError, Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -44,7 +47,7 @@ const roleDescription: Record<MemberRole, string> = {
 };
 
 const selectClass =
-  "mt-1.5 h-10 w-full rounded-xl border border-[#e2e6e4] bg-white px-3 text-sm text-[#182a3a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand";
+  "mt-1.5 h-10 w-full rounded-xl border border-border bg-card px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand";
 
 type Message = { ok: boolean; text: string } | null;
 
@@ -53,7 +56,7 @@ function StatusLine({ message }: { message: Message }) {
   return (
     <p
       role={message.ok ? "status" : "alert"}
-      className={`text-xs ${message.ok ? "text-[#397758]" : "text-[#a7473c]"}`}
+      className={`text-xs ${message.ok ? "text-success" : "text-danger"}`}
     >
       {message.text}
     </p>
@@ -83,6 +86,8 @@ function StaffDirectoryView({
   beforeTable?: ReactNode;
   footnote: string;
 }) {
+  const confirm = useConfirm();
+  const actions = usePendingAction();
   const roles = assignableRoles(level);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -106,13 +111,17 @@ function StaffDirectoryView({
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
-    const error = await onAdd({
-      fullName,
-      email,
-      role,
-      password: requirePassword ? password : undefined,
-    });
-    setBusy(false);
+    let error: string | null;
+    try {
+      error = await onAdd({
+        fullName,
+        email,
+        role,
+        password: requirePassword ? password : undefined,
+      });
+    } finally {
+      setBusy(false);
+    }
     if (error) return setFormMessage({ ok: false, text: error });
     setListMessage({ ok: true, text: `${fullName.trim()} was added as ${roleLabel[role]}.` });
     setFormMessage(null);
@@ -126,18 +135,25 @@ function StaffDirectoryView({
     const active = !member.active;
     if (
       !active &&
-      !window.confirm(`Remove ${roleLabel[member.role]} access for ${member.fullName}?`)
+      !(await confirm({
+        title: "Remove staff access?",
+        description: `Remove ${roleLabel[member.role]} access for ${member.fullName}?`,
+        confirmLabel: "Remove access",
+        destructive: true,
+      }))
     )
       return;
-    const error = await onSetActive(member, active);
-    setListMessage(
-      error
-        ? { ok: false, text: error }
-        : {
-            ok: true,
-            text: `${member.fullName}'s ${roleLabel[member.role]} access was ${active ? "restored" : "deactivated"}.`,
-          },
-    );
+    await actions.run(`${member.userId}:${member.role}`, async () => {
+      const error = await onSetActive(member, active);
+      setListMessage(
+        error
+          ? { ok: false, text: error }
+          : {
+              ok: true,
+              text: `${member.fullName}'s ${roleLabel[member.role]} access was ${active ? "restored" : "deactivated"}.`,
+            },
+      );
+    });
   }
 
   return (
@@ -164,10 +180,11 @@ function StaffDirectoryView({
           </>
         }
       />
+      <ActionError error={actions.error} />
       {addDisabledReason && (
         <div
           role="status"
-          className="mb-5 rounded-2xl border border-[#f1d6ad] bg-[#fff6e9] px-4 py-3 text-xs leading-5 text-[#986321]"
+          className="mb-5 rounded-2xl border border-warning/30 bg-warning-soft px-4 py-3 text-xs leading-5 text-warning"
         >
           {addDisabledReason}
         </div>
@@ -181,12 +198,12 @@ function StaffDirectoryView({
         ].map(({ label, value, icon: Icon }) => (
           <Card key={label}>
             <CardContent className="flex items-center gap-4 p-5">
-              <div className="grid h-11 w-11 place-items-center rounded-xl bg-brand-soft text-brand">
+              <div className="grid h-11 w-11 place-items-center rounded-xl bg-brand-soft text-brand-ink">
                 <Icon size={20} />
               </div>
               <div>
-                <div className="text-[23px] font-bold tracking-tight text-[#1a3042]">{value}</div>
-                <div className="text-xs font-semibold text-[#83919b]">{label}</div>
+                <div className="text-[23px] font-bold tracking-tight text-foreground">{value}</div>
+                <div className="text-xs font-semibold text-muted-foreground">{label}</div>
               </div>
             </CardContent>
           </Card>
@@ -211,11 +228,12 @@ function StaffDirectoryView({
             </Button>
           </CardHeader>
           <CardContent>
-            <form
+            <Form
+              pendingLabel="Saving staff…"
               onSubmit={submit}
               className={`grid gap-4 md:grid-cols-2 ${requirePassword ? "xl:grid-cols-4" : "xl:grid-cols-3"}`}
             >
-              <label className="text-xs font-semibold text-[#526575]">
+              <label className="text-xs font-semibold text-secondary">
                 Full name
                 <Input
                   className="mt-1.5"
@@ -226,7 +244,7 @@ function StaffDirectoryView({
                   required
                 />
               </label>
-              <label className="text-xs font-semibold text-[#526575]">
+              <label className="text-xs font-semibold text-secondary">
                 Email address
                 <Input
                   type="email"
@@ -238,7 +256,7 @@ function StaffDirectoryView({
                   required
                 />
               </label>
-              <label className="text-xs font-semibold text-[#526575]">
+              <label className="text-xs font-semibold text-secondary">
                 Role
                 <select
                   value={role}
@@ -253,7 +271,7 @@ function StaffDirectoryView({
                 </select>
               </label>
               {requirePassword && (
-                <label className="text-xs font-semibold text-[#526575]">
+                <label className="text-xs font-semibold text-secondary">
                   Temporary password
                   <Input
                     type="password"
@@ -269,10 +287,10 @@ function StaffDirectoryView({
                 <Button type="submit" variant="accent" disabled={busy}>
                   <Plus size={16} /> {busy ? "Adding…" : "Add to " + scope}
                 </Button>
-                <span className="text-xs text-[#7b8a93]">{roleDescription[role]}</span>
+                <span className="text-xs text-muted-foreground">{roleDescription[role]}</span>
               </div>
               {requirePassword && (
-                <p className="text-[11px] leading-5 text-[#8b969d] md:col-span-2 xl:col-span-full">
+                <p className="text-[11px] leading-5 text-muted-foreground md:col-span-2 xl:col-span-full">
                   The password is only needed for a new sign-in account. Share it privately; the
                   person can change it under Settings. An existing account keeps its password and
                   receives the new role.
@@ -281,7 +299,7 @@ function StaffDirectoryView({
               <div className="md:col-span-2 xl:col-span-full">
                 <StatusLine message={formMessage} />
               </div>
-            </form>
+            </Form>
           </CardContent>
         </Card>
       )}
@@ -314,15 +332,15 @@ function StaffDirectoryView({
                   return (
                     <tr key={`${member.userId}-${member.role}`}>
                       <td className={tdClass}>
-                        <div className="font-semibold text-[#2d4252]">{member.fullName}</div>
-                        <div className="text-[11px] text-[#8c99a1]">{member.email}</div>
+                        <div className="font-semibold text-foreground">{member.fullName}</div>
+                        <div className="text-[11px] text-muted-foreground">{member.email}</div>
                       </td>
                       <td className={tdClass}>
                         <Badge
                           className={
                             member.role === "admin"
-                              ? "bg-brand-soft text-brand-strong"
-                              : "bg-[#eef2f4] text-[#4f6676]"
+                              ? "bg-brand-soft text-brand-ink"
+                              : "bg-muted text-secondary"
                           }
                         >
                           {roleLabel[member.role]}
@@ -338,7 +356,9 @@ function StaffDirectoryView({
                         <Button
                           variant="outline"
                           size="sm"
-                          disabled={!allowed}
+                          disabled={!allowed || actions.pending !== null}
+                          loading={actions.pending === `${member.userId}:${member.role}`}
+                          loadingText="Updating…"
                           title={
                             allowed
                               ? undefined
@@ -367,7 +387,7 @@ function StaffDirectoryView({
           )}
         </CardContent>
       </Card>
-      <p className="mt-4 text-xs leading-5 text-[#99a4aa]">{footnote}</p>
+      <p className="mt-4 text-xs leading-5 text-muted-foreground">{footnote}</p>
     </>
   );
 }
@@ -418,8 +438,12 @@ function NewBarangayForm({ onCreated }: { onCreated(id: string): void }) {
     onCreated(result.id);
   }
   return (
-    <form onSubmit={submit} className="flex flex-wrap items-end gap-3">
-      <label className="min-w-[220px] flex-1 text-xs font-semibold text-[#526575]">
+    <Form
+      pendingLabel="Creating barangay…"
+      onSubmit={submit}
+      className="flex flex-wrap items-end gap-3"
+    >
+      <label className="min-w-[220px] flex-1 text-xs font-semibold text-secondary">
         Barangay name
         <Input
           className="mt-1.5"
@@ -433,7 +457,7 @@ function NewBarangayForm({ onCreated }: { onCreated(id: string): void }) {
         <Plus size={16} /> {busy ? "Creating…" : "Create barangay"}
       </Button>
       <StatusLine message={message} />
-    </form>
+    </Form>
   );
 }
 
@@ -463,13 +487,15 @@ export function LiveStaffView({
         <Card>
           <CardContent className="p-6">
             {directory.error ? (
-              <p role="alert" className="text-sm text-[#a7473c]">
+              <p role="alert" className="text-sm text-danger">
                 {directory.error}
               </p>
             ) : level === "superadmin" ? (
               <>
-                <h3 className="mb-1 text-sm font-bold text-[#253a49]">Create the first barangay</h3>
-                <p className="mb-4 text-xs text-[#7b8a93]">
+                <h3 className="mb-1 text-sm font-bold text-foreground">
+                  Create the first barangay
+                </h3>
+                <p className="mb-4 text-xs text-muted-foreground">
                   Staff and administrators are assigned to a barangay.
                 </p>
                 <NewBarangayForm onCreated={openBarangay} />
@@ -534,8 +560,8 @@ export function LiveStaffView({
           <Card className="mb-6">
             <CardContent className="flex flex-col gap-3 p-5 md:flex-row md:items-center md:justify-between">
               <div>
-                <div className="text-sm font-bold text-[#253a49]">Staff sign-in link</div>
-                <p className="mt-1 text-xs text-[#7b8a93]">
+                <div className="text-sm font-bold text-foreground">Staff sign-in link</div>
+                <p className="mt-1 text-xs text-muted-foreground">
                   Share this with new staff. It opens {selected.name}&apos;s branded sign-in page.
                 </p>
               </div>

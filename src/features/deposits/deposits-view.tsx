@@ -7,6 +7,7 @@ import { useFinance } from "@/data/demo/finance-provider";
 import type { Deposit } from "@/domain/types";
 import { parseMoney, receiptUnmatched } from "@/domain/finance";
 import { displayDate, formatMoney } from "@/lib/utils";
+import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -78,20 +79,20 @@ export function DepositsView() {
           <Card key={item.label}>
             <CardContent className="flex items-center justify-between p-5">
               <div>
-                <div className="text-xs font-semibold text-[#85939c]">{item.label}</div>
-                <div className="money mt-2 text-[23px] font-bold text-[#203747]">{item.value}</div>
+                <div className="text-xs font-semibold text-muted-foreground">{item.label}</div>
+                <div className="money mt-2 text-[23px] font-bold text-foreground">{item.value}</div>
               </div>
-              <Landmark size={19} className="text-[#ef732d]" />
+              <Landmark size={19} className="text-brand-ink" />
             </CardContent>
           </Card>
         ))}
       </div>
       {open && (
-        <Card className="mb-6 border-[#ffc59d]">
+        <Card className="mb-6 border-warning/30">
           <CardHeader className="flex-row items-center justify-between">
             <div>
               <CardTitle>Match a new deposit or remittance</CardTitle>
-              <p className="mt-1 text-xs text-[#909ca3]">
+              <p className="mt-1 text-xs text-muted-foreground">
                 Select receipts and adjust allocations for a partial amount.
               </p>
             </div>
@@ -105,20 +106,20 @@ export function DepositsView() {
             </Button>
           </CardHeader>
           <CardContent>
-            <form onSubmit={submit} className="space-y-5">
+            <Form pendingLabel="Confirming batch…" onSubmit={submit} className="space-y-5">
               <div className="grid gap-4 sm:grid-cols-3">
-                <label className="text-xs font-semibold text-[#526575]">
+                <label className="text-xs font-semibold text-secondary">
                   Transaction type
                   <select
                     value={kind}
                     onChange={(event) => setKind(event.target.value as Deposit["kind"])}
-                    className="mt-1.5 h-10 w-full rounded-lg border border-[#d9dedf] bg-white px-3 text-sm"
+                    className="mt-1.5 h-10 w-full rounded-lg border border-border bg-card px-3 text-sm"
                   >
                     <option value="deposit">Bank deposit</option>
                     <option value="remittance">Treasury remittance</option>
                   </select>
                 </label>
-                <label className="text-xs font-semibold text-[#526575]">
+                <label className="text-xs font-semibold text-secondary">
                   {kind === "deposit" ? "Depository bank" : "Remittance recipient"}
                   <Input
                     className="mt-1.5"
@@ -127,7 +128,7 @@ export function DepositsView() {
                     required
                   />
                 </label>
-                <label className="text-xs font-semibold text-[#526575]">
+                <label className="text-xs font-semibold text-secondary">
                   Reference / acknowledgement
                   <Input
                     className="mt-1.5"
@@ -139,27 +140,27 @@ export function DepositsView() {
                 </label>
               </div>
               <div>
-                <div className="mb-2 text-xs font-bold text-[#425766]">Unmatched receipts</div>
+                <div className="mb-2 text-xs font-bold text-secondary">Unmatched receipts</div>
                 <div className="max-h-60 space-y-2 overflow-y-auto">
                   {unmatched.map((item) => (
                     <div
                       key={item.id}
-                      className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#e7e9e5] bg-white p-3"
+                      className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card p-3"
                     >
                       <label className="flex cursor-pointer items-center gap-3">
                         <input
-                          className="accent-[#ed6b26]"
+                          className="accent-brand"
                           type="checkbox"
                           checked={selected[item.id] !== undefined}
                           onChange={() => toggle(item.id, receiptUnmatched(data, item.id))}
                         />
                         <span className="text-xs">
-                          <span className="font-bold text-[#2a4050]">{item.receiptNumber}</span>
-                          <span className="ml-2 text-[#84939d]">{item.payer}</span>
+                          <span className="font-bold text-foreground">{item.receiptNumber}</span>
+                          <span className="ml-2 text-muted-foreground">{item.payer}</span>
                         </span>
                       </label>
                       <div className="flex items-center gap-2">
-                        <span className="money text-xs text-[#7d8d98]">
+                        <span className="money text-xs text-muted-foreground">
                           of {formatMoney(receiptUnmatched(data, item.id))}
                         </span>
                         {selected[item.id] !== undefined && (
@@ -183,9 +184,9 @@ export function DepositsView() {
                     </div>
                   ))}
                   {!unmatched.length && (
-                    <p className="rounded-lg bg-[#f6f6f3] p-4 text-xs text-[#8f9aa0]">
+                    <p className="rounded-lg bg-muted p-4 text-xs text-muted-foreground">
                       All issued receipts are matched.{" "}
-                      <Link href="/collections" className="text-[#dd6425] hover:underline">
+                      <Link href="/collections" className="text-brand-ink hover:underline">
                         Record a collection
                       </Link>{" "}
                       first.
@@ -193,10 +194,10 @@ export function DepositsView() {
                   )}
                 </div>
               </div>
-              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#e8eae6] pt-4">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
                 <div>
-                  <div className="text-[11px] text-[#8d9aa0]">Batch total</div>
-                  <div className="money text-xl font-bold text-[#21394a]">
+                  <div className="text-[11px] text-muted-foreground">Batch total</div>
+                  <div className="money text-xl font-bold text-foreground">
                     {formatMoney(selectedAmount)}
                   </div>
                 </div>
@@ -204,14 +205,14 @@ export function DepositsView() {
                   Confirm demo batch <ArrowRight size={15} />
                 </Button>
               </div>
-            </form>
+            </Form>
           </CardContent>
         </Card>
       )}
       <Card>
         <CardHeader>
           <CardTitle>Matching register</CardTitle>
-          <p className="mt-1 text-xs text-[#96a1a7]">
+          <p className="mt-1 text-xs text-muted-foreground">
             Deposits and remittances settle collected cash. Only bank deposits increase cash in
             bank.
           </p>
@@ -231,14 +232,14 @@ export function DepositsView() {
             </thead>
             <tbody>
               {data.deposits.map((item) => (
-                <tr key={item.id} className="hover:bg-[#fdfaf7]">
-                  <td className={`${tdClass} font-bold text-[#2d4352]`}>{item.number}</td>
+                <tr key={item.id} className="hover:bg-accent">
+                  <td className={`${tdClass} font-bold text-foreground`}>{item.number}</td>
                   <td className={tdClass}>
                     {item.kind === "deposit" ? "Bank deposit" : "Remittance"}
                   </td>
                   <td className={tdClass}>
                     {item.bank}
-                    <div className="mt-0.5 text-[11px] text-[#93a0a7]">{item.reference}</div>
+                    <div className="mt-0.5 text-[11px] text-muted-foreground">{item.reference}</div>
                   </td>
                   <td className={tdClass}>{displayDate(item.date)}</td>
                   <td className={tdClass}>
@@ -254,7 +255,7 @@ export function DepositsView() {
                   <td className={tdClass}>
                     <StatusBadge status={item.status} />
                   </td>
-                  <td className={`${tdClass} money text-right font-bold text-[#2d4352]`}>
+                  <td className={`${tdClass} money text-right font-bold text-foreground`}>
                     {formatMoney(item.amount)}
                   </td>
                 </tr>

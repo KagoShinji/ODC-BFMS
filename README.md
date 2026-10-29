@@ -26,6 +26,7 @@ The dev server writes to `.next-dev` and production builds write to `.next`. Thi
 
 - Dashboard with budget, cash, bank, collection, payment, and exception summaries.
 - Login and sign-out with protected demo workspace routes; Supabase Auth remains the live sign-in path.
+- Theme-aware page skeletons and navigation spinners, plus submit and record-action progress indicators with duplicate-click protection. Loading states follow real pending work without adding artificial delays.
 - Budget lines with appropriation, committed amount, and available balance.
 - Procurement case stages: PR → RFQ → PO → AIR → ready for DV.
 - Source cases for payroll, recurring fees, travel, and SK fund transfers.
@@ -33,6 +34,8 @@ The dev server writes to `.next-dev` and production builds write to `.next`. Thi
 - Travel cash advances with expense liquidation, refunds, and outstanding balances.
 - Collection receipts, voids for unmatched receipts, partial deposit or remittance matching.
 - Three access levels: super admins, barangay administrators, and staff, each with its own navigation.
+- **Appearance** in the desktop and mobile sidebar switches all workspace pages, charts, menus, and dialogs between light and dark mode. The preference is remembered in this browser; sign-in stays light.
+- **Notifications**: the bell shows pending vouchers, unmatched receipts, unsettled cash advances, and recent activity, with links to the relevant records, unread counts, and mark-all-read. Read status is saved separately for each account and barangay in this browser. New items display an in-app alert; live workspaces check for updates every minute while visible and when returning to the tab.
 - **Staff & access** (administrators and super admins): add staff accounts, assign roles, and deactivate or restore access. Only super admins add or change administrators.
 - **White label** (super admins only): system name, organization, logo mark or logo image, and accent color, applied to the workspace, sign-in page, browser title and favicon. In live mode a super admin can also onboard each barangay with its own branding, uploaded logo, and sign-in link (`/b/<slug>`); that barangay's staff see its branding before and after signing in.
 - Derived working previews and CSV/print for RAO, SAOB, checks, cashbook, REAI, matching, RCD, RCR, and liquidation; an activity trail.
