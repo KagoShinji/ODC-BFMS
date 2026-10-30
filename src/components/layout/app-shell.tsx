@@ -30,7 +30,6 @@ import {
   UserCog,
   Users,
   Wallet,
-  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useFinance } from "@/data/demo/finance-provider";
@@ -336,7 +335,7 @@ export function AppShell({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const signOutForm = useRef<HTMLFormElement>(null);
-  const { data, loaded, notice, clearNotice, liveRecording } = useFinance();
+  const { data, loaded, liveRecording } = useFinance();
   const [navigating, startNavigation] = useTransition();
   const currentPath = usePathname();
   const pathname = illustration ? "/dashboard" : currentPath;
@@ -583,17 +582,6 @@ export function AppShell({
             </div>
           )}
 
-          {notice && (
-            <div
-              role="status"
-              className="mx-5 mb-4 flex items-center justify-between rounded-2xl border border-warning/30 bg-brand-soft px-4 py-3 text-xs font-medium text-warning sm:mx-7 xl:mx-9"
-            >
-              <span>{notice}</span>
-              <button onClick={clearNotice} aria-label="Dismiss message" className="ml-4">
-                <X size={16} />
-              </button>
-            </div>
-          )}
           <main
             id="main-content"
             aria-busy={!loaded || navigating}

@@ -8,6 +8,7 @@ import {
   type FormEvent,
   type FormHTMLAttributes,
 } from "react";
+import { useOptionalFeedback } from "@/components/layout/feedback-context";
 
 const SubmissionContext = createContext({ pending: false, label: "Saving…" });
 
@@ -28,6 +29,7 @@ export function Form({
   const inFlight = useRef(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
+  const feedback = useOptionalFeedback();
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     if (inFlight.current) {
@@ -43,11 +45,12 @@ export function Form({
     try {
       await onSubmit(event);
     } catch (cause) {
-      setError(
+      const message =
         cause instanceof Error
           ? cause.message
-          : "The action could not be completed. Please try again.",
-      );
+          : "The action could not be completed. Please try again.";
+      setError(message);
+      feedback?.error({ title: "Unable to complete action", description: message });
     } finally {
       inFlight.current = false;
       setPending(false);

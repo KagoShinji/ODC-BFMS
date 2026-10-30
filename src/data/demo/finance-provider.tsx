@@ -24,7 +24,8 @@ import type {
 } from "@/domain/types";
 import { availableForLine, canSubmitVoucher, nextNumber, receiptUnmatched } from "@/domain/finance";
 import { seedData } from "./seed";
-import { todayManila } from "@/lib/utils";
+import { formatMoney, todayManila } from "@/lib/utils";
+import { useFeedback } from "@/components/layout/feedback-context";
 
 const STORAGE_KEY = "odc-bfms-demo-v2";
 type Result = { ok: true; id?: string } | { ok: false; error: string };
@@ -39,8 +40,6 @@ interface FinanceContextValue {
   preview: boolean;
   /** Live mode where this account records transactions in Supabase. */
   liveRecording: boolean;
-  notice: string;
-  clearNotice(): void;
   resetDemo(): void;
   recordActivity(action: string, subject: string, detail: string): void;
   createCase(input: NewCase): Outcome;
@@ -101,9 +100,9 @@ export function FinanceProvider({
   liveRecording?: boolean;
 }) {
   const router = useRouter();
+  const { confirm, success: showSuccess, error: showError } = useFeedback();
   const [data, setData] = useState<FinanceData>(initialData ?? seedData);
   const [loaded, setLoaded] = useState(preview);
-  const [notice, setNotice] = useState("");
 
   useEffect(() => {
     if (preview) return;
@@ -128,14 +127,20 @@ export function FinanceProvider({
   useEffect(() => {
     if (loaded && !preview) localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   }, [data, loaded, preview]);
-  const fail = useCallback((error: string): Result => {
-    setNotice(error);
-    return { ok: false, error };
-  }, []);
-  const success = useCallback((message: string, id?: string): Result => {
-    setNotice(message);
-    return { ok: true, id };
-  }, []);
+  const fail = useCallback(
+    (error: string): Result => {
+      showError({ title: "Unable to complete action", description: error });
+      return { ok: false, error };
+    },
+    [showError],
+  );
+  const success = useCallback(
+    (message: string, id?: string): Result => {
+      showSuccess({ title: "Action completed", description: message });
+      return { ok: true, id };
+    },
+    [showSuccess],
+  );
 
   const value = useMemo<FinanceContextValue>(
     () => ({
@@ -143,11 +148,9 @@ export function FinanceProvider({
       loaded,
       preview,
       liveRecording: false,
-      notice,
-      clearNotice: () => setNotice(""),
       resetDemo: () => {
         setData(seedData);
-        setNotice("Demo data restored.");
+        success("Demo data restored.");
       },
       recordActivity(action, subject, detail) {
         setData((current) => audit(current, action, subject, detail));
@@ -518,7 +521,7 @@ export function FinanceProvider({
         return success(`${line.code} added to the budget.`, line.id);
       },
     }),
-    [data, loaded, preview, notice, fail, success],
+    [data, loaded, preview, fail, success],
   );
 
   const providerValue = useMemo<FinanceContextValue>(() => {
@@ -550,7 +553,9 @@ export function FinanceProvider({
       data: live,
       loaded: true,
       liveRecording,
-      resetDemo: () => setNotice("Live records cannot be reset from the workspace."),
+      resetDemo: () => {
+        fail("Live records cannot be reset from the workspace.");
+      },
       recordActivity: () => {},
       addBudgetLine: record("addBudgetLine", "Budget line added.", (input) => input),
       createCase: record("createCase", "Expense case created.", (input) => input),
@@ -587,7 +592,123 @@ export function FinanceProvider({
     };
   }, [value, preview, fail, success, initialData, liveRecording, router]);
 
-  return <FinanceContext.Provider value={providerValue}>{children}</FinanceContext.Provider>;
+  const confirmedValue = useMemo<FinanceContextValue>(() => {
+    const records = providerValue.data;
+    const voucher = (id: string) => records.vouchers.find((item) => item.id === id);
+    const run = async (
+      title: string,
+      description: string,
+      confirmLabel: string,
+      action: () => Outcome,
+      destructive = false,
+    ): Promise<Result> => {
+      if (providerValue.preview && !providerValue.liveRecording)
+        return fail("Read-only: recording transactions is not enabled for your account.");
+      if (!(await confirm({ title, description, confirmLabel, destructive })))
+        return { ok: false, error: "Action cancelled." };
+      return action();
+    };
+    return {
+      ...providerValue,
+      addBudgetLine: (input) =>
+        run(
+          "Add budget line?",
+          `Add ${input.code} · ${input.name} with an appropriation of ${formatMoney(input.appropriation)}?`,
+          "Add budget line",
+          () => providerValue.addBudgetLine(input),
+        ),
+      createCase: (input) =>
+        run(
+          "Create expense case?",
+          `Create this expense for ${input.payee} totaling ${formatMoney(input.amount)}?`,
+          "Create case",
+          () => providerValue.createCase(input),
+        ),
+      advanceCase: (id) =>
+        run(
+          "Complete procurement stage?",
+          `Move ${records.expenseCases.find((item) => item.id === id)?.reference ?? "this purchase"} to its next document stage?`,
+          "Complete stage",
+          () => providerValue.advanceCase(id),
+        ),
+      createVoucher: (id) =>
+        run(
+          "Create disbursement voucher?",
+          "Prepare a draft voucher linked to this expense case?",
+          "Create voucher",
+          () => providerValue.createVoucher(id),
+        ),
+      submitVoucher: (id) =>
+        run(
+          "Submit voucher for review?",
+          `Submit ${voucher(id)?.number ?? "this voucher"} for ${formatMoney(voucher(id)?.amount ?? 0)}? Its amount will count against the available budget.`,
+          "Submit voucher",
+          () => providerValue.submitVoucher(id),
+        ),
+      approveVoucher: (id) =>
+        run(
+          "Approve voucher?",
+          `Approve ${voucher(id)?.number ?? "this voucher"} for ${voucher(id)?.payee ?? "the payee"}, totaling ${formatMoney(voucher(id)?.amount ?? 0)}? It will be ready for payment.`,
+          "Approve voucher",
+          () => providerValue.approveVoucher(id),
+        ),
+      rejectVoucher: (id) =>
+        run(
+          "Reject voucher?",
+          `Reject ${voucher(id)?.number ?? "this voucher"}? The current workflow requires a new expense case for a corrected request.`,
+          "Reject voucher",
+          () => providerValue.rejectVoucher(id),
+          true,
+        ),
+      recordPayment: (id, reference) => {
+        if (!reference.trim()) return fail("Enter a payment reference.");
+        return run(
+          "Record payment?",
+          `Record the full ${formatMoney(voucher(id)?.amount ?? 0)} payment for ${voucher(id)?.number ?? "this voucher"} using reference ${reference.trim()}?`,
+          "Record payment",
+          () => providerValue.recordPayment(id, reference),
+        );
+      },
+      createCollection: (input) =>
+        run(
+          "Issue collection receipt?",
+          `Record ${formatMoney(input.amount)} collected from ${input.payer} and issue its receipt?`,
+          "Issue receipt",
+          () => providerValue.createCollection(input),
+        ),
+      voidCollection: (id) =>
+        run(
+          "Void receipt?",
+          `Void ${records.collections.find((item) => item.id === id)?.receiptNumber ?? "this receipt"}? The void remains in the receipt history.`,
+          "Void receipt",
+          () => providerValue.voidCollection(id),
+          true,
+        ),
+      createDeposit: (input) =>
+        run(
+          input.kind === "deposit" ? "Confirm bank deposit?" : "Confirm treasury remittance?",
+          `Match ${formatMoney(input.allocations.reduce((sum, item) => sum + item.amount, 0))} to ${input.bank} using reference ${input.reference}?`,
+          "Confirm batch",
+          () => providerValue.createDeposit(input),
+        ),
+      openAdvance: (id) =>
+        run(
+          "Open cash advance?",
+          `Track ${formatMoney(voucher(id)?.amount ?? 0)} from ${voucher(id)?.number ?? "this paid travel voucher"} as an accountable advance for ${voucher(id)?.payee ?? "the payee"}?`,
+          "Open advance",
+          () => providerValue.openAdvance(id),
+        ),
+      recordLiquidation: (input) =>
+        run(
+          input.kind === "refund" ? "Record cash refund?" : "Record accepted expense?",
+          `Apply ${formatMoney(input.amount)} to this advance using evidence reference “${input.description}”?`,
+          "Record entry",
+          () => providerValue.recordLiquidation(input),
+        ),
+    };
+  }, [providerValue, confirm, fail]);
+
+  return <FinanceContext.Provider value={confirmedValue}>{children}</FinanceContext.Provider>;
 }
 
 export function useFinance() {

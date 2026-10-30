@@ -6,7 +6,6 @@ import { ArrowRight, Plus, ReceiptText, X } from "lucide-react";
 import { useFinance } from "@/data/demo/finance-provider";
 import { dashboardTotals, parseMoney, receiptUnmatched } from "@/domain/finance";
 import { displayDate, formatMoney } from "@/lib/utils";
-import { useConfirm } from "@/components/layout/confirm-provider";
 import { usePendingAction } from "@/hooks/use-pending-action";
 import { ActionError, Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
@@ -30,7 +29,6 @@ const categories = [
 ];
 
 export function CollectionsView() {
-  const confirm = useConfirm();
   const actions = usePendingAction();
   const { data, createCollection, voidCollection } = useFinance();
   const [open, setOpen] = useState(false);
@@ -225,17 +223,7 @@ export function CollectionsView() {
                           loading={actions.pending === item.id}
                           loadingText="Voiding…"
                           disabled={actions.pending !== null}
-                          onClick={async () => {
-                            if (
-                              await confirm({
-                                title: "Void receipt?",
-                                description: `Void receipt ${item.receiptNumber}?`,
-                                confirmLabel: "Void receipt",
-                                destructive: true,
-                              })
-                            )
-                              await actions.run(item.id, () => voidCollection(item.id));
-                          }}
+                          onClick={() => actions.run(item.id, () => voidCollection(item.id))}
                         >
                           Void
                         </Button>

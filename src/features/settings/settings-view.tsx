@@ -13,11 +13,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PageHeading } from "@/components/financial/shared";
+import { useFeedbackMessage } from "@/hooks/use-feedback-message";
 
 function PasswordCard() {
+  const ask = useConfirm();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+  const [message, setMessage] = useFeedbackMessage("Password changed", "Unable to change password");
   const [busy, setBusy] = useState(false);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -28,6 +30,14 @@ function PasswordCard() {
         text: `Use ${MIN_STAFF_PASSWORD} to 72 characters for your password.`,
       });
     if (password !== confirm) return setMessage({ ok: false, text: "The passwords do not match." });
+    if (
+      !(await ask({
+        title: "Change your password?",
+        description: "Replace your current sign-in password with the new password you entered?",
+        confirmLabel: "Change password",
+      }))
+    )
+      return;
     setBusy(true);
     const result = await createClient()
       .auth.updateUser({ password })

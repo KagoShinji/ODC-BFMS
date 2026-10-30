@@ -44,6 +44,7 @@ import {
   thClass,
 } from "@/components/financial/shared";
 import { useDemoStaff } from "./demo-staff";
+import { useFeedbackMessage } from "@/hooks/use-feedback-message";
 import { PageAccessEditor } from "./page-access-editor";
 import type { ConfigurablePage } from "@/lib/auth/page-access";
 import {
@@ -119,13 +120,22 @@ function StaffDirectoryView({
   const [showPassword, setShowPassword] = useState(false);
   const passwordId = useId();
   const [busy, setBusy] = useState(false);
-  const [formMessage, setFormMessage] = useState<Message>(null);
-  const [listMessage, setListMessage] = useState<Message>(null);
+  const [formMessage, setFormMessage] = useFeedbackMessage(
+    "Account saved",
+    "Unable to add account",
+  );
+  const [listMessage, setListMessage] = useFeedbackMessage(
+    "Access updated",
+    "Unable to update access",
+  );
   const [newPages, setNewPages] = useState<ConfigurablePage[] | null | undefined>(undefined);
   const [editing, setEditing] = useState<StaffMember | null>(null);
   const [editPages, setEditPages] = useState<ConfigurablePage[] | null>(null);
   const [editBusy, setEditBusy] = useState(false);
-  const [editMessage, setEditMessage] = useState<Message>(null);
+  const [editMessage, setEditMessage] = useFeedbackMessage(
+    "Page access saved",
+    "Unable to save page access",
+  );
   const existing = members.find(
     (member) => member.email.toLowerCase() === email.trim().toLowerCase(),
   );
@@ -150,6 +160,14 @@ function StaffDirectoryView({
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (
+      !(await confirm({
+        title: "Add account access?",
+        description: `Add ${fullName.trim()} as ${roleLabel[role]} to ${scope} with the selected page access?`,
+        confirmLabel: "Add account",
+      }))
+    )
+      return;
     setBusy(true);
     let error: string | null;
     try {
@@ -178,6 +196,14 @@ function StaffDirectoryView({
   async function savePages(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!editing) return;
+    if (
+      !(await confirm({
+        title: "Save page access?",
+        description: `Update the pages ${editing.fullName} can access in ${scope}? This applies across all of their active roles in this barangay.`,
+        confirmLabel: "Save page access",
+      }))
+    )
+      return;
     setEditBusy(true);
     try {
       const error = await onSetPages(editing, editPages);
@@ -191,17 +217,16 @@ function StaffDirectoryView({
 
   async function toggle(member: StaffMember) {
     const active = !member.active;
-    if (
-      !active &&
-      !(await confirm({
-        title: "Remove staff access?",
-        description: `Remove ${roleLabel[member.role]} access for ${member.fullName}?`,
-        confirmLabel: "Remove access",
-        destructive: true,
-      }))
-    )
-      return;
     await actions.run(`${member.userId}:${member.role}`, async () => {
+      if (
+        !(await confirm({
+          title: active ? "Restore staff access?" : "Remove staff access?",
+          description: `${active ? "Restore" : "Remove"} ${roleLabel[member.role]} access for ${member.fullName} in ${scope}?`,
+          confirmLabel: active ? "Restore access" : "Remove access",
+          destructive: !active,
+        }))
+      )
+        return;
       const error = await onSetActive(member, active);
       setListMessage(
         error
@@ -594,15 +619,28 @@ async function send(path: string, method: string, body: unknown) {
 }
 
 function NewBarangayForm({ onCreated }: { onCreated(id: string): void }) {
+  const confirm = useConfirm();
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<Message>(null);
+  const [message, setMessage] = useFeedbackMessage("Barangay created", "Unable to create barangay");
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (
+      !(await confirm({
+        title: "Create barangay?",
+        description: `Create ${name.trim()} and its staff workspace?`,
+        confirmLabel: "Create barangay",
+      }))
+    )
+      return;
     setBusy(true);
     const { result, error } = await send("/api/barangays", "POST", { name });
     setBusy(false);
     if (error) return setMessage({ ok: false, text: error });
+    setMessage({
+      ok: true,
+      text: `${name.trim()} was created. You can now add its administrator and staff.`,
+    });
     setName("");
     onCreated(result.id);
   }

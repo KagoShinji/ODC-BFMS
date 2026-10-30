@@ -28,6 +28,7 @@ import {
 import { BrandLockup, BrandMark } from "@/components/layout/brand";
 import { PortalLink } from "@/components/layout/portal-link";
 import { useConfirm } from "@/components/layout/confirm-provider";
+import { useFeedbackMessage } from "@/hooks/use-feedback-message";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -98,7 +99,7 @@ function BrandEditor({
   const [draft, setDraft] = useState(initial);
   const [operation, setOperation] = useState<"save" | "reset" | "upload" | null>(null);
   const busy = operation !== null;
-  const [message, setMessage] = useState<Message>(null);
+  const [message, setMessage] = useFeedbackMessage("Branding updated", "Unable to update branding");
   const check = validateBranding(draft);
   const preview = check.ok ? check.value : saved;
   const changed = JSON.stringify(preview) !== JSON.stringify(saved) || !custom;
@@ -109,6 +110,14 @@ function BrandEditor({
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!check.ok) return setMessage({ ok: false, text: check.error });
+    if (
+      !(await confirm({
+        title: "Save branding changes?",
+        description: `Apply these changes to ${isSystem ? "the system default branding" : "this barangay’s branding"}?`,
+        confirmLabel: "Save changes",
+      }))
+    )
+      return;
     setOperation("save");
     const { error } = await send("/api/branding", jsonInit("PUT", { ...check.value, scope }));
     setOperation(null);
@@ -144,6 +153,16 @@ function BrandEditor({
   }
 
   async function upload(file: File) {
+    if (
+      !(await confirm({
+        title: "Upload and apply logo?",
+        description: "Upload the selected logo and apply it to this branding scope immediately?",
+        confirmLabel: "Apply logo",
+      }))
+    ) {
+      if (fileInput.current) fileInput.current.value = "";
+      return;
+    }
     setOperation("upload");
     setMessage(null);
     const form = new FormData();
@@ -366,11 +385,12 @@ function BrandEditor({
 }
 
 function OnboardForm({ onCreated }: { onCreated(id: string): void }) {
+  const confirm = useConfirm();
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [slugEdited, setSlugEdited] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<Message>(null);
+  const [message, setMessage] = useFeedbackMessage("Barangay created", "Unable to create barangay");
   const link = slugEdited ? slug : name.trim() ? portalSlug(name) : "";
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -380,10 +400,22 @@ function OnboardForm({ onCreated }: { onCreated(id: string): void }) {
         ok: false,
         text: "Use lowercase letters, numbers, and single hyphens for the sign-in link.",
       });
+    if (
+      !(await confirm({
+        title: "Create barangay?",
+        description: `Create ${name.trim()} with its own staff workspace and sign-in link?`,
+        confirmLabel: "Create barangay",
+      }))
+    )
+      return;
     setBusy(true);
     const { result, error } = await send("/api/barangays", jsonInit("POST", { name, slug: link }));
     setBusy(false);
     if (error) return setMessage({ ok: false, text: error });
+    setMessage({
+      ok: true,
+      text: `${name.trim()} was created. Add its administrator and staff to continue setup.`,
+    });
     onCreated(result.id);
   }
 
@@ -428,13 +460,25 @@ function OnboardForm({ onCreated }: { onCreated(id: string): void }) {
 
 function SignInLinkCard({ barangay }: { barangay: BrandingScopeItem }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [editing, setEditing] = useState(false);
   const [slug, setSlug] = useState(barangay.slug);
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<Message>(null);
+  const [message, setMessage] = useFeedbackMessage(
+    "Sign-in link updated",
+    "Unable to update sign-in link",
+  );
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (
+      !(await confirm({
+        title: "Update sign-in link?",
+        description: `Change ${barangay.name}’s sign-in link to /b/${slug.trim().toLowerCase()}? Share the new address with its staff.`,
+        confirmLabel: "Update link",
+      }))
+    )
+      return;
     setBusy(true);
     const { error } = await send(
       "/api/barangays",
