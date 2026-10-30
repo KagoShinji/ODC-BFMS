@@ -335,7 +335,7 @@ export function AppShell({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const signOutForm = useRef<HTMLFormElement>(null);
-  const { data, loaded, liveRecording } = useFinance();
+  const { data, loaded, liveRecording, liveApproval, livePayment } = useFinance();
   const [navigating, startNavigation] = useTransition();
   const currentPath = usePathname();
   const pathname = illustration ? "/dashboard" : currentPath;
@@ -565,7 +565,13 @@ export function AppShell({
                 <>
                   {liveRecording
                     ? `Showing ${data.barangay}'s live records. As super admin you can run every supported transaction, submit, reject and approve vouchers, including your own for workflow testing. Changes and self-approvals are audited.`
-                    : `Showing ${data.barangay}'s records, read-only. Your account can view records but cannot record transactions.`}
+                    : liveApproval && livePayment
+                      ? `Showing ${data.barangay}'s records. Your approver role can approve or reject vouchers, and your treasurer role can record approved payments; other live transactions remain read-only.`
+                      : liveApproval
+                        ? `Showing ${data.barangay}'s records. Your approver role can approve or reject submitted vouchers; other live transactions remain read-only.`
+                        : livePayment
+                          ? `Showing ${data.barangay}'s records. Your treasurer role can record approved payments; other live transactions remain read-only.`
+                          : `Showing ${data.barangay}'s records, read-only. Your account can view records but cannot record transactions.`}
                   {workspace.loadError && ` ${workspace.loadError}`}
                 </>
               ) : account.level === "superadmin" ? (

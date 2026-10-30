@@ -2,6 +2,7 @@
 // node tests can load it directly.
 
 import type { ConfigurablePage } from "./page-access";
+import type { WorkspaceAccount } from "./session";
 
 export const accessLevels = ["superadmin", "admin", "staff"] as const;
 export type AccessLevel = (typeof accessLevels)[number];
@@ -55,6 +56,34 @@ export function canManageBranding(level: AccessLevel) {
  */
 export function canRecordLive(level: AccessLevel) {
   return level === "superadmin";
+}
+
+/** Approvers can only act on vouchers in barangays where they hold that role. */
+export function canApproveVoucherForBarangay(
+  account: Pick<WorkspaceAccount, "level" | "memberships">,
+  barangayId: string | null,
+) {
+  return Boolean(
+    barangayId &&
+      (account.level === "superadmin" ||
+        account.memberships?.some(
+          (membership) => membership.barangayId === barangayId && membership.role === "approver",
+        )),
+  );
+}
+
+/** Treasurers can record payments only in barangays where they hold that role. */
+export function canRecordPaymentForBarangay(
+  account: Pick<WorkspaceAccount, "level" | "memberships">,
+  barangayId: string | null,
+) {
+  return Boolean(
+    barangayId &&
+      (account.level === "superadmin" ||
+        account.memberships?.some(
+          (membership) => membership.barangayId === barangayId && membership.role === "treasurer",
+        )),
+  );
 }
 
 export function canManageStaff(level: AccessLevel) {

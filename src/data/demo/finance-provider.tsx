@@ -40,6 +40,10 @@ interface FinanceContextValue {
   preview: boolean;
   /** Live mode where this account records transactions in Supabase. */
   liveRecording: boolean;
+  /** Live approver role can approve or reject submitted vouchers only. */
+  liveApproval: boolean;
+  /** Live treasurer role can record payments for approved vouchers only. */
+  livePayment: boolean;
   resetDemo(): void;
   recordActivity(action: string, subject: string, detail: string): void;
   createCase(input: NewCase): Outcome;
@@ -91,13 +95,19 @@ export function FinanceProvider({
   preview = false,
   initialData,
   liveRecording = false,
+  liveApproval = false,
+  livePayment = false,
 }: {
   children: ReactNode;
   /** Live mode: shows `initialData`; changes are blocked unless `liveRecording`. */
   preview?: boolean;
   initialData?: FinanceData;
-  /** Sends changes to the database (super admins only, enforced on the server too). */
+  /** Enables general live transaction recording; role-specific actions are separately authorized. */
   liveRecording?: boolean;
+  /** Allows voucher approval actions for an approver without enabling other writes. */
+  liveApproval?: boolean;
+  /** Allows payment recording for a treasurer without enabling other writes. */
+  livePayment?: boolean;
 }) {
   const router = useRouter();
   const { confirm, success: showSuccess, error: showError } = useFeedback();
@@ -148,6 +158,8 @@ export function FinanceProvider({
       loaded,
       preview,
       liveRecording: false,
+      liveApproval: false,
+      livePayment: false,
       resetDemo: () => {
         setData(seedData);
         success("Demo data restored.");
@@ -530,9 +542,20 @@ export function FinanceProvider({
     const blocked = (): Result =>
       fail("Read-only: recording transactions is not enabled for your account.");
     const record =
-      <A extends unknown[]>(action: string, message: string, toArgs: (...input: A) => object) =>
+      <A extends unknown[]>(
+        action: string,
+        message: string,
+        toArgs: (...input: A) => object,
+        allowApprover = false,
+        allowTreasurer = false,
+      ) =>
       async (...input: A): Promise<Result> => {
-        if (!liveRecording) return blocked();
+        if (
+          !liveRecording &&
+          !(allowApprover && liveApproval) &&
+          !(allowTreasurer && livePayment)
+        )
+          return blocked();
         try {
           const response = await fetch("/api/finance", {
             method: "POST",
@@ -553,6 +576,8 @@ export function FinanceProvider({
       data: live,
       loaded: true,
       liveRecording,
+      liveApproval,
+      livePayment,
       resetDemo: () => {
         fail("Live records cannot be reset from the workspace.");
       },
@@ -568,15 +593,17 @@ export function FinanceProvider({
       approveVoucher: record("approveVoucher", "Voucher approved.", (id: string) => ({
         id,
         version: version(id),
-      })),
+      }), true),
       rejectVoucher: record("rejectVoucher", "Voucher rejected.", (id: string) => ({
         id,
         version: version(id),
-      })),
+      }), true),
       recordPayment: record(
         "recordPayment",
         "Payment recorded.",
         (id: string, reference: string) => ({ id, version: version(id), reference }),
+        false,
+        true,
       ),
       createCollection: record("createCollection", "Receipt issued.", (input) => input),
       voidCollection: record("voidCollection", "Receipt voided.", (id: string) => ({ id })),
@@ -590,7 +617,7 @@ export function FinanceProvider({
         (input) => input,
       ),
     };
-  }, [value, preview, fail, success, initialData, liveRecording, router]);
+  }, [value, preview, fail, success, initialData, liveRecording, liveApproval, livePayment, router]);
 
   const confirmedValue = useMemo<FinanceContextValue>(() => {
     const records = providerValue.data;
@@ -601,8 +628,9 @@ export function FinanceProvider({
       confirmLabel: string,
       action: () => Outcome,
       destructive = false,
+      roleAuthorized = false,
     ): Promise<Result> => {
-      if (providerValue.preview && !providerValue.liveRecording)
+      if (providerValue.preview && !providerValue.liveRecording && !roleAuthorized)
         return fail("Read-only: recording transactions is not enabled for your account.");
       if (!(await confirm({ title, description, confirmLabel, destructive })))
         return { ok: false, error: "Action cancelled." };
@@ -651,6 +679,8 @@ export function FinanceProvider({
           `Approve ${voucher(id)?.number ?? "this voucher"} for ${voucher(id)?.payee ?? "the payee"}, totaling ${formatMoney(voucher(id)?.amount ?? 0)}? It will be ready for payment.`,
           "Approve voucher",
           () => providerValue.approveVoucher(id),
+          false,
+          providerValue.liveApproval,
         ),
       rejectVoucher: (id) =>
         run(
@@ -659,6 +689,7 @@ export function FinanceProvider({
           "Reject voucher",
           () => providerValue.rejectVoucher(id),
           true,
+          providerValue.liveApproval,
         ),
       recordPayment: (id, reference) => {
         if (!reference.trim()) return fail("Enter a payment reference.");
@@ -667,6 +698,8 @@ export function FinanceProvider({
           `Record the full ${formatMoney(voucher(id)?.amount ?? 0)} payment for ${voucher(id)?.number ?? "this voucher"} using reference ${reference.trim()}?`,
           "Record payment",
           () => providerValue.recordPayment(id, reference),
+          false,
+          providerValue.livePayment,
         );
       },
       createCollection: (input) =>

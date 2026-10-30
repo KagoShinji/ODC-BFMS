@@ -30,6 +30,8 @@ export function DisbursementsView() {
     data,
     preview,
     liveRecording,
+    liveApproval,
+    livePayment,
     submitVoucher,
     approveVoucher,
     rejectVoucher,
@@ -299,7 +301,12 @@ export function DisbursementsView() {
                   </Button>
                 </div>
               )}
-              {selected.status === "approved" && (
+              {selected.status === "approved" && preview && !livePayment && (
+                <p className="rounded-lg bg-muted p-3 text-xs text-muted-foreground">
+                  This voucher is approved. A Treasurer records the check or transfer reference after payment is issued.
+                </p>
+              )}
+              {selected.status === "approved" && (!preview || livePayment) && (
                 <div className="space-y-2">
                   <label className="text-xs font-semibold text-secondary">
                     Check / payment reference
@@ -336,7 +343,13 @@ export function DisbursementsView() {
               {preview
                 ? liveRecording
                   ? "Super admin actions are saved to this barangay’s live records and audit trail. Super admins can approve their own vouchers for support and workflow testing."
-                  : "Your account has read-only access to these live records."
+                  : liveApproval && livePayment
+                    ? "Your approver role can approve or reject submitted vouchers, and your treasurer role can record approved payments. Other live transactions remain read-only."
+                    : liveApproval
+                    ? "Your approver role can approve or reject submitted vouchers. Other live transaction recording is disabled."
+                    : livePayment
+                      ? "Your treasurer role can record payments for approved vouchers. Other live transaction recording is disabled."
+                      : "Your account has read-only access to these live records."
                 : "Demo approval and payment actions illustrate the workflow using browser data."}
             </div>
           </section>

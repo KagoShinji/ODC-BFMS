@@ -5,7 +5,11 @@ import { redirect } from "next/navigation";
 import { LiveModeView } from "@/features/live/live-mode-view";
 import { accessForAccount } from "@/lib/auth/workspace-access";
 import { PageAccessProvider } from "@/components/layout/page-access-provider";
-import { canRecordLive } from "@/lib/auth/roles";
+import {
+  canApproveVoucherForBarangay,
+  canRecordLive,
+  canRecordPaymentForBarangay,
+} from "@/lib/auth/roles";
 import { getWorkspaceSession } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 
@@ -25,7 +29,7 @@ export default async function WorkspaceLayout({ children }: { children: React.Re
       </PageAccessProvider>
     );
 
-  // Live mode shows the selected barangay's records; only super admins record changes.
+  // Live mode shows the selected barangay's records; approvers may approve/reject vouchers.
   const live = active
     ? await loadFinanceData(await createClient(), active)
     : { data: emptyFinanceData("No barangay yet"), error: undefined };
@@ -36,6 +40,8 @@ export default async function WorkspaceLayout({ children }: { children: React.Re
         preview
         initialData={live.data}
         liveRecording={Boolean(active) && canRecordLive(account.level)}
+        liveApproval={canApproveVoucherForBarangay(account, active?.id ?? null)}
+        livePayment={canRecordPaymentForBarangay(account, active?.id ?? null)}
       >
         <AppShell
           preview

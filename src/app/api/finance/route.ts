@@ -1,7 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getWorkspaceBarangays } from "@/lib/auth/active-barangay";
 import { currentAccount } from "@/lib/auth/session";
-import { canRecordLive } from "@/lib/auth/roles";
+import {
+  canApproveVoucherForBarangay,
+  canRecordLive,
+  canRecordPaymentForBarangay,
+} from "@/lib/auth/roles";
 import { createClient } from "@/lib/supabase/server";
 
 type Args = Record<string, unknown>;
@@ -97,11 +101,6 @@ const actions: Record<string, (args: Args, barangayId: string) => [string, Args]
 export async function POST(request: NextRequest) {
   const account = await currentAccount();
   if (!account || account.mode !== "supabase") return new NextResponse(null, { status: 404 });
-  if (!canRecordLive(account.level))
-    return NextResponse.json(
-      { error: "Live records are read-only for your account." },
-      { status: 403 },
-    );
   if (!request.headers.get("content-type")?.includes("application/json"))
     return NextResponse.json({ error: "Send the request as JSON." }, { status: 415 });
   let body: Args;
@@ -110,7 +109,8 @@ export async function POST(request: NextRequest) {
   } catch {
     return NextResponse.json({ error: "The request could not be read." }, { status: 400 });
   }
-  const action = actions[text(body?.action)];
+  const actionName = text(body?.action);
+  const action = actions[actionName];
   if (!action)
     return NextResponse.json(
       { error: "This action is not available for live records yet." },
@@ -118,6 +118,19 @@ export async function POST(request: NextRequest) {
     );
   const { active } = await getWorkspaceBarangays(account);
   if (!active) return NextResponse.json({ error: "Choose a barangay first." }, { status: 400 });
+
+  const isVoucherApproval = actionName === "approveVoucher" || actionName === "rejectVoucher";
+  const approverAccess = canApproveVoucherForBarangay(account, active.id);
+  const paymentAccess = actionName === "recordPayment" && canRecordPaymentForBarangay(account, active.id);
+  if (!canRecordLive(account.level) && !(isVoucherApproval && approverAccess) && !paymentAccess)
+    return NextResponse.json(
+      {
+        error: isVoucherApproval
+          ? "Approval is not authorized for this barangay."
+          : "Live records are read-only for your account.",
+      },
+      { status: 403 },
+    );
 
   let call: [string, Args];
   try {
