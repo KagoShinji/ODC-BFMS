@@ -34,6 +34,15 @@ import {
   thClass,
 } from "@/components/financial/shared";
 import { useDemoStaff } from "./demo-staff";
+import { PageAccessEditor } from "./page-access-editor";
+import type { ConfigurablePage } from "@/lib/auth/page-access";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const roleDescription: Record<MemberRole, string> = {
   admin: "Manages staff accounts and oversees barangay finance.",
@@ -71,6 +80,7 @@ function StaffDirectoryView({
   addDisabledReason,
   onAdd,
   onSetActive,
+  onSetPages,
   toolbar,
   beforeTable,
   footnote,
@@ -82,6 +92,7 @@ function StaffDirectoryView({
   addDisabledReason?: string;
   onAdd(input: NewStaff): Promise<string | null>;
   onSetActive(member: StaffMember, active: boolean): Promise<string | null>;
+  onSetPages(member: StaffMember, pages: ConfigurablePage[] | null): Promise<string | null>;
   toolbar?: ReactNode;
   beforeTable?: ReactNode;
   footnote: string;
@@ -98,6 +109,23 @@ function StaffDirectoryView({
   const [busy, setBusy] = useState(false);
   const [formMessage, setFormMessage] = useState<Message>(null);
   const [listMessage, setListMessage] = useState<Message>(null);
+  const [newPages, setNewPages] = useState<ConfigurablePage[] | null | undefined>(undefined);
+  const [editing, setEditing] = useState<StaffMember | null>(null);
+  const [editPages, setEditPages] = useState<ConfigurablePage[] | null>(null);
+  const [editBusy, setEditBusy] = useState(false);
+  const [editMessage, setEditMessage] = useState<Message>(null);
+  const existing = members.find(
+    (member) => member.email.toLowerCase() === email.trim().toLowerCase(),
+  );
+  const rolesFor = (userId: string) =>
+    members
+      .filter((member) => member.userId === userId && member.active)
+      .map((member) => member.role);
+  const canCustomize = (member: StaffMember) =>
+    !member.isSystemAdmin &&
+    rolesFor(member.userId).length > 0 &&
+    (level === "superadmin" || !rolesFor(member.userId).includes("admin"));
+  const newAccountRoles = [...new Set([...(existing ? rolesFor(existing.userId) : []), role])];
 
   const filtered = members.filter((member) =>
     `${member.fullName} ${member.email} ${roleLabel[member.role]}`
@@ -118,6 +146,8 @@ function StaffDirectoryView({
         email,
         role,
         password: requirePassword ? password : undefined,
+        pages: existing && !canCustomize(existing) ? undefined : newPages,
+        pageAccessVersion: existing?.pageAccessVersion ?? 0,
       });
     } finally {
       setBusy(false);
@@ -128,7 +158,22 @@ function StaffDirectoryView({
     setFullName("");
     setEmail("");
     setPassword("");
+    setNewPages(undefined);
     setOpen(false);
+  }
+
+  async function savePages(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!editing) return;
+    setEditBusy(true);
+    try {
+      const error = await onSetPages(editing, editPages);
+      if (error) return setEditMessage({ ok: false, text: error });
+      setListMessage({ ok: true, text: `${editing.fullName}'s page access was saved.` });
+      setEditing(null);
+    } finally {
+      setEditBusy(false);
+    }
   }
 
   async function toggle(member: StaffMember) {
@@ -283,6 +328,16 @@ function StaffDirectoryView({
                   />
                 </label>
               )}
+              {(!existing || canCustomize(existing)) && (
+                <div className="md:col-span-2 xl:col-span-full">
+                  <PageAccessEditor
+                    roles={newAccountRoles}
+                    value={newPages === undefined ? (existing?.pageOverride ?? null) : newPages}
+                    onChange={setNewPages}
+                    disabled={busy}
+                  />
+                </div>
+              )}
               <div className="flex flex-wrap items-center gap-3 md:col-span-2 xl:col-span-full">
                 <Button type="submit" variant="accent" disabled={busy}>
                   <Plus size={16} /> {busy ? "Adding…" : "Add to " + scope}
@@ -323,6 +378,7 @@ function StaffDirectoryView({
                   <th className={thClass}>Role</th>
                   <th className={thClass}>Status</th>
                   <th className={thClass}>Added</th>
+                  <th className={thClass}>Pages</th>
                   <th className={`${thClass} text-right`}>Access</th>
                 </tr>
               </thead>
@@ -351,6 +407,35 @@ function StaffDirectoryView({
                       </td>
                       <td className={tdClass}>
                         {member.createdAt ? displayDate(member.createdAt.slice(0, 10)) : "—"}
+                      </td>
+                      <td className={tdClass}>
+                        <div className="mb-1.5 text-[10px] text-muted-foreground">
+                          {member.isSystemAdmin
+                            ? "All pages"
+                            : member.pageOverride == null
+                              ? "Role defaults"
+                              : `${member.pageOverride.length} custom pages`}
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          disabled={!canCustomize(member)}
+                          title={
+                            member.isSystemAdmin
+                              ? "Super admins always have access to all pages."
+                              : !canCustomize(member)
+                                ? "An active account is required; administrator pages are managed by a super admin."
+                                : undefined
+                          }
+                          onClick={() => {
+                            setEditing(member);
+                            setEditPages(member.pageOverride ?? null);
+                            setEditMessage(null);
+                          }}
+                        >
+                          Customize pages
+                        </Button>
                       </td>
                       <td className={`${tdClass} text-right`}>
                         <Button
@@ -388,13 +473,52 @@ function StaffDirectoryView({
         </CardContent>
       </Card>
       <p className="mt-4 text-xs leading-5 text-muted-foreground">{footnote}</p>
+      <Dialog
+        open={editing !== null}
+        onOpenChange={(value) => {
+          if (!value && !editBusy) setEditing(null);
+        }}
+      >
+        <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Pages for {editing?.fullName}</DialogTitle>
+            <DialogDescription>
+              This selection applies to this person across all their active roles in {scope}.
+            </DialogDescription>
+          </DialogHeader>
+          {editing && (
+            <Form onSubmit={savePages} pendingLabel="Saving page access…" className="space-y-4">
+              <PageAccessEditor
+                roles={rolesFor(editing.userId)}
+                value={editPages}
+                onChange={setEditPages}
+                disabled={editBusy}
+              />
+              <StatusLine message={editMessage} />
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={editBusy}
+                  onClick={() => setEditing(null)}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" variant="accent" disabled={editBusy}>
+                  {editBusy ? "Saving…" : "Save page access"}
+                </Button>
+              </div>
+            </Form>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
 
 export function DemoStaffView({ level }: { level: AccessLevel }) {
   const { data } = useFinance();
-  const { members, loaded, add, setActive } = useDemoStaff(level);
+  const { members, loaded, add, setActive, setPages } = useDemoStaff(level);
   if (!loaded) return null;
   return (
     <StaffDirectoryView
@@ -404,6 +528,7 @@ export function DemoStaffView({ level }: { level: AccessLevel }) {
       requirePassword={false}
       onAdd={add}
       onSetActive={setActive}
+      onSetPages={setPages}
       footnote="Demo staff entries are saved in this browser and cannot sign in. To try another access level, sign out and choose it on the sign-in page."
     />
   );
@@ -538,6 +663,7 @@ export function LiveStaffView({
 
   return (
     <StaffDirectoryView
+      key={selected.id}
       level={level}
       scope={selected.name}
       members={directory.members}
@@ -545,7 +671,7 @@ export function LiveStaffView({
       addDisabledReason={
         directory.canCreateAccounts
           ? undefined
-          : "Adding accounts needs SUPABASE_SECRET_KEY in the server environment. Existing roles can still be deactivated or restored."
+          : "Account creation is unavailable. Contact your system administrator to enable it. Existing roles can still be deactivated or restored."
       }
       toolbar={toolbar}
       beforeTable={
@@ -581,6 +707,17 @@ export function LiveStaffView({
           userId: member.userId,
           role: member.role,
           active,
+        });
+        if (!error) router.refresh();
+        return error ?? null;
+      }}
+      onSetPages={async (member, pages) => {
+        const { error } = await send("/api/staff", "PATCH", {
+          action: "pages",
+          barangayId: selected.id,
+          userId: member.userId,
+          pages,
+          pageAccessVersion: member.pageAccessVersion ?? 0,
         });
         if (!error) router.refresh();
         return error ?? null;

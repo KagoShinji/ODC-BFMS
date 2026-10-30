@@ -3,6 +3,7 @@ import { createBrowserClient } from "@supabase/ssr";
 export function createClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-  if (!url || !key) throw new Error("Supabase URL and publishable key are required for live mode.");
+  if (!url || !key)
+    throw new Error("The workspace connection is unavailable. Contact your system administrator.");
   return createBrowserClient(url, key);
 }

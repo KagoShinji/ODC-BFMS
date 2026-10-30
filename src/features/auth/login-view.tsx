@@ -63,7 +63,7 @@ export function LoginView({ mode, demoHint, supabaseConfigured, barangayName }: 
           return;
         }
       }
-      window.location.replace("/dashboard");
+      window.location.replace("/");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Sign in failed. Please try again.");
     } finally {
@@ -192,7 +192,7 @@ export function LoginView({ mode, demoHint, supabaseConfigured, barangayName }: 
             )}
             {mode === "supabase" && !supabaseConfigured && (
               <p role="alert" className={styles.configNotice}>
-                Supabase is not configured yet. Add its URL and publishable key to the environment.
+                Sign-in is temporarily unavailable. Contact your system administrator for help.
               </p>
             )}
             <Button

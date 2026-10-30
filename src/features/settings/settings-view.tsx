@@ -106,7 +106,7 @@ export function SettingsView() {
         description={
           preview
             ? "Review the live workspace and your account."
-            : "Review the current demo workspace and prepare the eventual live connection."
+            : "Review the demo workspace settings."
         }
       />
       <div className="grid gap-5 lg:grid-cols-2">
@@ -142,7 +142,7 @@ export function SettingsView() {
               <Settings2 size={18} className="mt-0.5 shrink-0 text-brand-ink" />
               <p className="text-xs leading-5 text-secondary">
                 {preview
-                  ? "Records are read from Supabase for the barangay shown, under your role's access rules. Recording transactions stays disabled until live posting passes verification."
+                  ? "You are viewing records for the selected barangay. Your assigned role determines which actions are available."
                   : "The current workspace stores demo records in this browser. It uses synthetic names and balances for walkthroughs."}
               </p>
             </div>
@@ -169,22 +169,6 @@ export function SettingsView() {
           </CardContent>
         </Card>
         {preview && <PasswordCard />}
-        <Card className={preview ? "" : "lg:col-span-2"}>
-          <CardHeader>
-            <CardTitle>Supabase connection readiness</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm leading-6 text-muted-foreground">
-              {preview
-                ? "Supabase authentication, role checks, and read-only records are active. Live posting and certified reports await verification."
-                : "The repository includes environment configuration, browser and server clients, SQL migrations, and policy foundations. Connect an isolated Supabase project and verify authentication, access rules, and financial posting before enabling live transactions."}
-            </p>
-            <div className="mt-4 rounded-lg border border-border bg-muted px-4 py-3 font-mono text-xs text-secondary">
-              DATA_PROVIDER={preview ? "supabase" : "demo"} · NEXT_PUBLIC_SUPABASE_URL ·
-              NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </>
   );

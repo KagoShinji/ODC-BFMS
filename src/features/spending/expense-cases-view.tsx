@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
-import Link from "next/link";
+import { PageLink as Link } from "@/components/layout/page-access-provider";
 import { ArrowRight, Check, ChevronRight, Plus, X } from "lucide-react";
 import { useFinance } from "@/data/demo/finance-provider";
 import { availableForLine, parseMoney } from "@/domain/finance";

@@ -525,7 +525,7 @@ export function FinanceProvider({
     if (!preview) return value;
     const live = initialData ?? value.data;
     const blocked = (): Result =>
-      fail("Read-only: recording transactions in Supabase is not enabled for your account.");
+      fail("Read-only: recording transactions is not enabled for your account.");
     const record =
       <A extends unknown[]>(action: string, message: string, toArgs: (...input: A) => object) =>
       async (...input: A): Promise<Result> => {

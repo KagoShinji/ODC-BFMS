@@ -3,7 +3,8 @@ import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { DEMO_COOKIE_NAME, verifyDemoSession } from "./demo-session";
 import { dataProvider } from "./provider";
-import type { AccessLevel } from "./roles";
+import { isMemberRole, type AccessLevel, type MemberRole } from "./roles";
+import { validPageSelection, type ConfigurablePage } from "./page-access";
 
 export interface WorkspaceAccount {
   mode: "demo" | "supabase";
@@ -16,6 +17,8 @@ export interface WorkspaceAccount {
   barangayId?: string;
   /** Every live barangay this account holds an active role in. */
   barangayIds: string[];
+  memberships?: { barangayId: string; role: MemberRole }[];
+  pageOverrides?: Record<string, { pages: ConfigurablePage[] | null; version: number }>;
 }
 
 export type WorkspaceSession =
@@ -61,6 +64,19 @@ export const getWorkspaceSession = cache(async (): Promise<WorkspaceSession> => 
   const adminBarangayIds = memberships
     .filter((membership) => membership.role === "admin")
     .map((membership) => membership.barangay_id as string);
+  const pageOverrides: NonNullable<WorkspaceAccount["pageOverrides"]> = {};
+  if (!isSystemAdmin) {
+    const { data, error } = await supabase
+      .from("account_page_access")
+      .select("barangay_id, pages, version")
+      .eq("user_id", user.id);
+    if (error) return { status: "migration-pending", email: user.email };
+    for (const item of data ?? []) {
+      if (item.pages !== null && !validPageSelection(item.pages))
+        return { status: "migration-pending", email: user.email };
+      pageOverrides[item.barangay_id] = { pages: item.pages, version: item.version };
+    }
+  }
   return {
     status: "ready",
     account: {
@@ -71,6 +87,10 @@ export const getWorkspaceSession = cache(async (): Promise<WorkspaceSession> => 
       adminBarangayIds,
       barangayId: adminBarangayIds[0] ?? memberships[0]?.barangay_id,
       barangayIds: [...new Set(memberships.map((item) => item.barangay_id as string))],
+      memberships: memberships
+        .filter((item) => isMemberRole(item.role))
+        .map((item) => ({ barangayId: item.barangay_id, role: item.role as MemberRole })),
+      pageOverrides,
     },
   };
 });

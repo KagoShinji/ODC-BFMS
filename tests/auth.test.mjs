@@ -10,6 +10,7 @@ import {
   canManageBranding,
   canManageRole,
   canManageStaff,
+  canRecordLive,
   validateNewStaff,
 } from "../src/lib/auth/roles.ts";
 
@@ -43,6 +44,12 @@ test("white labeling is exclusive to super admins", () => {
   assert.equal(canManageBranding("superadmin"), true);
   assert.equal(canManageBranding("admin"), false);
   assert.equal(canManageBranding("staff"), false);
+});
+
+test("super admins can record all supported live workflow actions", () => {
+  assert.equal(canRecordLive("superadmin"), true);
+  assert.equal(canRecordLive("admin"), false);
+  assert.equal(canRecordLive("staff"), false);
 });
 
 test("admins manage staff roles but only super admins manage administrators", () => {

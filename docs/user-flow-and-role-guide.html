@@ -1,0 +1,3097 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="Visual step-by-step user flows and role access guide for ODC BFMS, based on the checked-out source reviewed 31 October 2026."
+    />
+    <title>ODC BFMS — Visual user flow &amp; role guide</title>
+    <style>
+      :root {
+        --ink: #173147;
+        --muted: #526778;
+        --orange: #ee6b26;
+        --line: #d9e3e8;
+        --paper: #fff;
+        --soft: #f1f5f7;
+        --blue: #eaf3fa;
+        --green: #146d56;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        background: #e7edf1;
+        color: var(--ink);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+        font-size: 14px;
+        line-height: 1.45;
+      }
+      a {
+        color: inherit;
+      }
+      .toolbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: #142d42;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 13px 24px;
+        box-shadow: 0 3px 15px #10253822;
+      }
+      .toolbar strong {
+        white-space: nowrap;
+        font-size: 14px;
+      }
+      .toolbar select {
+        min-width: 0;
+        flex: 1;
+        max-width: 490px;
+        background: #234358;
+        color: #fff;
+        border: 1px solid #496273;
+        border-radius: 8px;
+        padding: 10px;
+        font: inherit;
+      }
+      .toolbar button,
+      .toolbar a {
+        border: 1px solid #67808e;
+        background: transparent;
+        color: white;
+        border-radius: 8px;
+        padding: 9px 13px;
+        text-decoration: none;
+        font: inherit;
+        cursor: pointer;
+      }
+      .toolbar button:hover,
+      .toolbar a:hover {
+        background: #325269;
+      }
+      .toolbar .count {
+        margin-left: auto;
+        white-space: nowrap;
+        font-size: 12px;
+      }
+      .sheet {
+        width: 1120px;
+        height: 792px;
+        background: var(--paper);
+        margin: 28px auto;
+        padding: 34px 40px 25px;
+        box-shadow: 0 8px 30px #233a4a18;
+        display: flex;
+        flex-direction: column;
+        scroll-margin-top: 90px;
+        overflow: visible;
+        position: relative;
+      }
+      .sheet:before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 40px;
+        width: 58px;
+        height: 5px;
+        background: var(--orange);
+      }
+      .eyebrow {
+        font-size: 10px;
+        letter-spacing: 1.7px;
+        font-weight: 800;
+        color: #647a89;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .eyebrow span:last-child {
+        letter-spacing: 0.7px;
+      }
+      h1 {
+        font-size: 30px;
+        letter-spacing: -0.9px;
+        line-height: 1.13;
+        margin: 15px 0 9px;
+        font-weight: 760;
+      }
+      h2 {
+        font-size: 38px;
+        line-height: 1.12;
+        letter-spacing: -1.1px;
+        margin: 14px 0;
+      }
+      h3 {
+        font-size: 17px;
+        line-height: 1.2;
+        margin: 0 0 9px;
+      }
+      p {
+        margin: 0;
+      }
+      header > p {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.5;
+        max-width: 1000px;
+      }
+      header {
+        margin-bottom: 23px;
+      }
+      .body {
+        display: flex;
+        flex-direction: column;
+        gap: 17px;
+        flex: 1;
+        min-height: 0;
+      }
+      .grid {
+        display: grid;
+        gap: 18px;
+        align-items: start;
+      }
+      .grid.two {
+        grid-template-columns: 1fr 1fr;
+      }
+      .grid.three {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .card {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 19px;
+        background: #fff;
+        break-inside: avoid;
+      }
+      .card p {
+        font-size: 13px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+      .card .pill {
+        margin-bottom: 11px;
+      }
+      .card .jump {
+        font-size: 11px;
+        font-weight: 750;
+        text-decoration: none;
+        color: #9d4316;
+        display: block;
+        margin-bottom: 12px;
+      }
+      .callout {
+        padding: 15px 18px;
+        border-left: 4px solid #47829f;
+        border-radius: 0 9px 9px 0;
+        background: var(--blue);
+        break-inside: avoid;
+      }
+      .callout strong {
+        font-size: 13px;
+      }
+      .callout p {
+        font-size: 12px;
+        line-height: 1.55;
+        margin-top: 5px;
+        color: #355569;
+      }
+      .callout.important {
+        background: #fff1e7;
+        border-left-color: var(--orange);
+      }
+      .callout.important p {
+        color: #795037;
+      }
+      .steps {
+        counter-reset: step;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .steps li {
+        counter-increment: step;
+        display: grid;
+        grid-template-columns: 29px 1fr;
+        gap: 11px;
+        break-inside: avoid;
+      }
+      .steps li:before {
+        content: counter(step, decimal-leading-zero);
+        display: grid;
+        place-items: center;
+        width: 29px;
+        height: 29px;
+        background: var(--ink);
+        color: white;
+        border-radius: 8px;
+        font-size: 11px;
+        font-weight: 750;
+      }
+      .steps strong {
+        font-size: 14px;
+        display: block;
+        line-height: 1.3;
+        margin-bottom: 4px;
+      }
+      .steps p {
+        font-size: 12.5px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+      .pill {
+        display: inline-block;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.7px;
+        padding: 5px 8px;
+        border-radius: 5px;
+        background: #e7f3ee;
+        color: #247158;
+      }
+      .pill.demo {
+        background: #edf0f5;
+        color: #586980;
+      }
+      .pill.planned {
+        background: #fff0e4;
+        color: #9b4c20;
+      }
+      .flow {
+        display: flex;
+        align-items: stretch;
+        gap: 25px;
+      }
+      .node {
+        position: relative;
+        flex: 1;
+        min-width: 0;
+        background: var(--soft);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 14px;
+      }
+      .node:not(:last-child):after {
+        content: "→";
+        position: absolute;
+        right: -21px;
+        top: 42%;
+        font-size: 18px;
+        color: var(--orange);
+        font-weight: 800;
+      }
+      .node small {
+        display: block;
+        color: #6b7f8d;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.7px;
+        margin-bottom: 8px;
+      }
+      .node strong {
+        display: block;
+        font-size: 15px;
+        line-height: 1.25;
+        margin-bottom: 7px;
+      }
+      .node p {
+        font-size: 11px;
+        line-height: 1.5;
+        color: var(--muted);
+      }
+      .lane-title {
+        font-size: 10px;
+        letter-spacing: 1.2px;
+        font-weight: 800;
+        color: #9b4c20;
+        margin-bottom: -7px;
+      }
+      .status-path {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        background: var(--soft);
+        padding: 14px 18px;
+        border-radius: 10px;
+      }
+      .status-path span {
+        padding: 7px 13px;
+        background: white;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .status-path b {
+        color: var(--orange);
+      }
+      .status-path small {
+        font-size: 11px;
+        color: var(--muted);
+        margin-left: auto;
+      }
+      .status-path .success {
+        color: var(--green);
+        background: #e7f3ee;
+      }
+      .table-wrap {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 12px;
+        text-align: left;
+        line-height: 1.4;
+      }
+      thead {
+        background: var(--ink);
+        color: #fff;
+      }
+      th,
+      td {
+        padding: 12px 13px;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+      }
+      thead th {
+        font-size: 11px;
+        font-weight: 650;
+      }
+      tbody th {
+        font-weight: 700;
+        width: 22%;
+      }
+      tbody tr:nth-child(even) {
+        background: #f6f8fa;
+      }
+      tbody tr:last-child > * {
+        border-bottom: 0;
+      }
+      .matrix {
+        font-size: 12px;
+      }
+      .matrix th,
+      .matrix td {
+        padding: 12px;
+      }
+      .matrix tbody th {
+        width: 20%;
+      }
+      .matrix tbody td {
+        color: #426479;
+      }
+      .compact {
+        font-size: 11.5px;
+      }
+      .compact td,
+      .compact th {
+        padding: 10px 12px;
+      }
+      .compact tbody th {
+        width: 24%;
+      }
+      .compact td:nth-child(2) {
+        width: 29%;
+      }
+      .small {
+        font-size: 11px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+      .hero {
+        display: grid;
+        grid-template-columns: 1.25fr 0.8fr;
+        gap: 35px;
+        background: var(--ink);
+        color: white;
+        border-radius: 14px;
+        padding: 26px 30px;
+      }
+      .hero p {
+        font-size: 14px;
+        color: #d1dfe8;
+        max-width: 480px;
+      }
+      .cover-number {
+        font-size: 10px;
+        letter-spacing: 2px;
+        color: #ffb783;
+        font-weight: 750;
+      }
+      .cover-path {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        justify-content: center;
+      }
+      .cover-path span {
+        display: block;
+        width: 100%;
+        border: 1px solid #658094;
+        border-radius: 7px;
+        padding: 7px 14px;
+        font-size: 12px;
+        font-weight: 650;
+        background: #244256;
+      }
+      .cover-path b {
+        color: #ffb580;
+        font-size: 15px;
+      }
+      .role-card {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 20px;
+        break-inside: avoid;
+      }
+      .role-heading {
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 14px;
+        margin-bottom: 16px;
+      }
+      .role-heading h3 {
+        font-size: 22px;
+        margin: 10px 0 6px;
+      }
+      .role-heading > p {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .role-card .steps {
+        gap: 13px;
+      }
+      .role-card .steps strong {
+        font-size: 13px;
+      }
+      .role-card .steps p {
+        font-size: 12px;
+      }
+      .role-card .steps li {
+        grid-template-columns: 25px 1fr;
+        gap: 9px;
+      }
+      .role-card .steps li:before {
+        width: 25px;
+        height: 25px;
+        font-size: 10px;
+      }
+      .handoff {
+        background: #fff2e8;
+        border-radius: 8px;
+        padding: 13px;
+        margin-top: 17px;
+      }
+      .handoff b,
+      .boundary b {
+        font-size: 11px;
+      }
+      .handoff p,
+      .boundary p {
+        font-size: 11.5px;
+        line-height: 1.5;
+        margin-top: 5px;
+        color: #775540;
+      }
+      .boundary {
+        padding-top: 12px;
+      }
+      .boundary p {
+        color: var(--muted);
+      }
+      footer {
+        border-top: 1px solid var(--line);
+        padding-top: 11px;
+        margin-top: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        font-size: 9px;
+        color: #758894;
+        line-height: 1.4;
+      }
+      footer .page-no {
+        white-space: nowrap;
+        font-weight: 800;
+        color: var(--ink);
+        font-size: 11px;
+      }
+      code {
+        font-size: 10.5px;
+        word-break: break-word;
+        color: #385c72;
+      }
+      hr {
+        border: 0;
+        border-top: 1px solid var(--line);
+        margin: 12px 0;
+      }
+      .toolbar a.active {
+        background: #426478;
+      }
+      .screen-tip {
+        max-width: 1120px;
+        margin: 23px auto -7px;
+        color: #536d7e;
+        font-size: 12px;
+        padding: 0 4px;
+      }
+      .screen-tip a {
+        font-weight: 700;
+      }
+      @media screen and (max-width: 1150px) {
+        .sheet {
+          width: calc(100% - 32px);
+          height: auto;
+          min-height: 792px;
+          padding: 30px;
+        }
+        .toolbar {
+          flex-wrap: wrap;
+          padding: 10px 16px;
+          gap: 8px;
+        }
+        .toolbar select {
+          max-width: none;
+        }
+        .toolbar .count {
+          display: none;
+        }
+        .screen-tip {
+          margin: 18px 20px 0;
+        }
+        .sheet:before {
+          left: 30px;
+        }
+      }
+      @media screen and (max-width: 680px) {
+        .grid.two,
+        .grid.three,
+        .hero {
+          grid-template-columns: 1fr;
+        }
+        .flow {
+          flex-direction: column;
+          gap: 24px;
+        }
+        .node:not(:last-child):after {
+          content: "↓";
+          right: auto;
+          left: 49%;
+          top: auto;
+          bottom: -24px;
+        }
+        .sheet {
+          padding: 24px 20px;
+          min-height: 0;
+        }
+        .sheet:before {
+          left: 20px;
+        }
+        h1 {
+          font-size: 27px;
+        }
+        h2 {
+          font-size: 32px;
+        }
+        .table-wrap {
+          overflow-x: auto;
+        }
+        table {
+          min-width: 630px;
+        }
+        .status-path {
+          flex-wrap: wrap;
+        }
+        .status-path small {
+          margin-left: 0;
+        }
+        .toolbar strong {
+          font-size: 12px;
+        }
+        .toolbar select {
+          flex-basis: 100%;
+          order: 2;
+        }
+        .toolbar button,
+        .toolbar a {
+          font-size: 11px;
+          padding: 7px 9px;
+        }
+        .eyebrow {
+          font-size: 8px;
+        }
+        footer {
+          align-items: flex-start;
+        }
+      }
+      @page {
+        size: A4 landscape;
+        margin: 0;
+      }
+      @media print {
+        html {
+          scroll-behavior: auto;
+        }
+        body {
+          background: white;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+          font-size: 14px;
+        }
+        .toolbar,
+        .screen-tip {
+          display: none !important;
+        }
+        .sheet {
+          width: 297mm;
+          height: 210mm;
+          min-height: 0;
+          margin: 0;
+          box-shadow: none;
+          padding: 9mm 10.6mm 6.6mm;
+          break-after: page;
+          page-break-after: always;
+          scroll-margin: 0;
+        }
+        .sheet:last-child {
+          break-after: auto;
+          page-break-after: auto;
+        }
+        .sheet:before {
+          left: 10.6mm;
+        }
+        a {
+          text-decoration: none;
+        }
+        header {
+          margin-bottom: 21px;
+        }
+        .body {
+          gap: 16px;
+        }
+        footer {
+          margin-top: 14px;
+        }
+      }
+      /* Keep dense role pages and the cover comfortably clear of the footer. */
+      .role-card {
+        padding: 18px;
+      }
+      .role-heading {
+        padding-bottom: 12px;
+        margin-bottom: 14px;
+      }
+      .role-card .steps {
+        gap: 11px;
+      }
+      .handoff {
+        padding: 12px;
+        margin-top: 15px;
+      }
+      .boundary {
+        padding-top: 11px;
+      }
+      #scope .stack {
+        gap: 14px;
+      }
+      #scope .card {
+        padding: 17px;
+      }
+      #start .hero {
+        padding: 24px 28px;
+      }
+      #start h2 {
+        font-size: 36px;
+      }
+      .body > * {
+        flex-shrink: 0;
+      }
+      #read-access .matrix th,
+      #read-access .matrix td {
+        padding: 7px 11px;
+      }
+      #read-access .card,
+      #action-access .card {
+        padding: 14px;
+      }
+      #read-access .card h3,
+      #action-access .card h3 {
+        font-size: 15px;
+        margin-bottom: 6px;
+      }
+      #read-access .card p,
+      #action-access .card p {
+        font-size: 11.5px;
+        line-height: 1.5;
+      }
+      #read-access .callout,
+      #action-access .callout {
+        padding: 12px 15px;
+      }
+      #read-access .callout p,
+      #action-access .callout p {
+        font-size: 11.5px;
+      }
+      #action-access table td,
+      #action-access table th {
+        padding: 7px 11px;
+      }
+      #action-access table {
+        font-size: 11.5px;
+      }
+      #exceptions .compact {
+        font-size: 11px;
+        line-height: 1.35;
+      }
+      #exceptions .compact th,
+      #exceptions .compact td {
+        padding: 7px 11px;
+      }
+      #exceptions .callout {
+        padding: 12px 15px;
+      }
+      #exceptions .callout p {
+        font-size: 11.5px;
+        line-height: 1.4;
+      }
+      #start .small {
+        font-size: 10.5px;
+        line-height: 1.45;
+      }
+      #action-access tbody th {
+        width: 42%;
+      }
+      #action-access tbody td:nth-child(2) {
+        width: 27%;
+      }
+      #action-access tbody td:nth-child(3) {
+        width: 15%;
+      }
+      #action-access tbody td:nth-child(4) {
+        width: 16%;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="toolbar" aria-label="Handbook navigation">
+      <strong>ODC / USER HANDBOOK</strong
+      ><label
+        for="chapter"
+        class="sr-only"
+        style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%)"
+        >Choose chapter</label
+      ><select id="chapter">
+        <option value="start">01 · Start here</option>
+        <option value="journey">02 · The complete journey</option>
+        <option value="read-access">03 · Who can see what</option>
+        <option value="action-access">04 · Who can do what</option>
+        <option value="signin">05 · Sign in &amp; find your way</option>
+        <option value="setup">06 · Super admin / setup</option>
+        <option value="staff">07 · Administrator / staff</option>
+        <option value="budget">08 · Budget walkthrough</option>
+        <option value="procurement">09 · Procurement walkthrough</option>
+        <option value="other-expenses">10 · Other expense routes</option>
+        <option value="vouchers">11 · Voucher &amp; payment</option>
+        <option value="advances">12 · Cash advance &amp; liquidation</option>
+        <option value="collections">13 · Collections walkthrough</option>
+        <option value="deposits">14 · Deposit &amp; remittance</option>
+        <option value="reports">15 · Reports &amp; audit</option>
+        <option value="roles-request">16 · Roles / request &amp; purchase</option>
+        <option value="roles-review">17 · Roles / budget &amp; approval</option>
+        <option value="roles-treasury">18 · Roles / treasury &amp; collection</option>
+        <option value="roles-audit">19 · Role / audit &amp; daily close</option>
+        <option value="exceptions">20 · When something stops</option>
+        <option value="scope">21 · Scope &amp; source notes</option></select
+      ><span class="count" id="position">1 / 21</span
+      ><button type="button" id="prev" aria-label="Previous chapter">←</button
+      ><button type="button" id="next" aria-label="Next chapter">→</button
+      ><a href="user-flow-and-role-guide.pdf">PDF</a
+      ><button type="button" id="print">Print / Save PDF</button>
+    </nav>
+    <div class="screen-tip">
+      Browse by chapter above, use ← / →, or scroll. <a href="#read-access">Access matrix</a> ·
+      <a href="#roles-request">Role walkthroughs</a> · <a href="#exceptions">Troubleshooting</a>.
+      Works offline.
+    </div>
+    <main>
+      <section class="sheet" id="start" aria-labelledby="title-start">
+        <header>
+          <div class="eyebrow">
+            <span>ODC / BARANGAY FINANCIAL MANAGEMENT SYSTEM</span><span>CURRENT APPLICATION</span>
+          </div>
+          <h1 id="title-start">Your barangay. One complete financial journey.</h1>
+          <p>
+            Barangay Financial Management System by ODC · Visual user handbook · 31 October 2026
+          </p>
+        </header>
+        <div class="body">
+          <div class="hero">
+            <div>
+              <div class="cover-number">BFMS / FIELD GUIDE</div>
+              <h2>From the first sign-in<br />to the final report.</h2>
+              <p>
+                Follow the money, see who handles each step, and find the exact screen or button to
+                use.
+              </p>
+            </div>
+            <div class="cover-path">
+              <span>Set up access</span><b>↓</b><span>Prepare budget &amp; expense</span><b>↓</b
+              ><span>Review, approve &amp; pay</span><b>↓</b
+              ><span>Collect, match &amp; report</span>
+            </div>
+          </div>
+          <aside class="callout important">
+            <strong>The access rule to know first</strong>
+            <p>
+              In the current live application,
+              <b>only Super admins can record financial transactions</b>. Administrators manage
+              staff; staff roles view records permitted by their memberships. Super admin
+              self-approvals are marked in the audit trail.
+            </p>
+          </aside>
+          <div class="grid three">
+            <article class="card">
+              <a class="jump" href="#journey">Open map →</a>
+              <h3>01 / Understand the journey</h3>
+              <p>Start with the process map and access matrices.</p>
+            </article>
+            <article class="card">
+              <a class="jump" href="#signin">Open walkthroughs →</a>
+              <h3>02 / Follow a task</h3>
+              <p>Use the screen-by-screen guides for setup, spending, revenue and reports.</p>
+            </article>
+            <article class="card">
+              <a class="jump" href="#roles-request">Open role guides →</a>
+              <h3>03 / Find your role</h3>
+              <p>Read your current access and the intended operational handoff.</p>
+            </article>
+          </div>
+          <p class="small">
+            This handbook describes the checked-out source, including the account page access
+            migration. It does not confirm which migrations are installed in your connected
+            deployment. All worked amounts and references are training examples.
+          </p>
+        </div>
+        <footer>
+          <span
+            >Source review: application screens, access helpers, financial rules and migration
+            files</span
+          ><span class="page-no">01 / 21</span>
+        </footer>
+      </section>
+      <section class="sheet" id="journey" aria-labelledby="title-journey">
+        <header>
+          <div class="eyebrow">
+            <span>ODC / BARANGAY FINANCIAL MANAGEMENT SYSTEM</span><span>CURRENT APPLICATION</span>
+          </div>
+          <h1 id="title-journey">Two journeys, one connected record trail.</h1>
+          <p>
+            Set up the barangay and access first. Spending and revenue then follow their own linked
+            records.
+          </p>
+        </header>
+        <div class="body">
+          <div class="flow">
+            <div class="node">
+              <small>SUPER ADMIN</small><strong>1. Set up</strong>
+              <p>Create barangay → branding → administrator</p>
+            </div>
+            <div class="node">
+              <small>ADMINISTRATOR</small><strong>2. Give access</strong>
+              <p>Create staff accounts → assign roles</p>
+            </div>
+            <div class="node">
+              <small>ALL USERS</small><strong>3. Enter workspace</strong>
+              <p>Sign in → confirm barangay and year</p>
+            </div>
+          </div>
+          <div class="lane-title">SPENDING / CURRENT SCREEN SEQUENCE</div>
+          <div class="flow">
+            <div class="node">
+              <small>BUDGET</small><strong>Add budget line</strong>
+              <p>Code + category + appropriation</p>
+            </div>
+            <div class="node">
+              <small>SOURCE CASE</small><strong>Prepare expense</strong>
+              <p>Procurement / payroll / bill / travel / SK</p>
+            </div>
+            <div class="node">
+              <small>DISBURSEMENTS</small><strong>Review → approve → pay</strong>
+              <p>Draft → Submitted → Approved → Paid</p>
+            </div>
+            <div class="node">
+              <small>ACCOUNTABILITY</small><strong>Settle advance if applicable</strong>
+              <p>Paid travel DV → expenses + refund</p>
+            </div>
+          </div>
+          <div class="lane-title">REVENUE / CURRENT SCREEN SEQUENCE</div>
+          <div class="flow">
+            <div class="node">
+              <small>COLLECTIONS</small><strong>Issue receipt</strong>
+              <p>Payer + purpose + category + amount</p>
+            </div>
+            <div class="node">
+              <small>DEPOSITS</small><strong>Match receipts</strong>
+              <p>Bank deposit or treasury remittance</p>
+            </div>
+            <div class="node">
+              <small>REPORTS & AUDIT</small><strong>Check results</strong>
+              <p>Report previews → CSV / Print → history</p>
+            </div>
+          </div>
+          <aside class="callout note">
+            <strong>Who clicks the financial actions today?</strong>
+            <p>
+              The live financial steps above require a Super admin. The same Super admin can submit,
+              reject, approve and pay a test voucher; self-approvals are audited. The role guides
+              later show the intended staff handoffs, which are not enabled through the current live
+              app.
+            </p>
+          </aside>
+        </div>
+        <footer>
+          <span
+            >Basis: workspace layout · finance API · expense, voucher, advance and revenue
+            screens</span
+          ><span class="page-no">02 / 21</span>
+        </footer>
+      </section>
+      <section class="sheet" id="read-access" aria-labelledby="title-read-access">
+        <header>
+          <div class="eyebrow">
+            <span>ODC / BARANGAY FINANCIAL MANAGEMENT SYSTEM</span><span>CURRENT APPLICATION</span>
+          </div>
+          <h1 id="title-read-access">Default pages by role.</h1>
+          <p>
+            Role defaults control the sidebar and direct page URLs. An account-specific selection
+            can replace these defaults in one barangay.
+          </p>
+        </header>
+        <div class="body">
+          <div class="table-wrap">
+            <table class="matrix">
+              <thead>
+                <tr>
+                  <th scope="col">Role</th>
+                  <th scope="col">Budget</th>
+                  <th scope="col">Expense pages</th>
+                  <th scope="col">Disbursements</th>
+                  <th scope="col">Revenue</th>
+                  <th scope="col">Advances</th>
+                  <th scope="col">Audit</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Super admin</th>
+                  <td>All</td>
+                  <td>All</td>
+                  <td>All</td>
+                  <td>All</td>
+                  <td>All</td>
+                  <td>All</td>
+                </tr>
+                <tr>
+                  <th scope="row">Administrator</th>
+                  <td>Yes</td>
+                  <td>All six</td>
+                  <td>Yes</td>
+                  <td>Yes</td>
+                  <td>Yes</td>
+                  <td>Yes</td>
+                </tr>
+                <tr>
+                  <th scope="row">Encoder</th>
+                  <td>Yes</td>
+                  <td>All six</td>
+                  <td>Yes</td>
+                  <td>—</td>
+                  <td>Yes</td>
+                  <td>—</td>
+                </tr>
+                <tr>
+                  <th scope="row">Procurement officer</th>
+                  <td>Yes</td>
+                  <td>Procurement only</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>—</td>
+                </tr>
+                <tr>
+                  <th scope="row">Budget officer</th>
+                  <td>Yes</td>
+                  <td>All expense cases</td>
+                  <td>Yes</td>
+                  <td>—</td>
+                  <td>Yes</td>
+                  <td>—</td>
+                </tr>
+                <tr>
+                  <th scope="row">Approver</th>
+                  <td>Yes</td>
+                  <td>All expense cases</td>
+                  <td>Yes</td>
+                  <td>—</td>
+                  <td>Yes</td>
+                  <td>—</td>
+                </tr>
+                <tr>
+                  <th scope="row">Treasurer</th>
+                  <td>Yes</td>
+                  <td>All six</td>
+                  <td>Yes</td>
+                  <td>Yes</td>
+                  <td>Yes</td>
+                  <td>—</td>
+                </tr>
+                <tr>
+                  <th scope="row">Collector</th>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>Yes</td>
+                  <td>—</td>
+                  <td>—</td>
+                </tr>
+                <tr>
+                  <th scope="row">Auditor</th>
+                  <td>Yes</td>
+                  <td>All six</td>
+                  <td>Yes</td>
+                  <td>Yes</td>
+                  <td>Yes</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="grid two">
+            <article class="card">
+              <h3>Sidebar and direct URLs</h3>
+              <p>
+                Only allowed pages appear in navigation, search and shortcuts. A direct URL to an
+                unchecked page is blocked. Dashboard and Reports are included in all role defaults;
+                Settings always remains available.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Custom pages replace role defaults</h3>
+              <p>
+                In Staff & access, Customize pages lets an administrator check or uncheck financial
+                pages for one person. The selection applies across all of that person’s roles in
+                this barangay. Use role defaults restores the active-role union.
+              </p>
+            </article>
+          </div>
+          <aside class="callout note">
+            <strong>Supporting records</strong>
+            <p>
+              An allowed page can read its required supporting records: matching needs receipts;
+              expense forms need budget lines; advances need paid travel vouchers. This does not
+              grant those other page URLs or financial action authority.
+            </p>
+          </aside>
+        </div>
+        <footer>
+          <span>Basis: page-access.ts · account_page_access migration · server page guards</span
+          ><span class="page-no">03 / 21</span>
+        </footer>
+      </section>
+      <section class="sheet" id="action-access" aria-labelledby="title-action-access">
+        <header>
+          <div class="eyebrow">
+            <span>ODC / BARANGAY FINANCIAL MANAGEMENT SYSTEM</span><span>CURRENT APPLICATION</span>
+          </div>
+          <h1 id="title-action-access">Live actions are controlled separately.</h1>
+          <p>
+            Access levels determine the live application actions. Staff role labels do not currently
+            enable financial posting through the app.
+          </p>
+        </header>
+        <div class="body">
+          <div class="table-wrap">
+            <table class="">
+              <thead>
+                <tr>
+                  <th scope="col">Action</th>
+                  <th scope="col">Super admin</th>
+                  <th scope="col">Administrator</th>
+                  <th scope="col">Staff (all 7 roles)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Read financial records</th>
+                  <td>All barangays</td>
+                  <td>Assigned barangays</td>
+                  <td>By record-access matrix</td>
+                </tr>
+                <tr>
+                  <th scope="row">Add budget / case / voucher; submit DV</th>
+                  <td>Yes</td>
+                  <td>Read only</td>
+                  <td>Read only</td>
+                </tr>
+                <tr>
+                  <th scope="row">Approve / reject DV</th>
+                  <td>Yes, including own vouchers; audited</td>
+                  <td>No</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <th scope="row">Record payment, receipt, deposit or liquidation</th>
+                  <td>Yes</td>
+                  <td>No</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <th scope="row">Create barangay; change White label</th>
+                  <td>Yes</td>
+                  <td>No</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <th scope="row">Add / deactivate / reactivate staff roles</th>
+                  <td>Any barangay</td>
+                  <td>Own administered barangays</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <th scope="row">Grant / deactivate / reactivate Administrator role</th>
+                  <td>Yes</td>
+                  <td>No</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <th scope="row">Print / export available report previews</th>
+                  <td>Yes</td>
+                  <td>Yes</td>
+                  <td>Yes, with visible records</td>
+                </tr>
+                <tr>
+                  <th scope="row">Customize account pages</th>
+                  <td>Staff and administrators</td>
+                  <td>Own barangay’s staff</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <th scope="row">Change own password in Settings</th>
+                  <td>Yes</td>
+                  <td>Yes</td>
+                  <td>Yes</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="grid two">
+            <article class="card">
+              <h3>Live workspace</h3>
+              <p>
+                Financial actions save to the database. Some buttons still say “demo”; in a live
+                workspace they save live records.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Demo workspace</h3>
+              <p>
+                Finance actions use browser data at every demo access level. Demo behavior does not
+                grant live staff posting rights.
+              </p>
+            </article>
+          </div>
+          <aside class="callout important">
+            <strong>One-account support and flow testing</strong>
+            <p>
+              A Super admin can create, submit, approve or reject their own test vouchers, then
+              record payment. Audit history identifies the actor and self-approval override. Staff
+              posting rights remain controlled separately.
+            </p>
+          </aside>
+        </div>
+        <footer>
+          <span
+            >Basis: roles.ts · /api/finance · finance-provider.tsx · approve_voucher database
+            function</span
+          ><span class="page-no">04 / 21</span>
+        </footer>
+      </section>
+      <section class="sheet" id="signin" aria-labelledby="title-signin">
+        <header>
+          <div class="eyebrow">
+            <span>ODC / BARANGAY FINANCIAL MANAGEMENT SYSTEM</span><span>CURRENT APPLICATION</span>
+          </div>
+          <h1 id="title-signin">Start every session with the right scope.</h1>
+          <p>For every role · Entry: /login or the barangay’s /b/&lt;slug&gt; sign-in link</p>
+        </header>
+        <div class="body">
+          <div class="grid two">
+            <div>
+              <ol class="steps">
+                <li>
+                  <div>
+                    <strong>Open your sign-in link</strong>
+                    <p>
+                      Use the address provided by your administrator. A branded sign-in link
+                      identifies the barangay; it does not grant membership.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Enter email and password</strong>
+                    <p>
+                      Select Log in. Live access is determined from your account; the “Sign in as”
+                      selector appears only in demo mode.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Check the workspace header</strong>
+                    <p>
+                      Confirm the barangay, displayed fiscal year and mode banner before using a
+                      financial action.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Replace a temporary password</strong>
+                    <p>
+                      Open Settings → Account password. Enter and confirm a 12–72 character password
+                      → Change password.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Open your work area</strong>
+                    <p>
+                      The sidebar shows your allowed pages. Sign-in opens your first available page.
+                      If no financial pages are selected, you enter Settings.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Sign out when finished</strong>
+                    <p>Open the profile menu → Sign out.</p>
+                  </div>
+                </li>
+              </ol>
+            </div>
+            <div class="stack">
+              <article class="card">
+                <h3>Workspace navigation</h3>
+                <p>
+                  <b>Workspace:</b> Dashboard, Budget<br /><b>Spending:</b> expense cases, five
+                  source workflows, vouchers, advances<br /><b>Revenue:</b> receipts and matching<br /><b
+                    >Management:</b
+                  >
+                  reports, audit, staff, settings
+                </p>
+              </article>
+              <article class="card">
+                <h3>Changing barangays</h3>
+                <p>
+                  Use the header switcher when multiple authorized barangays are available. A
+                  barangay subdomain fixes the workspace. Staff management also has its own barangay
+                  selector; check it separately.
+                </p>
+              </article>
+              <article class="card">
+                <h3>If you cannot enter</h3>
+                <p>
+                  “Membership pending” means an administrator must assign active membership.
+                  “Workspace setup pending” or “setup needed” requires system setup. A successful
+                  sign-in alone does not ensure access.
+                </p>
+              </article>
+            </div>
+          </div>
+        </div>
+        <footer>
+          <span
+            >Basis: login-view.tsx · session.ts · app-shell.tsx · settings-view.tsx ·
+            live-mode-view.tsx</span
+          ><span class="page-no">05 / 21</span>
+        </footer>
+      </section>
+      <section class="sheet" id="setup" aria-labelledby="title-setup">
+        <header>
+          <div class="eyebrow">
+            <span>ODC / BARANGAY FINANCIAL MANAGEMENT SYSTEM</span><span>CURRENT APPLICATION</span>
+          </div>
+          <h1 id="title-setup">Onboard a barangay from an empty workspace.</h1>
+          <p>Current live actor: Super admin · Screens: White label and Staff & access</p>
+        </header>
+        <div class="body">
+          <div class="grid two">
+            <div>
+              <ol class="steps">
+                <li>
+                  <div>
+                    <strong>Create the barangay</strong>
+                    <p>
+                      Open White label → the barangay onboarding form. Enter the barangay name and
+                      its sign-in slug → Create barangay.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Configure its identity</strong>
+                    <p>
+                      Choose the barangay in Branding scope. Set its name, logo and accent color →
+                      Save changes. Use System default for the shared identity.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Check the sign-in address</strong>
+                    <p>
+                      Review the barangay link. If you change the slug, use Save link and distribute
+                      the updated address through your usual process.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Add its administrator</strong>
+                    <p>
+                      Choose Add its administrator, or open Staff & access. Select the barangay →
+                      Add account → role Administrator.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Create or link the person</strong>
+                    <p>
+                      Enter full name and email. Set a 12–72 character temporary password for a new
+                      sign-in account → Add to the selected barangay.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Open its financial workspace</strong>
+                    <p>
+                      Select that barangay in the header. Confirm its name, then proceed to Budget.
+                      Use the audit trail to trace each workflow action.
+                    </p>
+                  </div>
+                </li>
+              </ol>
+            </div>
+            <div class="stack">
+              <article class="card">
+                <h3>Expected result</h3>
+                <p>
+                  The barangay has a sign-in link, saved branding, an active administrator
+                  membership and a selectable workspace.
+                </p>
+              </article>
+              <article class="card">
+                <h3>Existing person</h3>
+                <p>
+                  A recognized existing staff account keeps its sign-in password. Adding a
+                  membership does not create a second person.
+                </p>
+              </article>
+              <aside class="callout note">
+                <strong>Super admin access is separate</strong>
+                <p>
+                  The Staff & access role selector creates Administrator and staff memberships. It
+                  does not grant the global Super admin role. That role must be provisioned through
+                  the system’s administrator setup.
+                </p>
+              </aside>
+            </div>
+          </div>
+        </div>
+        <footer>
+          <span
+            >Basis: branding-view.tsx · staff-view.tsx · staff API · system_admins migration</span
+          ><span class="page-no">06 / 21</span>
+        </footer>
+      </section>
+      <section class="sheet" id="staff" aria-labelledby="title-staff">
+        <header>
+          <div class="eyebrow">
+            <span>ODC / BARANGAY FINANCIAL MANAGEMENT SYSTEM</span><span>CURRENT APPLICATION</span>
+          </div>
+          <h1 id="title-staff">Give each person the right barangay access.</h1>
+          <p>Current live actors: Administrator or Super admin · Screen: Staff & access</p>
+        </header>
+        <div class="body">
+          <div class="flow">
+            <div class="node">
+              <small>1 / SELECT</small><strong>Choose barangay</strong>
+              <p>Confirm the Staff & access selector</p>
+            </div>
+            <div class="node">
+              <small>2 / ASSIGN</small><strong>Choose role</strong>
+              <p>Role defaults select the initial pages</p>
+            </div>
+            <div class="node">
+              <small>3 / CUSTOMIZE</small><strong>Check allowed pages</strong>
+              <p>One selection per person and barangay</p>
+            </div>
+            <div class="node">
+              <small>4 / VERIFY</small><strong>Save and reload</strong>
+              <p>Sidebar and direct URLs follow the selection</p>
+            </div>
+          </div>
+          <div class="grid two">
+            <div>
+              <ol class="steps">
+                <li>
+                  <div>
+                    <strong>Choose Add staff or Add account</strong>
+                    <p>
+                      Confirm the target barangay. Enter full name, email and a temporary password
+                      for a new account.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Choose the role</strong>
+                    <p>
+                      The page checkboxes start with role defaults. For multiple active roles,
+                      defaults combine their pages.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Customize the checkboxes</strong>
+                    <p>
+                      Check extra pages or uncheck unwanted pages. The resulting custom selection
+                      replaces role defaults for this person in this barangay.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Save the account</strong>
+                    <p>
+                      Choose Add to [barangay]. Membership and any custom page selection are saved
+                      together.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Change an existing account</strong>
+                    <p>
+                      Find the person → Customize pages → adjust checkboxes → Save page access. Use
+                      role defaults restores the role-based selection.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Verify access</strong>
+                    <p>
+                      Have the person reload. Check their sidebar and available records. Deactivate
+                      or Reactivate still controls each separate role membership.
+                    </p>
+                  </div>
+                </li>
+              </ol>
+            </div>
+            <div class="stack">
+              <article class="card">
+                <h3>Administrator boundary</h3>
+                <p>
+                  Administrators can customize staff in their own barangays. Only Super admins can
+                  customize an Administrator’s pages. Super admins always retain every page.
+                </p>
+              </article>
+              <article class="card">
+                <h3>Keep account access available</h3>
+                <p>
+                  Settings always remains available. Staff & access and White label are reserved for
+                  their administrator roles and are not financial-page checkboxes.
+                </p>
+              </article>
+              <aside class="callout important">
+                <strong>Viewing and posting are separate</strong>
+                <p>
+                  Custom pages grant the supporting records needed for viewing. Live financial
+                  actions still require a Super admin; page checkboxes do not grant approval or
+                  payment authority.
+                </p>
+              </aside>
+            </div>
+          </div>
+        </div>
+        <footer>
+          <span
+            >Basis: staff-view.tsx · page-access-editor.tsx · staff API · account_page_access
+            migration</span
+          ><span class="page-no">07 / 21</span>
+        </footer>
+      </section>
+      <section class="sheet" id="budget" aria-labelledby="title-budget">
+        <header>
+          <div class="eyebrow">
+            <span>ODC / BARANGAY FINANCIAL MANAGEMENT SYSTEM</span><span>CURRENT APPLICATION</span>
+          </div>
+          <h1 id="title-budget">Give an expense a budget line to use.</h1>
+          <p>
+            Current live actor: Super admin · Intended staff owner: Budget officer · Screen: Budget
+          </p>
+        </header>
+        <div class="body">
+          <div class="grid two">
+            <div>
+              <ol class="steps">
+                <li>
+                  <div>
+                    <strong>Review the Budget overview</strong>
+                    <p>
+                      Check Total appropriation, Obligated and Available to commit. Search for an
+                      existing account before adding another.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Choose Add budget line</strong>
+                    <p>Enter Code, Budget line name, Category and Appropriation in pesos.</p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Select the category</strong>
+                    <p>
+                      Use Personnel Services, Maintenance & Operations, Capital Outlay or Transfers.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Choose Save budget line</strong>
+                    <p>
+                      Use a unique code and an amount greater than zero. Confirm the saved row and
+                      the updated total.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Use the line in an expense case</strong>
+                    <p>
+                      Select this line when creating the source case. The form displays its current
+                      available amount.
+                    </p>
+                  </div>
+                </li>
+              </ol>
+            </div>
+            <div class="stack">
+              <article class="card">
+                <h3>Training example</h3>
+                <p>
+                  Add code <b>MOOE-TRAIN-01</b>, name <b>Community supplies</b>, category
+                  <b>Maintenance &amp; Operations</b>, appropriation <b>₱50,000.00</b>. A submitted
+                  ₱10,000 DV leaves ₱40,000 available.
+                </p>
+              </article>
+              <article class="card">
+                <h3>What changes the available amount?</h3>
+                <p>
+                  In this version, Submitted, Approved and Paid vouchers count as committed. Draft
+                  and Rejected vouchers do not. Paying a voucher does not restore its budget
+                  authority.
+                </p>
+              </article>
+              <aside class="callout note">
+                <strong>Budget is separate from cash</strong>
+                <p>
+                  Adding a budget line does not create a collection or a bank balance. This screen
+                  is a simple appropriation register; annual approval, supplemental/continuing
+                  budgets and formal obligation management remain planned features.
+                </p>
+              </aside>
+            </div>
+          </div>
+        </div>
+        <footer>
+          <span>Basis: budget-view.tsx · domain/finance.ts · add_budget_line function</span
+          ><span class="page-no">08 / 21</span>
+        </footer>
+      </section>
+      <section class="sheet" id="procurement" aria-labelledby="title-procurement">
+        <header>
+          <div class="eyebrow">
+            <span>ODC / BARANGAY FINANCIAL MANAGEMENT SYSTEM</span><span>CURRENT APPLICATION</span>
+          </div>
+          <h1 id="title-procurement">Move a purchase from PR to a linked DV.</h1>
+          <p>
+            Current live actor: Super admin · Intended staff owners: Encoder and Procurement officer
+            · Screen: Procurement
+          </p>
+        </header>
+        <div class="body">
+          <div class="flow">
+            <div class="node">
+              <small>REQUEST</small><strong>PR</strong>
+              <p>Purchase Request</p>
+            </div>
+            <div class="node">
+              <small>SOLICIT</small><strong>RFQ</strong>
+              <p>Request for Quotation</p>
+            </div>
+            <div class="node">
+              <small>ORDER</small><strong>PO</strong>
+              <p>Purchase Order</p>
+            </div>
+            <div class="node">
+              <small>ACCEPT</small><strong>AIR</strong>
+              <p>Acceptance and Inspection Report</p>
+            </div>
+            <div class="node">
+              <small>PAYMENT PREP</small><strong>Ready for DV</strong>
+              <p>Create one linked voucher</p>
+            </div>
+          </div>
+          <div class="grid two">
+            <div>
+              <ol class="steps">
+                <li>
+                  <div>
+                    <strong>Choose New procurement</strong>
+                    <p>
+                      Fill Payee / recipient, Amount, Purpose and Budget line. The expense type is
+                      already Procurement.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Choose Create case</strong>
+                    <p>Confirm the reference, amount and initial PR stage in the register.</p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Advance the stage</strong>
+                    <p>
+                      Choose Complete PR, Complete RFQ, Complete PO and Complete AIR in order. Each
+                      action moves the same case to the next stage.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Choose Create DV</strong>
+                    <p>
+                      This becomes available at Ready for DV. The voucher inherits the case’s payee,
+                      purpose, amount and budget line.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Choose View DV</strong>
+                    <p>
+                      Open Disbursements and find the linked draft. Continue with Submit for review
+                      and independent approval.
+                    </p>
+                  </div>
+                </li>
+              </ol>
+            </div>
+            <div class="stack">
+              <article class="card">
+                <h3>Expected result</h3>
+                <p>
+                  One purchase case is linked to one draft voucher. Once linked, its next action is
+                  View DV rather than creating another voucher.
+                </p>
+              </article>
+              <aside class="callout note">
+                <strong>What the stage buttons prove</strong>
+                <p>
+                  The current interface tracks stages. It does not collect full quotations, award
+                  decisions, delivery quantities or inspection attachments. Keep the required
+                  supporting documents through your established process; those detailed screens
+                  remain planned.
+                </p>
+              </aside>
+            </div>
+          </div>
+        </div>
+        <footer>
+          <span
+            >Basis: expense-cases-view.tsx · nextProcurementStep · advance_expense_case /
+            create_voucher</span
+          ><span class="page-no">09 / 21</span>
+        </footer>
+      </section>
+      <section class="sheet" id="other-expenses" aria-labelledby="title-other-expenses">
+        <header>
+          <div class="eyebrow">
+            <span>ODC / BARANGAY FINANCIAL MANAGEMENT SYSTEM</span><span>CURRENT APPLICATION</span>
+          </div>
+          <h1 id="title-other-expenses">Four expense sources share the same voucher path.</h1>
+          <p>
+            Current live actor: Super admin · These routes use the same short expense-case form.
+          </p>
+        </header>
+        <div class="body">
+          <div class="table-wrap">
+            <table class="">
+              <thead>
+                <tr>
+                  <th scope="col">Sidebar route</th>
+                  <th scope="col">Enter in the current form</th>
+                  <th scope="col">Prepare alongside the case; detailed fields are planned</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Payroll</th>
+                  <td>Payee, total amount, purpose / payroll period, budget line</td>
+                  <td>Payroll breakdown, personnel, deductions and certifications</td>
+                </tr>
+                <tr>
+                  <th scope="row">Recurring fees</th>
+                  <td>Provider, bill amount, purpose / billing period, budget line</td>
+                  <td>Bill, service account and payment evidence; no automatic scheduler</td>
+                </tr>
+                <tr>
+                  <th scope="row">Travel</th>
+                  <td>Accountable person / payee, amount, purpose, budget line</td>
+                  <td>
+                    Travel order, itinerary and expense evidence; select advances only when
+                    applicable
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">SK transfers</th>
+                  <td>Recipient, transfer amount, purpose, budget line</td>
+                  <td>Transfer authority, recipient details and acknowledgement</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="flow">
+            <div class="node">
+              <small>1 / OPEN</small><strong>Choose source route</strong>
+              <p>Payroll / Recurring fees / Travel / SK transfers</p>
+            </div>
+            <div class="node">
+              <small>2 / ENTER</small><strong>New [source] → Create case</strong>
+              <p>Complete the same five basic fields</p>
+            </div>
+            <div class="node">
+              <small>3 / LINK</small><strong>Ready for DV → Create DV</strong>
+              <p>Non-procurement cases skip PR / RFQ / PO / AIR</p>
+            </div>
+            <div class="node">
+              <small>4 / CONTINUE</small><strong>Open Disbursements</strong>
+              <p>Submit → approve or reject → payment</p>
+            </div>
+          </div>
+          <div class="grid two">
+            <article class="card">
+              <h3>Travel has an optional next stage</h3>
+              <p>
+                After a travel DV is Paid, it can appear under Cash advances. Open an advance only
+                if it represents money given to an accountable person, not every travel payment.
+              </p>
+            </article>
+            <article class="card">
+              <h3>SK transfer stays identifiable</h3>
+              <p>
+                The source kind remains SK fund transfer. Recording this outgoing payment does not
+                create a receipt in another entity’s books.
+              </p>
+            </article>
+          </div>
+        </div>
+        <footer>
+          <span
+            >Basis: workflows/[kind] page · expense-cases-view.tsx · create_expense_case
+            function</span
+          ><span class="page-no">10 / 21</span>
+        </footer>
+      </section>
+      <section class="sheet" id="vouchers" aria-labelledby="title-vouchers">
+        <header>
+          <div class="eyebrow">
+            <span>ODC / BARANGAY FINANCIAL MANAGEMENT SYSTEM</span><span>CURRENT APPLICATION</span>
+          </div>
+          <h1 id="title-vouchers">Create, submit, approve and pay a voucher.</h1>
+          <p>
+            Current live actor: Super admin · One account can complete a test workflow · Screen:
+            Disbursements
+          </p>
+        </header>
+        <div class="body">
+          <div class="status-path">
+            <span>Draft</span><b>→</b><span>Submitted</span><b>→</b><span>Approved</span><b>→</b
+            ><span class="success">Paid</span><small>Submitted can also become Rejected.</small>
+          </div>
+          <div class="grid two">
+            <div>
+              <ol class="steps">
+                <li>
+                  <div>
+                    <strong>Open the draft voucher</strong>
+                    <p>
+                      From its source case choose View DV, or search Disbursements by number, payee
+                      or purpose. Click the row to open its detail panel.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Review the linked details</strong>
+                    <p>
+                      Check payee, amount, purpose, source document and budget line against the
+                      supporting records.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Submit for review</strong>
+                    <p>
+                      The creator selects Submit for review. Insufficient available appropriation
+                      blocks submission.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Review as Super admin</strong>
+                    <p>
+                      Find the Submitted voucher. Review it and choose Approve or Reject. Super
+                      admins can approve their own vouchers; the override is audited.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Record the payment</strong>
+                    <p>
+                      For an Approved voucher, enter Check / payment reference → Record payment. The
+                      current app records the full voucher amount.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Verify completion</strong>
+                    <p>
+                      Confirm Paid and the saved payment reference. Check the report previews and,
+                      where authorized, the Audit trail.
+                    </p>
+                  </div>
+                </li>
+              </ol>
+            </div>
+            <div class="stack">
+              <article class="card">
+                <h3>Rejected voucher</h3>
+                <p>
+                  The current interface has no Return / edit / resubmit workflow. Keep the rejected
+                  record. If a corrected request is authorized, create a new expense case and linked
+                  DV.
+                </p>
+              </article>
+              <article class="card">
+                <h3>Payment recording</h3>
+                <p>
+                  Record payment saves the transaction and its reference. It does not initiate a
+                  bank transfer or issue a physical check.
+                </p>
+              </article>
+              <aside class="callout important">
+                <strong>Trace every support/test action</strong>
+                <p>
+                  Audit events retain actor, barangay, action and time. Super admin events identify
+                  the access level; self-approvals also record the creator and override.
+                </p>
+              </aside>
+            </div>
+          </div>
+        </div>
+        <footer>
+          <span
+            >Basis: disbursements-view.tsx · finance API · submit_voucher / approve_voucher /
+            record_payment</span
+          ><span class="page-no">11 / 21</span>
+        </footer>
+      </section>
+      <section class="sheet" id="advances" aria-labelledby="title-advances">
+        <header>
+          <div class="eyebrow">
+            <span>ODC / BARANGAY FINANCIAL MANAGEMENT SYSTEM</span><span>CURRENT APPLICATION</span>
+          </div>
+          <h1 id="title-advances">Settle a paid travel advance without paying twice.</h1>
+          <p>
+            Current live actor: Super admin · Intended staff owner: Treasurer · Screen: Cash
+            advances
+          </p>
+        </header>
+        <div class="body">
+          <div class="flow">
+            <div class="node">
+              <small>BEFORE</small><strong>Paid travel DV</strong>
+              <p>Cash actually given to accountable person</p>
+            </div>
+            <div class="node">
+              <small>OPEN</small><strong>Open advance</strong>
+              <p>One advance per voucher</p>
+            </div>
+            <div class="node">
+              <small>SETTLE</small><strong>Accepted expense + Cash refund</strong>
+              <p>Each entry reduces the outstanding balance</p>
+            </div>
+            <div class="node">
+              <small>FINISH</small><strong>Outstanding = zero</strong>
+              <p>Advance is fully settled</p>
+            </div>
+          </div>
+          <div class="grid two">
+            <div>
+              <ol class="steps">
+                <li>
+                  <div>
+                    <strong>Find an eligible travel voucher</strong>
+                    <p>
+                      Open Cash advances. Under Paid travel vouchers eligible for an advance,
+                      confirm this is a genuine accountable cash advance.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Choose Open advance</strong>
+                    <p>
+                      The payee becomes the accountable person and the paid DV amount becomes the
+                      advance amount.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Choose View in the register</strong>
+                    <p>Review the Advance, Settled and Outstanding amounts.</p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Record an accepted expense</strong>
+                    <p>
+                      Choose Accepted expense, enter Description / evidence reference and Amount →
+                      Record demo entry. Use an amount no greater than the remaining balance.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Record unused cash returned</strong>
+                    <p>
+                      Choose Cash refund and enter its evidence reference and amount. Confirm
+                      Outstanding reaches zero when all funds are accounted for.
+                    </p>
+                  </div>
+                </li>
+              </ol>
+            </div>
+            <div class="stack">
+              <article class="card">
+                <h3>Worked example</h3>
+                <p>
+                  Advance <b>₱10,000</b><br />Accepted expenses <b>₱8,500</b><br />Cash refund
+                  <b>₱1,500</b>
+                </p>
+                <hr />
+                <p>Outstanding <b>₱0</b></p>
+              </article>
+              <aside class="callout note">
+                <strong>Current settlement behavior</strong>
+                <p>
+                  An expense entry reduces the advance balance; a refund also returns cash. These
+                  entries do not create another voucher payment. Separate liquidation
+                  submission/approval, file attachments, due dates and excess reimbursement are not
+                  available in this screen.
+                </p>
+              </aside>
+            </div>
+          </div>
+        </div>
+        <footer>
+          <span>Basis: advances-view.tsx · cash_advances migration · domain/finance.ts</span
+          ><span class="page-no">12 / 21</span>
+        </footer>
+      </section>
+      <section class="sheet" id="collections" aria-labelledby="title-collections">
+        <header>
+          <div class="eyebrow">
+            <span>ODC / BARANGAY FINANCIAL MANAGEMENT SYSTEM</span><span>CURRENT APPLICATION</span>
+          </div>
+          <h1 id="title-collections">Record a receipt and keep its unmatched balance visible.</h1>
+          <p>
+            Current live actor: Super admin · Intended staff owner: Collector · Screen: Collections
+          </p>
+        </header>
+        <div class="body">
+          <div class="grid two">
+            <div>
+              <ol class="steps">
+                <li>
+                  <div>
+                    <strong>Choose Record collection</strong>
+                    <p>Enter Payer, Revenue category, Amount and Purpose / particulars.</p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Review the collection details</strong>
+                    <p>
+                      Confirm the payer, purpose and peso amount before saving. The current form
+                      does not offer a payment-method selector.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Choose Issue demo receipt</strong>
+                    <p>
+                      In a live workspace this records a live collection. Confirm its receipt number
+                      and Issued status in the register.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Check Unmatched</strong>
+                    <p>
+                      A newly issued receipt starts with its full amount awaiting matching. It is
+                      ready to allocate to a deposit or remittance.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Continue to Deposits & remittances</strong>
+                    <p>
+                      Prepare a matching batch after the actual bank deposit or treasury remittance
+                      is supported by its reference.
+                    </p>
+                  </div>
+                </li>
+              </ol>
+            </div>
+            <div class="stack">
+              <article class="card">
+                <h3>Categories in the current form</h3>
+                <p>
+                  Clearance fees · Certification fees · Other income · Barangay aid · Permit fees
+                </p>
+              </article>
+              <article class="card">
+                <h3>Worked example</h3>
+                <p>
+                  Record a <b>₱500</b> clearance collection. The receipt is Issued; its Unmatched
+                  amount is <b>₱500</b>. The receipt number is generated automatically.
+                </p>
+              </article>
+              <aside class="callout note">
+                <strong>If a receipt needs to be voided</strong>
+                <p>
+                  An issued receipt with no deposit allocation offers Void → confirmation. It
+                  remains in history as Voided. Any receipt already linked to a deposit/remittance
+                  cannot be voided through this action.
+                </p>
+              </aside>
+              <aside class="callout note">
+                <strong>Receipt scope</strong>
+                <p>
+                  This screen stores a receipt record. Official accountable-form stock, authorized
+                  serial allocation and an individual receipt-printing workflow are not implemented
+                  here.
+                </p>
+              </aside>
+            </div>
+          </div>
+        </div>
+        <footer>
+          <span
+            >Basis: collections-view.tsx · issue_collection / void_collection ·
+            receiptUnmatched</span
+          ><span class="page-no">13 / 21</span>
+        </footer>
+      </section>
+      <section class="sheet" id="deposits" aria-labelledby="title-deposits">
+        <header>
+          <div class="eyebrow">
+            <span>ODC / BARANGAY FINANCIAL MANAGEMENT SYSTEM</span><span>CURRENT APPLICATION</span>
+          </div>
+          <h1 id="title-deposits">Match actual treasury movements to receipts.</h1>
+          <p>
+            Current live actor: Super admin · Intended staff owner: Treasurer · Screen: Deposits &
+            remittances
+          </p>
+        </header>
+        <div class="body">
+          <div class="grid two">
+            <div>
+              <ol class="steps">
+                <li>
+                  <div>
+                    <strong>Choose New matching batch</strong>
+                    <p>Select Bank deposit or Treasury remittance.</p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Enter the destination and proof reference</strong>
+                    <p>
+                      Fill Depository bank or Remittance recipient, then Reference /
+                      acknowledgement.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Select the receipts</strong>
+                    <p>
+                      Choose one or more Unmatched receipts. The form starts with each selected
+                      receipt’s remaining amount.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Adjust partial allocations if needed</strong>
+                    <p>
+                      Enter the amount covered for each selected receipt. Never allocate more than
+                      its unmatched balance.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Check the Batch total</strong>
+                    <p>Compare the total with the bank validation or recipient acknowledgement.</p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Choose Confirm demo batch</strong>
+                    <p>
+                      Confirm the batch in the Matching register. Review the remaining receipt
+                      balance and the Matching report.
+                    </p>
+                  </div>
+                </li>
+              </ol>
+            </div>
+            <div class="stack">
+              <article class="card">
+                <h3>Partial-match example</h3>
+                <p>
+                  Receipt: <b>₱1,000</b><br />First batch: <b>₱600</b><br />Remaining unmatched:
+                  <b>₱400</b>
+                </p>
+                <hr />
+                <p>Allocate the remaining ₱400 in a later batch.</p>
+              </article>
+              <article class="card">
+                <h3>What each type does</h3>
+                <p>
+                  <b>Bank deposit:</b> reduces collected cash on hand and increases bank.<br /><b
+                    >Treasury remittance:</b
+                  >
+                  reduces cash on hand; does not increase this workspace’s bank balance.
+                </p>
+              </article>
+              <aside class="callout note">
+                <strong>Do not count the money twice</strong>
+                <p>
+                  A deposit allocates an existing collection; it is not another income entry. The
+                  current screen confirms directly and stores a reference. Separate
+                  draft/review/approval and document upload are planned.
+                </p>
+              </aside>
+            </div>
+          </div>
+        </div>
+        <footer>
+          <span
+            >Basis: deposits-view.tsx · confirm_deposit function · receiptUnmatched /
+            dashboardTotals</span
+          ><span class="page-no">14 / 21</span>
+        </footer>
+      </section>
+      <section class="sheet" id="reports" aria-labelledby="title-reports">
+        <header>
+          <div class="eyebrow">
+            <span>ODC / BARANGAY FINANCIAL MANAGEMENT SYSTEM</span><span>CURRENT APPLICATION</span>
+          </div>
+          <h1 id="title-reports">Check the record trail and share a preview.</h1>
+          <p>
+            Reports and Audit trail require their page permission. Figures follow the selected
+            financial pages and barangay.
+          </p>
+        </header>
+        <div class="body">
+          <div class="grid two">
+            <div>
+              <ol class="steps">
+                <li>
+                  <div>
+                    <strong>Confirm the workspace scope</strong>
+                    <p>
+                      Check the barangay and displayed year. The current report screen has no
+                      independent date/fund filter or finalized snapshot selector.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Open Reports and choose a report</strong>
+                    <p>
+                      Select the report name on the left. Check whether its badge says preview or
+                      template pending.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Compare against the source register</strong>
+                    <p>
+                      Reconcile voucher, receipt, allocation or advance details before sharing.
+                      Limited roles may see only part of the underlying dataset.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Choose CSV or Print</strong>
+                    <p>
+                      CSV downloads the current table. Print opens browser printing; choose Save as
+                      PDF if available. Pending templates have these actions disabled.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Inspect Audit trail where authorized</strong>
+                    <p>
+                      Search by action, subject or details and review actor/time information. The
+                      live loader currently retrieves up to the latest 200 events.
+                    </p>
+                  </div>
+                </li>
+              </ol>
+            </div>
+            <div class="stack">
+              <article class="card">
+                <h3>Working previews / 9</h3>
+                <p>
+                  RAO · SAOB · Summary of checks issued · Cashbook · REAI · Matching of collection
+                  and deposit · RCD · RCR · Liquidation report
+                </p>
+              </article>
+              <article class="card">
+                <h3>Template pending / 3</h3>
+                <p>
+                  PBC · RAAF · Transmittal<br /><br />Approved income estimates are also missing
+                  from the complete REAI. Official layouts and signatories require completion.
+                </p>
+              </article>
+              <aside class="callout note">
+                <strong>Read previews in context</strong>
+                <p>
+                  Live opening balances currently start at zero. The Cashbook preview is
+                  reconstructed from visible records rather than read directly from the stored
+                  cashbook ledger. Use a broad-access account for reconciliation; the preview is not
+                  a finalized official statement.
+                </p>
+              </aside>
+            </div>
+          </div>
+        </div>
+        <footer>
+          <span>Basis: reports-view.tsx · report-data.ts · audit-view.tsx · workspace-data.ts</span
+          ><span class="page-no">15 / 21</span>
+        </footer>
+      </section>
+      <section class="sheet" id="roles-request" aria-labelledby="title-roles-request">
+        <header>
+          <div class="eyebrow">
+            <span>ODC / BARANGAY FINANCIAL MANAGEMENT SYSTEM</span><span>ROLE PLAYBOOKS</span>
+          </div>
+          <h1 id="title-roles-request">Encoder and Procurement officer.</h1>
+          <p>
+            Role defaults are shown below. Administrators can customize allowed pages for one person
+            in one barangay.
+          </p>
+        </header>
+        <div class="body">
+          <div class="grid two">
+            <article class="role-card">
+              <div class="role-heading">
+                <span class="pill live">CURRENT LIVE ACCESS</span>
+                <h3>Encoder</h3>
+                <p>Read budget, expense cases, vouchers and advances in assigned barangays.</p>
+              </div>
+              <ol class="steps">
+                <li>
+                  <div>
+                    <strong>Sign in and confirm barangay</strong>
+                    <p>Open Dashboard and verify the workspace header.</p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Inspect the request</strong>
+                    <p>
+                      Open Expense cases or the relevant source workflow. Search its reference,
+                      payee or purpose.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Check the voucher</strong>
+                    <p>
+                      Open Disbursements and inspect the source link, amount, status and budget
+                      coding.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Check advance status if relevant</strong>
+                    <p>
+                      Open Cash advances to see the related travel advance and remaining balance.
+                    </p>
+                  </div>
+                </li>
+              </ol>
+              <div class="handoff">
+                <b>Intended operational handoff · planned</b>
+                <p>
+                  Draft request → assemble evidence → coordinate budget check → prepare and submit
+                  DV → hand off to independent reviewer/approver.
+                </p>
+              </div>
+              <div class="boundary">
+                <b>Access boundary</b>
+                <p>
+                  Cannot save cases, submit vouchers, approve or pay through the current live app.
+                  Collections/deposits and Audit trail records are not visible with Encoder alone.
+                </p>
+              </div>
+            </article>
+            <article class="role-card">
+              <div class="role-heading">
+                <span class="pill live">CURRENT LIVE ACCESS</span>
+                <h3>Procurement officer</h3>
+                <p>Read budget and procurement cases in assigned barangays by default.</p>
+              </div>
+              <ol class="steps">
+                <li>
+                  <div>
+                    <strong>Sign in and confirm barangay</strong>
+                    <p>Open Procurement from the sidebar.</p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Locate the purchase</strong>
+                    <p>Search by reference, purpose or supplier/payee.</p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Review the stage</strong>
+                    <p>
+                      Inspect PR → RFQ → PO → AIR → Ready for DV and the linked DV indicator, if
+                      present.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Coordinate the handoff</strong>
+                    <p>
+                      Provide the case reference and supporting records to the authorized finance
+                      user.
+                    </p>
+                  </div>
+                </li>
+              </ol>
+              <div class="handoff">
+                <b>Intended operational handoff · planned</b>
+                <p>
+                  Receive PR → gather RFQ/quotations → document selection and PO → coordinate
+                  delivery/AIR → hand off the ready case for DV preparation.
+                </p>
+              </div>
+              <div class="boundary">
+                <b>Access boundary</b>
+                <p>
+                  Cannot advance stages or create a DV through the current live app. Procurement
+                  alone does not grant voucher, advance, revenue or audit record access.
+                </p>
+              </div>
+            </article>
+          </div>
+        </div>
+        <footer>
+          <span>Basis: roles.ts · financial read policies · expense and disbursement screens</span
+          ><span class="page-no">16 / 21</span>
+        </footer>
+      </section>
+      <section class="sheet" id="roles-review" aria-labelledby="title-roles-review">
+        <header>
+          <div class="eyebrow">
+            <span>ODC / BARANGAY FINANCIAL MANAGEMENT SYSTEM</span><span>ROLE PLAYBOOKS</span>
+          </div>
+          <h1 id="title-roles-review">Budget officer and Approver.</h1>
+          <p>
+            Role defaults are shown below. Administrators can customize allowed pages for one person
+            in one barangay.
+          </p>
+        </header>
+        <div class="body">
+          <div class="grid two">
+            <article class="role-card">
+              <div class="role-heading">
+                <span class="pill live">CURRENT LIVE ACCESS</span>
+                <h3>Budget officer</h3>
+                <p>Read budget, expense cases, vouchers and advances in assigned barangays.</p>
+              </div>
+              <ol class="steps">
+                <li>
+                  <div>
+                    <strong>Open Budget</strong>
+                    <p>
+                      Search the account code and review appropriation, obligated amount and
+                      available balance.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Check the source case</strong>
+                    <p>Confirm the expense is linked to the intended budget line.</p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Inspect the voucher state</strong>
+                    <p>
+                      Distinguish Draft/Rejected from Submitted/Approved/Paid; the latter count
+                      against available budget.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Review RAO / SAOB previews</strong>
+                    <p>
+                      Compare the register and report figures using your visible data; flag a
+                      missing or incorrect line to the authorized user.
+                    </p>
+                  </div>
+                </li>
+              </ol>
+              <div class="handoff">
+                <b>Intended operational handoff · planned</b>
+                <p>
+                  Set up approved appropriations → review coding and availability → track formal
+                  obligations/adjustments → monitor utilization and budget reports.
+                </p>
+              </div>
+              <div class="boundary">
+                <b>Access boundary</b>
+                <p>
+                  Cannot add budget lines or certify a budget step through the current live app.
+                  Revenue and audit records are hidden with this role alone. A database
+                  cashbook-read permission exists, but the UI preview uses loaded records.
+                </p>
+              </div>
+            </article>
+            <article class="role-card">
+              <div class="role-heading">
+                <span class="pill live">CURRENT LIVE ACCESS</span>
+                <h3>Approver</h3>
+                <p>Read budget, expense cases, vouchers and advances in assigned barangays.</p>
+              </div>
+              <ol class="steps">
+                <li>
+                  <div>
+                    <strong>Open Disbursements</strong>
+                    <p>Filter the register to Submitted.</p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Open a voucher</strong>
+                    <p>Check payee, purpose, amount, budget line and source reference.</p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Compare supporting records</strong>
+                    <p>
+                      Identify missing documents or corrections through the established review
+                      process.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Coordinate the decision</strong>
+                    <p>
+                      Provide your review outcome to the authorized approving Super admin. The
+                      Approver role cannot save that decision in the live app yet.
+                    </p>
+                  </div>
+                </li>
+              </ol>
+              <div class="handoff">
+                <b>Intended operational handoff · planned</b>
+                <p>
+                  Receive submitted request → verify the required review → approve, return with
+                  reason or reject → hand off approved DV to Treasurer.
+                </p>
+              </div>
+              <div class="boundary">
+                <b>Access boundary</b>
+                <p>
+                  Approve/Reject is blocked for staff in the current live app. Ordinary
+                  self-approval is blocked; Super admins have an audited exception. Return with
+                  reason is planned.
+                </p>
+              </div>
+            </article>
+          </div>
+        </div>
+        <footer>
+          <span
+            >Basis: financial read policies · roles.ts · domain/finance.ts · approve_voucher</span
+          ><span class="page-no">17 / 21</span>
+        </footer>
+      </section>
+      <section class="sheet" id="roles-treasury" aria-labelledby="title-roles-treasury">
+        <header>
+          <div class="eyebrow">
+            <span>ODC / BARANGAY FINANCIAL MANAGEMENT SYSTEM</span><span>ROLE PLAYBOOKS</span>
+          </div>
+          <h1 id="title-roles-treasury">Treasurer and Collector.</h1>
+          <p>
+            Role defaults are shown below. Administrators can customize allowed pages for one person
+            in one barangay.
+          </p>
+        </header>
+        <div class="body">
+          <div class="grid two">
+            <article class="role-card">
+              <div class="role-heading">
+                <span class="pill live">CURRENT LIVE ACCESS</span>
+                <h3>Treasurer</h3>
+                <p>
+                  Read budget, cases, vouchers, advances, collections and deposits in assigned
+                  barangays.
+                </p>
+              </div>
+              <ol class="steps">
+                <li>
+                  <div>
+                    <strong>Review approved vouchers</strong>
+                    <p>
+                      Open Disbursements → Approved. Check payee, amount and payment reference
+                      status.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Review advances</strong>
+                    <p>Open Cash advances and check settled versus outstanding amounts.</p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Review treasury matching</strong>
+                    <p>
+                      Open Collections and Deposits & remittances. Check unmatched receipts and
+                      confirmed batches.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Check the previews</strong>
+                    <p>
+                      Review checks issued, matching, RCD/RCR, cashbook and liquidation. Confirm all
+                      source records needed are visible.
+                    </p>
+                  </div>
+                </li>
+              </ol>
+              <div class="handoff">
+                <b>Intended operational handoff · planned</b>
+                <p>
+                  Approved DV → actual payment/reference → advance tracking → verified
+                  expenses/refunds → deposit/remittance matching → reconciliation.
+                </p>
+              </div>
+              <div class="boundary">
+                <b>Access boundary</b>
+                <p>
+                  Cannot record payments, advances, liquidation or matching through the current live
+                  app. Audit trail records are hidden with Treasurer alone.
+                </p>
+              </div>
+            </article>
+            <article class="role-card">
+              <div class="role-heading">
+                <span class="pill live">CURRENT LIVE ACCESS</span>
+                <h3>Collector</h3>
+                <p>Read collections, deposits and allocations in assigned barangays by default.</p>
+              </div>
+              <ol class="steps">
+                <li>
+                  <div>
+                    <strong>Open Collections</strong>
+                    <p>Search receipt number, payer or purpose. Confirm Issued/Voided status.</p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Review pending matching</strong>
+                    <p>Check each receipt’s Unmatched balance.</p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Inspect matching batches</strong>
+                    <p>
+                      Open Deposits & remittances to review the allocation and deposit/remittance
+                      reference.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Review revenue previews</strong>
+                    <p>
+                      Open Matching, RCD and RCR. Send discrepancies to the authorized treasury user
+                      through your usual process.
+                    </p>
+                  </div>
+                </li>
+              </ol>
+              <div class="handoff">
+                <b>Intended operational handoff · planned</b>
+                <p>
+                  Record authorized payer collection → issue accountable receipt → prepare
+                  collection summary and supporting deposit/remittance details → hand off to
+                  Treasurer for confirmation.
+                </p>
+              </div>
+              <div class="boundary">
+                <b>Access boundary</b>
+                <p>
+                  Cannot issue/void receipts or confirm matching through the current live app.
+                  Expense cases, vouchers, advances and audit records are hidden with Collector
+                  alone.
+                </p>
+              </div>
+            </article>
+          </div>
+        </div>
+        <footer>
+          <span
+            >Basis: financial read policies · roles.ts · collections, deposits and advances
+            screens</span
+          ><span class="page-no">18 / 21</span>
+        </footer>
+      </section>
+      <section class="sheet" id="roles-audit" aria-labelledby="title-roles-audit">
+        <header>
+          <div class="eyebrow">
+            <span>ODC / BARANGAY FINANCIAL MANAGEMENT SYSTEM</span><span>ROLE PLAYBOOKS</span>
+          </div>
+          <h1 id="title-roles-audit">Auditor: trace, reconcile and follow up.</h1>
+          <p>
+            Role defaults are shown below. Administrators can customize allowed pages for one person
+            in one barangay.
+          </p>
+        </header>
+        <div class="body">
+          <div class="grid two">
+            <div>
+              <ol class="steps">
+                <li>
+                  <div>
+                    <strong>Confirm barangay and reporting context</strong>
+                    <p>
+                      Check the current workspace and displayed year. This version does not provide
+                      a finalized period-close workflow.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Trace spending end to end</strong>
+                    <p>
+                      Find the expense case → linked voucher → approval/payment state → payment
+                      reference → report preview.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Trace advance accountability</strong>
+                    <p>
+                      For paid travel advances, compare the original DV with accepted expenses,
+                      refunds and remaining balance.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Trace revenue end to end</strong>
+                    <p>
+                      Find issued/voided receipts → deposit/remittance allocation → unmatched
+                      balance → matching and RCD/RCR previews.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Review the Audit trail</strong>
+                    <p>
+                      Search action, subject or detail. Review actor and time. The visible list is
+                      limited to the latest 200 loaded events.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>Export findings for follow-up</strong>
+                    <p>
+                      Use report CSV/Print and retain the document references. Use your established
+                      process to request correction; the Auditor cannot change records.
+                    </p>
+                  </div>
+                </li>
+              </ol>
+            </div>
+            <div class="stack">
+              <article class="card">
+                <h3>Daily reconciliation questions</h3>
+                <p>
+                  Do submitted/approved/paid vouchers reconcile with budget use?<br /><br />Do
+                  payments have references?<br /><br />Do receipts reconcile with matched +
+                  unmatched totals?<br /><br />Do advances reconcile with settled + outstanding
+                  totals?
+                </p>
+              </article>
+              <article class="card">
+                <h3>Administrator’s daily check</h3>
+                <p>
+                  Review active staff memberships and cross-module records for the correct barangay.
+                  Adjust staff access when authorized; ask the Super admin for financial corrections
+                  or administrator-role changes.
+                </p>
+              </article>
+              <aside class="callout note">
+                <strong>Current boundary</strong>
+                <p>
+                  There is no period lock, reopening approval or archived report snapshot in the
+                  current interface. Report previews and the latest audit list support review, but
+                  do not represent a formal close procedure.
+                </p>
+              </aside>
+            </div>
+          </div>
+        </div>
+        <footer>
+          <span>Basis: audit-view.tsx · read policies · reports · workspace-data.ts</span
+          ><span class="page-no">19 / 21</span>
+        </footer>
+      </section>
+      <section class="sheet" id="exceptions" aria-labelledby="title-exceptions">
+        <header>
+          <div class="eyebrow">
+            <span>ODC / BARANGAY FINANCIAL MANAGEMENT SYSTEM</span><span>CURRENT APPLICATION</span>
+          </div>
+          <h1 id="title-exceptions">Resolve the problem at the step where it appears.</h1>
+          <p>Use the exact error or record reference when coordinating with the administrator.</p>
+        </header>
+        <div class="body">
+          <div class="table-wrap">
+            <table class="compact">
+              <thead>
+                <tr>
+                  <th scope="col">What you see</th>
+                  <th scope="col">What it means</th>
+                  <th scope="col">Next step</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Membership pending</th>
+                  <td>Signed in without active access</td>
+                  <td>Administrator assigns/reactivates membership; sign in again.</td>
+                </tr>
+                <tr>
+                  <th scope="row">Read-only / recording not enabled</th>
+                  <td>Your account is not a Super admin</td>
+                  <td>Continue reviewing; route the transaction to an authorized Super admin.</td>
+                </tr>
+                <tr>
+                  <th scope="row">Empty page or partial totals</th>
+                  <td>No visible records, role restriction or loading problem</td>
+                  <td>
+                    Check barangay, membership and any load-error banner before assuming no
+                    activity.
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">Insufficient appropriation</th>
+                  <td>Submitting would exceed the selected budget</td>
+                  <td>
+                    Check coding and current commitments with the Budget officer; resolve through
+                    authorized budget action.
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">Approval is not authorized</th>
+                  <td>Permission is missing; ordinary self-approval is blocked</td>
+                  <td>
+                    Use a Super admin for support/testing; ordinary approvals require a different
+                    creator.
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">Voucher state or version changed</th>
+                  <td>Another action changed this voucher</td>
+                  <td>Refresh, reopen it, and check its latest status before acting.</td>
+                </tr>
+                <tr>
+                  <th scope="row">Receipt linked to a deposit cannot be voided</th>
+                  <td>An allocation already exists</td>
+                  <td>
+                    Retain the record and escalate the correction; no allocation reversal UI is
+                    provided.
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">Liquidation exceeds remaining balance</th>
+                  <td>Expense + refunds would exceed the advance</td>
+                  <td>
+                    Correct the amount. Any excess claim needs a separately authorized process.
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">Cash advance list is empty</th>
+                  <td>No eligible data, permission limit or migration absent</td>
+                  <td>
+                    Check paid travel vouchers, your role, and installation of the cash-advance
+                    migration.
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">Server could not be reached</th>
+                  <td>Save outcome may be uncertain</td>
+                  <td>
+                    Refresh and check the register before retrying, to avoid creating another
+                    transaction.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <aside class="callout note">
+            <strong>After a posted-record mistake</strong>
+            <p>
+              The app does not provide general financial editing, deletion, payment reversal or
+              deposit reversal screens. Preserve the reference and coordinate an authorized
+              correction with the system and finance administrators. Do not enter an offsetting
+              receipt/payment just to hide the error.
+            </p>
+          </aside>
+        </div>
+        <footer>
+          <span
+            >Basis: screen error handling · finance-provider.tsx · financial database
+            functions</span
+          ><span class="page-no">20 / 21</span>
+        </footer>
+      </section>
+      <section class="sheet" id="scope" aria-labelledby="title-scope">
+        <header>
+          <div class="eyebrow">
+            <span>ODC / BARANGAY FINANCIAL MANAGEMENT SYSTEM</span><span>REFERENCE</span>
+          </div>
+          <h1 id="title-scope">Use this guide with the version you actually run.</h1>
+          <p>
+            Reviewed on 31 October 2026 · Based on the local checked-out repository, including
+            current uncommitted screen changes.
+          </p>
+        </header>
+        <div class="body">
+          <div class="grid two">
+            <div class="stack">
+              <article class="card">
+                <span class="pill live">CURRENT</span>
+                <h3>Covered in the current source</h3>
+                <p>
+                  Sign-in, account password change, barangay onboarding/branding, staff roles and
+                  custom pages, basic budget lines, five expense routes, procurement stages, linked
+                  vouchers, review/approval/payment, travel advances, liquidation entries, receipts,
+                  partial matching, report previews and audit viewing.
+                </p>
+              </article>
+              <article class="card">
+                <span class="pill planned">PLANNED</span>
+                <h3>Planned operational controls</h3>
+                <p>
+                  Full quotation/AIR evidence, payroll deductions, recurring schedules, travel
+                  forms, detailed SK authorization, attachments, multi-step certification/return,
+                  budget versions/adjustments, separate formal obligations, liquidation review/due
+                  dates, accountable forms, period close and finalized report templates.
+                </p>
+              </article>
+              <aside class="callout note">
+                <strong>Deployment check</strong>
+                <p>
+                  Page access requires <b>202611030001_account_page_access.sql</b>; full Super admin
+                  flow testing requires <b>202611040001_superadmin_workflow_access.sql</b>. Apply
+                  migrations in order. This handbook does not confirm live installation.
+                </p>
+              </aside>
+            </div>
+            <div class="stack">
+              <article class="card">
+                <h3>Where the access rules come from</h3>
+                <p>
+                  <code>src/lib/auth/roles.ts</code><br /><code>src/lib/auth/session.ts</code
+                  ><br /><code>src/app/api/finance/route.ts</code><br /><code
+                    >src/app/api/staff/route.ts</code
+                  ><br /><code>supabase/migrations/</code>
+                </p>
+              </article>
+              <article class="card">
+                <h3>Where the screen steps come from</h3>
+                <p>
+                  <code>src/features/</code> — auth, branding, staff, budget, spending,
+                  disbursements, advances, collections, deposits, reports, audit, settings.<br /><br /><code
+                    >src/domain/finance.ts</code
+                  ><br /><code>src/data/supabase/workspace-data.ts</code><br /><code
+                    >src/data/demo/finance-provider.tsx</code
+                  >
+                </p>
+              </article>
+              <article class="card">
+                <h3>Where the intended handoffs come from</h3>
+                <p>
+                  <code>docs/process-flow.md</code><br /><code>docs/implementation-plan.md</code
+                  ><br /><code>docs/implementation-status.md</code><br /><br />The current code
+                  takes precedence where these planning documents describe broader future behavior.
+                  “Accounting reviewer” appears in planning but is not a selectable staff role
+                  today.
+                </p>
+              </article>
+            </div>
+          </div>
+        </div>
+        <footer>
+          <span>No live financial data or environment secrets were used in this handbook</span
+          ><span class="page-no">21 / 21</span>
+        </footer>
+      </section>
+    </main>
+    <script>
+      const sections = [...document.querySelectorAll(".sheet")],
+        select = document.getElementById("chapter"),
+        count = document.getElementById("position");
+      let active = 0;
+      function go(i) {
+        active = Math.max(0, Math.min(sections.length - 1, i));
+        location.hash = sections[active].id;
+        sections[active].scrollIntoView({ behavior: "smooth" });
+        select.value = sections[active].id;
+        count.textContent = `${active + 1} / ${sections.length}`;
+      }
+      select.addEventListener("change", () => go(sections.findIndex((s) => s.id === select.value)));
+      document.getElementById("prev").onclick = () => go(active - 1);
+      document.getElementById("next").onclick = () => go(active + 1);
+      document.getElementById("print").onclick = () => window.print();
+      document.addEventListener("keydown", (e) => {
+        if (["INPUT", "SELECT", "TEXTAREA"].includes(e.target.tagName)) return;
+        if (e.altKey || e.ctrlKey || e.metaKey) return;
+        if (e.key === "ArrowRight") {
+          e.preventDefault();
+          go(active + 1);
+        }
+        if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          go(active - 1);
+        }
+      });
+      const observe = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries)
+            if (e.isIntersecting) {
+              active = sections.indexOf(e.target);
+              select.value = e.target.id;
+              count.textContent = `${active + 1} / ${sections.length}`;
+            }
+        },
+        { rootMargin: "-100px 0px -55% 0px", threshold: 0 },
+      );
+      sections.forEach((s) => observe.observe(s));
+      window.addEventListener("hashchange", () => {
+        const index = sections.findIndex((s) => s.id === location.hash.slice(1));
+        if (index >= 0) {
+          active = index;
+          select.value = sections[index].id;
+          count.textContent = `${index + 1} / ${sections.length}`;
+        }
+      });
+    </script>
+  </body>
+</html>

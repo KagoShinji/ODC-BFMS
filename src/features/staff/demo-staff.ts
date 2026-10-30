@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useFinance } from "@/data/demo/finance-provider";
+import { validPageSelection, type ConfigurablePage } from "@/lib/auth/page-access";
 import {
   canManageRole,
   isMemberRole,
@@ -76,6 +77,7 @@ function stored(): StaffMember[] | null {
           typeof item.fullName === "string" &&
           typeof item.email === "string" &&
           isMemberRole(item.role) &&
+          (item.pageOverride == null || validPageSelection(item.pageOverride)) &&
           typeof item.active === "boolean",
       )
     )
@@ -110,6 +112,17 @@ export function useDemoStaff(level: AccessLevel) {
       const existing = members.find((member) => member.email === email);
       if (members.some((member) => member.email === email && member.role === input.role))
         return "This person already has that role. Reactivate it from the list instead.";
+      if (input.pages !== undefined && input.pages !== null && !validPageSelection(input.pages))
+        return "Choose valid pages.";
+      if (
+        input.pages !== undefined &&
+        existing &&
+        level !== "superadmin" &&
+        members.some(
+          (member) => member.userId === existing.userId && member.active && member.role === "admin",
+        )
+      )
+        return "Only a super admin can change administrator pages.";
       const member: StaffMember = {
         userId: existing?.userId ?? crypto.randomUUID(),
         fullName: existing?.fullName ?? input.fullName.trim(),
@@ -117,8 +130,21 @@ export function useDemoStaff(level: AccessLevel) {
         role: input.role,
         active: true,
         createdAt: new Date().toISOString().slice(0, 10),
+        pageOverride: input.pages === undefined ? (existing?.pageOverride ?? null) : input.pages,
+        pageAccessVersion: (existing?.pageAccessVersion ?? 0) + (input.pages === undefined ? 0 : 1),
       };
-      setMembers((current) => [member, ...current]);
+      setMembers((current) => [
+        member,
+        ...current.map((row) =>
+          row.userId === member.userId
+            ? {
+                ...row,
+                pageOverride: member.pageOverride,
+                pageAccessVersion: member.pageAccessVersion,
+              }
+            : row,
+        ),
+      ]);
       recordActivity(
         "Staff role granted",
         member.fullName,
@@ -150,5 +176,45 @@ export function useDemoStaff(level: AccessLevel) {
     [level, recordActivity],
   );
 
-  return { members, loaded, add, setActive };
+  const setPages = useCallback(
+    async (target: StaffMember, pages: ConfigurablePage[] | null) => {
+      const current = members.find((member) => member.userId === target.userId);
+      if (
+        !current ||
+        current.isSystemAdmin ||
+        !members.some((member) => member.userId === target.userId && member.active)
+      )
+        return "Choose an active account.";
+      if (
+        level !== "superadmin" &&
+        members.some(
+          (member) => member.userId === target.userId && member.role === "admin" && member.active,
+        )
+      )
+        return "Only a super admin can change administrator pages.";
+      if (pages !== null && !validPageSelection(pages)) return "Choose valid pages.";
+      if ((current.pageAccessVersion ?? 0) !== (target.pageAccessVersion ?? 0))
+        return "Page access changed. Reload the staff list and try again.";
+      setMembers((rows) =>
+        rows.map((member) =>
+          member.userId === target.userId
+            ? {
+                ...member,
+                pageOverride: pages,
+                pageAccessVersion: (current.pageAccessVersion ?? 0) + 1,
+              }
+            : member,
+        ),
+      );
+      recordActivity(
+        "Account pages updated",
+        target.fullName,
+        pages === null ? "Role defaults" : pages.join(", ") || "Settings only",
+      );
+      return null;
+    },
+    [level, members, recordActivity],
+  );
+
+  return { members, loaded, add, setActive, setPages };
 }

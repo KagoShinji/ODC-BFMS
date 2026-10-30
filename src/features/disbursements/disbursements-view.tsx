@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { PageLink as Link } from "@/components/layout/page-access-provider";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Banknote, Check, FileText, Plus, X } from "lucide-react";
 import { useFinance } from "@/data/demo/finance-provider";
@@ -26,7 +26,15 @@ export function DisbursementsView() {
   const router = useRouter();
   const actions = usePendingAction();
   const searchParams = useSearchParams();
-  const { data, submitVoucher, approveVoucher, rejectVoucher, recordPayment } = useFinance();
+  const {
+    data,
+    preview,
+    liveRecording,
+    submitVoucher,
+    approveVoucher,
+    rejectVoucher,
+    recordPayment,
+  } = useFinance();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -325,8 +333,11 @@ export function DisbursementsView() {
               )}
             </div>
             <div className="mt-5 rounded-lg border border-border p-3 text-[11px] leading-5 text-muted-foreground">
-              Demo approval and payment actions illustrate the workflow. Production permissions,
-              evidence and posting controls are defined in the implementation plan.
+              {preview
+                ? liveRecording
+                  ? "Super admin actions are saved to this barangay’s live records and audit trail. Super admins can approve their own vouchers for support and workflow testing."
+                  : "Your account has read-only access to these live records."
+                : "Demo approval and payment actions illustrate the workflow using browser data."}
             </div>
           </section>
         </div>

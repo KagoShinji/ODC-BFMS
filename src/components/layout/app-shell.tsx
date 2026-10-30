@@ -36,7 +36,9 @@ import { cn } from "@/lib/utils";
 import { useFinance } from "@/data/demo/finance-provider";
 import type { BarangayOption } from "@/lib/auth/active-barangay";
 import type { WorkspaceAccount } from "@/lib/auth/session";
-import { accessLabel, canManageBranding, canManageStaff, type AccessLevel } from "@/lib/auth/roles";
+import { accessLabel, type AccessLevel } from "@/lib/auth/roles";
+import { canAccessPath, type PageKey } from "@/lib/auth/page-access";
+import { usePageAccess } from "@/components/layout/page-access-provider";
 import { BrandLockup } from "@/components/layout/brand";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Notifications } from "@/components/layout/notifications";
@@ -67,7 +69,6 @@ type NavLink = {
   href: string;
   label: string;
   icon: typeof Wallet;
-  allow?: (level: AccessLevel) => boolean;
 };
 
 const allGroups: { label: string; links: NavLink[] }[] = [
@@ -103,21 +104,21 @@ const allGroups: { label: string; links: NavLink[] }[] = [
     links: [
       { href: "/reports", label: "Reports", icon: FileBarChart2 },
       { href: "/audit", label: "Audit trail", icon: ShieldCheck },
-      { href: "/staff", label: "Staff & access", icon: UserCog, allow: canManageStaff },
+      { href: "/staff", label: "Staff & access", icon: UserCog },
       { href: "/settings", label: "Settings", icon: Settings2 },
     ],
   },
   {
     label: "System",
-    links: [{ href: "/branding", label: "White label", icon: Palette, allow: canManageBranding }],
+    links: [{ href: "/branding", label: "White label", icon: Palette }],
   },
 ];
 
-function groupsFor(level: AccessLevel) {
+function groupsFor(pages: readonly PageKey[]) {
   return allGroups
     .map((group) => ({
       ...group,
-      links: group.links.filter((link) => !link.allow || link.allow(level)),
+      links: group.links.filter((link) => canAccessPath(pages, link.href)),
     }))
     .filter((group) => group.links.length);
 }
@@ -302,7 +303,7 @@ function Sidebar({
           </div>
           <p className="mt-1 text-[10px] leading-4 text-muted-foreground">
             {preview
-              ? "Records come from Supabase for the barangay shown."
+              ? "Financial records for the selected barangay."
               : "Sample financial records for walkthroughs."}
           </p>
           <Link
@@ -340,7 +341,8 @@ export function AppShell({
   const currentPath = usePathname();
   const pathname = illustration ? "/dashboard" : currentPath;
   const router = useRouter();
-  const groups = groupsFor(account.level);
+  const { pages, canOpen } = usePageAccess();
+  const groups = groupsFor(pages);
   const current = groups.flatMap((group) => group.links).find((link) => link.href === pathname);
   const pendingCount = data.vouchers.filter((voucher) => voucher.status === "submitted").length;
 
@@ -430,39 +432,46 @@ export function AppShell({
                 <Search size={18} />
               </button>
 
-              {(!preview || liveRecording) && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button className="h-11 rounded-full px-4 text-xs sm:px-5">
-                      <Plus size={15} /> <span className="hidden sm:inline">Create</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    align="end"
-                    className="w-56 rounded-2xl border-border bg-card p-2 shadow-xl"
-                  >
-                    <DropdownMenuLabel className="px-3 text-xs text-muted-foreground">
-                      New record
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator className="bg-muted" />
-                    <DropdownMenuItem asChild className="rounded-xl px-3 py-2.5">
-                      <Link href="/spending">
-                        <FileText size={16} /> Expense case
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="rounded-xl px-3 py-2.5">
-                      <Link href="/collections">
-                        <ReceiptText size={16} /> Collection
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="rounded-xl px-3 py-2.5">
-                      <Link href="/deposits">
-                        <Landmark size={16} /> Deposit or remittance
-                      </Link>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
+              {(!preview || liveRecording) &&
+                ["/spending", "/collections", "/deposits"].some(canOpen) && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button className="h-11 rounded-full px-4 text-xs sm:px-5">
+                        <Plus size={15} /> <span className="hidden sm:inline">Create</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="end"
+                      className="w-56 rounded-2xl border-border bg-card p-2 shadow-xl"
+                    >
+                      <DropdownMenuLabel className="px-3 text-xs text-muted-foreground">
+                        New record
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator className="bg-muted" />
+                      {canOpen("/spending") && (
+                        <DropdownMenuItem asChild className="rounded-xl px-3 py-2.5">
+                          <Link href="/spending">
+                            <FileText size={16} /> Expense case
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
+                      {canOpen("/collections") && (
+                        <DropdownMenuItem asChild className="rounded-xl px-3 py-2.5">
+                          <Link href="/collections">
+                            <ReceiptText size={16} /> Collection
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
+                      {canOpen("/deposits") && (
+                        <DropdownMenuItem asChild className="rounded-xl px-3 py-2.5">
+                          <Link href="/deposits">
+                            <Landmark size={16} /> Deposit or remittance
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
 
               {illustration ? (
                 <span className="relative grid h-11 w-11 place-items-center rounded-full bg-card text-secondary">
@@ -477,14 +486,16 @@ export function AppShell({
                   liveRefresh={account.mode === "supabase" && Boolean(workspace?.activeId)}
                 />
               )}
-              <Link
-                href="/audit"
-                className="hidden h-11 w-11 place-items-center rounded-full bg-card text-secondary transition-colors hover:text-foreground xl:grid"
-                aria-label="Recent activity"
-                title="Recent activity"
-              >
-                <Activity size={18} />
-              </Link>
+              {canOpen("/audit") && (
+                <Link
+                  href="/audit"
+                  className="hidden h-11 w-11 place-items-center rounded-full bg-card text-secondary transition-colors hover:text-foreground xl:grid"
+                  aria-label="Recent activity"
+                  title="Recent activity"
+                >
+                  <Activity size={18} />
+                </Link>
+              )}
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -514,14 +525,14 @@ export function AppShell({
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-muted" />
-                  {canManageStaff(account.level) && (
+                  {canOpen("/staff") && (
                     <DropdownMenuItem asChild className="rounded-xl px-3 py-2.5">
                       <Link href="/staff">
                         <UserCog size={16} /> Staff & access
                       </Link>
                     </DropdownMenuItem>
                   )}
-                  {canManageBranding(account.level) && (
+                  {canOpen("/branding") && (
                     <DropdownMenuItem asChild className="rounded-xl px-3 py-2.5">
                       <Link href="/branding">
                         <Palette size={16} /> White label
@@ -554,8 +565,8 @@ export function AppShell({
               {workspace.activeId ? (
                 <>
                   {liveRecording
-                    ? `Showing ${data.barangay}'s live records. As super admin you can record transactions here; they are saved to the database and audited. Approving a voucher still needs someone other than its creator.`
-                    : `Showing ${data.barangay}'s records from Supabase, read-only. Recording transactions here is not enabled until live posting passes verification.`}
+                    ? `Showing ${data.barangay}'s live records. As super admin you can run every supported transaction, submit, reject and approve vouchers, including your own for workflow testing. Changes and self-approvals are audited.`
+                    : `Showing ${data.barangay}'s records, read-only. Your account can view records but cannot record transactions.`}
                   {workspace.loadError && ` ${workspace.loadError}`}
                 </>
               ) : account.level === "superadmin" ? (

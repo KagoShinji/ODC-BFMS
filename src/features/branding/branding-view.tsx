@@ -227,7 +227,7 @@ function BrandEditor({
                 <p className="text-[11px] leading-4 text-muted-foreground">
                   {mode === "supabase"
                     ? "PNG, JPEG, or WebP up to 1 MB; a square image works best. Without a logo, the text mark is shown."
-                    : "Logo uploads need Supabase Storage. In the demo, paste a square https image link."}
+                    : "In the demo, paste a square https image link instead of uploading a file."}
                 </p>
               </div>
             </div>

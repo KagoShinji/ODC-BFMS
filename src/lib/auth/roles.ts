@@ -1,6 +1,8 @@
 // Access levels and barangay roles. Keep this module free of runtime imports so
 // node tests can load it directly.
 
+import type { ConfigurablePage } from "./page-access";
+
 export const accessLevels = ["superadmin", "admin", "staff"] as const;
 export type AccessLevel = (typeof accessLevels)[number];
 
@@ -102,6 +104,10 @@ export interface StaffMember {
   role: MemberRole;
   active: boolean;
   createdAt?: string;
+  /** Shared by this person's memberships in this barangay. null follows active roles. */
+  pageOverride?: ConfigurablePage[] | null;
+  pageAccessVersion?: number;
+  isSystemAdmin?: boolean;
 }
 
 export interface NewStaff {
@@ -109,4 +115,6 @@ export interface NewStaff {
   email: string;
   role: MemberRole;
   password?: string;
+  pages?: ConfigurablePage[] | null;
+  pageAccessVersion?: number;
 }

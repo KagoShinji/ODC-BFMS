@@ -1,7 +1,5 @@
-import { notFound } from "next/navigation";
 import { BrandingView } from "@/features/branding/branding-view";
-import { canManageBranding } from "@/lib/auth/roles";
-import { getWorkspaceSession } from "@/lib/auth/session";
+import { requirePageAccess } from "@/lib/auth/workspace-access";
 import { getSystemBranding, loadBrandingScopes } from "@/lib/branding-server";
 import { createClient } from "@/lib/supabase/server";
 
@@ -10,10 +8,9 @@ export default async function BrandingPage({
 }: {
   searchParams: Promise<{ scope?: string }>;
 }) {
-  const session = await getWorkspaceSession();
-  if (session.status !== "ready" || !canManageBranding(session.account.level)) notFound();
+  const { account } = await requirePageAccess("branding");
   const system = await getSystemBranding();
-  if (session.account.mode === "demo")
+  if (account.mode === "demo")
     return <BrandingView mode="demo" system={system} barangays={[]} scope="system" />;
   const barangays = await loadBrandingScopes(await createClient());
   const { scope } = await searchParams;

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { PageLink as Link } from "@/components/layout/page-access-provider";
 import {
   ArrowRight,
   ArrowUpRight,

@@ -1,4 +1,6 @@
+import { requirePageAccess } from "@/lib/auth/workspace-access";
 import { DisbursementsView } from "@/features/disbursements/disbursements-view";
-export default function DisbursementsPage() {
+export default async function DisbursementsPage() {
+  await requirePageAccess("disbursements");
   return <DisbursementsView />;
 }

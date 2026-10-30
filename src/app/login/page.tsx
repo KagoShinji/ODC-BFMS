@@ -31,14 +31,14 @@ export default async function LoginPage({ searchParams }: Props) {
   const mode = dataProvider();
   if (mode === "demo") {
     const cookieStore = await cookies();
-    if (verifyDemoSession(cookieStore.get(DEMO_COOKIE_NAME)?.value)) redirect("/dashboard");
+    if (verifyDemoSession(cookieStore.get(DEMO_COOKIE_NAME)?.value)) redirect("/");
   } else if (
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
   ) {
     const supabase = await createClient();
     const { data } = await supabase.auth.getUser();
-    if (data.user) redirect("/dashboard");
+    if (data.user) redirect("/");
   }
   const props = {
     mode,

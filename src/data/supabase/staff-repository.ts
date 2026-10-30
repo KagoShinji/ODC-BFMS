@@ -1,6 +1,7 @@
 import type { WorkspaceAccount } from "@/lib/auth/session";
 import { isMemberRole, type StaffMember } from "@/lib/auth/roles";
 import { createClient } from "@/lib/supabase/server";
+import { validPageSelection } from "@/lib/auth/page-access";
 
 export interface StaffDirectory {
   barangays: { id: string; name: string; slug: string }[];
@@ -11,7 +12,7 @@ export interface StaffDirectory {
 }
 
 const schemaError =
-  "Staff records could not be loaded. Apply the staff and branding migration, then reload.";
+  "Staff access settings are not ready. Apply the account page access migration, then reload.";
 
 /** Barangays the account may manage and the selected barangay's memberships, read under RLS. */
 export async function loadStaffDirectory(
@@ -35,6 +36,23 @@ export async function loadStaffDirectory(
     .select("user_id, role, active, created_at")
     .eq("barangay_id", barangayId);
   if (membershipError) return { ...empty, barangays, barangayId, error: schemaError };
+  const { data: pageAccess, error: pageError } = await supabase.rpc("get_staff_page_access", {
+    p_barangay_id: barangayId,
+  });
+  if (pageError) return { ...empty, barangays, barangayId, error: schemaError };
+  const accessByUser = new Map<
+    string,
+    { pages: StaffMember["pageOverride"]; version: number; isSystemAdmin: boolean }
+  >();
+  for (const item of pageAccess ?? []) {
+    if (item.pages !== null && !validPageSelection(item.pages))
+      return { ...empty, barangays, barangayId, error: schemaError };
+    accessByUser.set(item.user_id, {
+      pages: item.pages,
+      version: item.version,
+      isSystemAdmin: item.is_system_admin,
+    });
+  }
   const userIds = [...new Set(memberships.map((item) => item.user_id as string))];
   const profiles = new Map<string, { full_name: string; email: string }>();
   if (userIds.length) {
@@ -50,6 +68,7 @@ export async function loadStaffDirectory(
     .filter((item) => isMemberRole(item.role))
     .map((item) => {
       const profile = profiles.get(item.user_id);
+      const access = accessByUser.get(item.user_id);
       return {
         userId: item.user_id,
         fullName: profile?.full_name ?? "Profile not set",
@@ -57,6 +76,9 @@ export async function loadStaffDirectory(
         role: item.role,
         active: item.active,
         createdAt: item.created_at ?? undefined,
+        pageOverride: access?.pages ?? null,
+        pageAccessVersion: access?.version ?? 0,
+        isSystemAdmin: access?.isSystemAdmin ?? false,
       };
     })
     .sort(

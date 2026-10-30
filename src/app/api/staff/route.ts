@@ -3,6 +3,7 @@ import { currentAccount } from "@/lib/auth/session";
 import { canManageRole, canManageStaff, validateNewStaff } from "@/lib/auth/roles";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { validPageSelection } from "@/lib/auth/page-access";
 
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -36,6 +37,14 @@ export async function POST(request: NextRequest) {
     return fail("Choose a barangay.", 400);
   const inputError = validateNewStaff(body, account.level, { requirePassword: false });
   if (inputError) return fail(inputError, 400);
+  const setPages = Object.hasOwn(body, "pages");
+  if (setPages && body.pages !== null && !validPageSelection(body.pages))
+    return fail("Choose valid pages without duplicates.", 400);
+  if (
+    setPages &&
+    (!Number.isSafeInteger(body.pageAccessVersion) || (body.pageAccessVersion as number) < 0)
+  )
+    return fail("Reload the staff list and try again.", 400);
 
   // The database decides whether this account may grant the role in this barangay.
   const supabase = await createClient();
@@ -45,9 +54,20 @@ export async function POST(request: NextRequest) {
   });
   if (checkError) return fail("Staff management is not set up. Apply the latest migration.", 500);
   if (allowed !== true) return fail("You are not allowed to assign this role here.", 403);
+  // Check migration availability before creating any sign-in account.
+  const ready = await supabase.rpc("get_staff_page_access", { p_barangay_id: barangayId });
+  if (ready.error)
+    return fail(
+      "Page access management is not set up. Apply the account page access migration.",
+      503,
+    );
 
   const admin = createAdminClient();
-  if (!admin) return fail("Adding accounts needs SUPABASE_SECRET_KEY on the server.", 503);
+  if (!admin)
+    return fail(
+      "Account creation is unavailable. Contact your system administrator for help.",
+      503,
+    );
   const normalizedEmail = (email as string).trim().toLowerCase();
   const { data: profile, error: lookupError } = await admin
     .from("staff_profiles")
@@ -87,16 +107,21 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // Inserted with the signed-in user's session so row level security and the audit trigger apply.
-  const { error: membershipError } = await supabase
-    .from("memberships")
-    .insert({ user_id: userId, barangay_id: barangayId, role, active: true });
+  // Membership, optional page customization and audit history are one database transaction.
+  const { error: membershipError } = await supabase.rpc("grant_staff_access", {
+    p_user_id: userId,
+    p_barangay_id: barangayId,
+    p_role: role,
+    p_set_pages: setPages,
+    p_pages: setPages ? body.pages : null,
+    p_expected_page_version: setPages ? body.pageAccessVersion : 0,
+  });
   if (membershipError) {
     if (createdUserId) await admin.auth.admin.deleteUser(createdUserId);
     return fail(
       membershipError.code === "23505"
         ? "This person already has that role here. Reactivate it from the list instead."
-        : "The role could not be assigned.",
+        : membershipError.message || "The role could not be assigned.",
       membershipError.code === "23505" ? 409 : 403,
     );
   }
@@ -108,6 +133,27 @@ export async function PATCH(request: NextRequest) {
   if ("response" in auth) return auth.response;
   const { account, body } = auth;
   const { barangayId, userId, role, active } = body;
+  if (body.action === "pages") {
+    if (
+      typeof barangayId !== "string" ||
+      !uuid.test(barangayId) ||
+      typeof userId !== "string" ||
+      !uuid.test(userId) ||
+      (body.pages !== null && !validPageSelection(body.pages)) ||
+      !Number.isSafeInteger(body.pageAccessVersion) ||
+      (body.pageAccessVersion as number) < 0
+    )
+      return fail("Choose an account and valid pages, then reload if needed.", 400);
+    const supabase = await createClient();
+    const { error } = await supabase.rpc("set_account_page_access", {
+      p_barangay_id: barangayId,
+      p_user_id: userId,
+      p_pages: body.pages,
+      p_expected_version: body.pageAccessVersion,
+    });
+    if (error) return fail(error.message, error.message.includes("changed") ? 409 : 403);
+    return NextResponse.json({ ok: true });
+  }
   if (
     typeof barangayId !== "string" ||
     !uuid.test(barangayId) ||

@@ -6,15 +6,15 @@ import { Button } from "@/components/ui/button";
 type State = "missing-config" | "migration-pending" | "membership-pending";
 const content: Record<State, { title: string; description: string; icon: typeof Database }> = {
   "missing-config": {
-    title: "Supabase configuration needed",
+    title: "Workspace setup needed",
     description:
-      "Add the project URL and publishable key to the environment before opening live mode.",
+      "The workspace connection has not been configured. Contact your system administrator for help.",
     icon: CircleAlert,
   },
   "migration-pending": {
-    title: "Database schema pending",
+    title: "Workspace setup pending",
     description:
-      "The Supabase project is reachable, but its BFMS tables or access policies are not ready. Apply the reviewed migrations.",
+      "Workspace records or access settings are not ready. Contact your system administrator to complete setup.",
     icon: Database,
   },
   "membership-pending": {
@@ -49,8 +49,8 @@ export function LiveModeView({ state, email }: { state: State; email?: string })
             </p>
           )}
           <div className="mt-6 border-t border-border pt-5 text-xs leading-5 text-muted-foreground">
-            Authorized users can view their barangay&apos;s records read-only. Live financial
-            posting remains disabled until the controls and workflows pass staging verification.
+            Access to your barangay&apos;s records and financial actions depends on your assigned
+            role.
           </div>
           {email && (
             <Form action="/auth/signout" method="post" className="mt-5" pendingLabel="Signing out…">

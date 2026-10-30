@@ -3,7 +3,8 @@ import { emptyFinanceData, loadFinanceData } from "@/data/supabase/workspace-dat
 import { AppShell } from "@/components/layout/app-shell";
 import { redirect } from "next/navigation";
 import { LiveModeView } from "@/features/live/live-mode-view";
-import { getWorkspaceBarangays } from "@/lib/auth/active-barangay";
+import { accessForAccount } from "@/lib/auth/workspace-access";
+import { PageAccessProvider } from "@/components/layout/page-access-provider";
 import { canRecordLive } from "@/lib/auth/roles";
 import { getWorkspaceSession } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
@@ -14,37 +15,41 @@ export default async function WorkspaceLayout({ children }: { children: React.Re
   if (session.status !== "ready")
     return <LiveModeView state={session.status} email={session.email} />;
   const { account } = session;
+  const { options, active, lockedBySubdomain, pages } = await accessForAccount(account);
   if (account.mode === "demo")
     return (
-      <FinanceProvider>
-        <AppShell account={account}>{children}</AppShell>
-      </FinanceProvider>
+      <PageAccessProvider pages={pages}>
+        <FinanceProvider>
+          <AppShell account={account}>{children}</AppShell>
+        </FinanceProvider>
+      </PageAccessProvider>
     );
 
   // Live mode shows the selected barangay's records; only super admins record changes.
-  const { options, active, lockedBySubdomain } = await getWorkspaceBarangays(account);
   const live = active
     ? await loadFinanceData(await createClient(), active)
     : { data: emptyFinanceData("No barangay yet"), error: undefined };
   return (
-    <FinanceProvider
-      key={active?.id ?? "none"}
-      preview
-      initialData={live.data}
-      liveRecording={Boolean(active) && canRecordLive(account.level)}
-    >
-      <AppShell
+    <PageAccessProvider pages={pages}>
+      <FinanceProvider
+        key={active?.id ?? "none"}
         preview
-        account={account}
-        workspace={{
-          barangays: options,
-          activeId: active?.id ?? null,
-          locked: lockedBySubdomain,
-          loadError: live.error,
-        }}
+        initialData={live.data}
+        liveRecording={Boolean(active) && canRecordLive(account.level)}
       >
-        {children}
-      </AppShell>
-    </FinanceProvider>
+        <AppShell
+          preview
+          account={account}
+          workspace={{
+            barangays: options,
+            activeId: active?.id ?? null,
+            locked: lockedBySubdomain,
+            loadError: live.error,
+          }}
+        >
+          {children}
+        </AppShell>
+      </FinanceProvider>
+    </PageAccessProvider>
   );
 }

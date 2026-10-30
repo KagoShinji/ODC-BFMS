@@ -15,6 +15,8 @@ import {
   X,
 } from "lucide-react";
 import { useFinance } from "@/data/demo/finance-provider";
+import { usePageAccess } from "@/components/layout/page-access-provider";
+import { canAccessPath } from "@/lib/auth/page-access";
 import {
   notificationReadIds,
   workspaceNotifications,
@@ -49,7 +51,11 @@ export function Notifications({
   const { data, loaded } = useFinance();
   const router = useRouter();
   const [refreshing, startRefresh] = useTransition();
-  const notifications = useMemo(() => workspaceNotifications(data), [data]);
+  const { pages } = usePageAccess();
+  const notifications = useMemo(
+    () => workspaceNotifications(data).filter((item) => canAccessPath(pages, item.href)),
+    [data, pages],
+  );
   const storageKey = `odc-notifications:${scope}`;
   const [open, setOpen] = useState(false);
   const [readState, setReadState] = useState<{ key: string; ids: string[] }>({ key: "", ids: [] });

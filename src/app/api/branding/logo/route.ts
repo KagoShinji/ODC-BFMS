@@ -20,7 +20,10 @@ export async function POST(request: NextRequest) {
   const auth = await authorizeBranding(form.get("scope") ?? undefined);
   if ("response" in auth) return auth.response;
   if (auth.account.mode === "demo")
-    return fail("Logo uploads use Supabase Storage. In the demo, paste an https image link.", 400);
+    return fail(
+      "Logo uploads are unavailable in the demo. Paste an https image link instead.",
+      400,
+    );
   const file = form.get("file");
   if (!(file instanceof File) || !file.size) return fail("Choose a logo file to upload.", 400);
   if (file.size > LOGO_MAX_BYTES) return fail("The logo must be 1 MB or smaller.", 413);
