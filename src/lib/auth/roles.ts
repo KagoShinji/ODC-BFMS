@@ -72,7 +72,7 @@ export function canManageRole(level: AccessLevel, role: string) {
   return (assignableRoles(level) as readonly string[]).includes(role);
 }
 
-export const MIN_STAFF_PASSWORD = 12;
+export const MIN_STAFF_PASSWORD = 8;
 
 export function validateNewStaff(
   input: { fullName?: unknown; email?: unknown; role?: unknown; password?: unknown },

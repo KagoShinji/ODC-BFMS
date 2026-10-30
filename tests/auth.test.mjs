@@ -91,3 +91,25 @@ test("new staff input is validated against the caller's access level", () => {
     null,
   );
 });
+
+test("temporary staff passwords accept 8 through 72 characters", () => {
+  const input = { fullName: "Juan Dela Cruz", email: "juan@example.gov.ph", role: "encoder" };
+  for (const length of [8, 12, 72]) {
+    assert.equal(
+      validateNewStaff({ ...input, password: "a".repeat(length) }, "admin", {
+        requirePassword: true,
+      }),
+      null,
+    );
+  }
+  for (const length of [0, 7, 73]) {
+    assert.match(
+      validateNewStaff({ ...input, password: "a".repeat(length) }, "admin", {
+        requirePassword: true,
+      }),
+      /8 to 72/,
+    );
+  }
+  // Linking an existing account keeps its current password.
+  assert.equal(validateNewStaff(input, "admin", { requirePassword: false }), null);
+});

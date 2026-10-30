@@ -1,8 +1,18 @@
 "use client";
 
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useId, useState, type FormEvent, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { Building2, Plus, ShieldCheck, UserCheck, UserPlus, UserX, X } from "lucide-react";
+import {
+  Building2,
+  Eye,
+  EyeOff,
+  Plus,
+  ShieldCheck,
+  UserCheck,
+  UserPlus,
+  UserX,
+  X,
+} from "lucide-react";
 import { useFinance } from "@/data/demo/finance-provider";
 import type { StaffDirectory } from "@/data/supabase/staff-repository";
 import {
@@ -106,6 +116,8 @@ function StaffDirectoryView({
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<MemberRole>("encoder");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const passwordId = useId();
   const [busy, setBusy] = useState(false);
   const [formMessage, setFormMessage] = useState<Message>(null);
   const [listMessage, setListMessage] = useState<Message>(null);
@@ -158,6 +170,7 @@ function StaffDirectoryView({
     setFullName("");
     setEmail("");
     setPassword("");
+    setShowPassword(false);
     setNewPages(undefined);
     setOpen(false);
   }
@@ -216,7 +229,10 @@ function StaffDirectoryView({
             {toolbar}
             <Button
               variant="accent"
-              onClick={() => setOpen(!open)}
+              onClick={() => {
+                setOpen(!open);
+                setShowPassword(false);
+              }}
               disabled={Boolean(addDisabledReason)}
               title={addDisabledReason}
             >
@@ -266,7 +282,10 @@ function StaffDirectoryView({
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setOpen(false)}
+              onClick={() => {
+                setOpen(false);
+                setShowPassword(false);
+              }}
               aria-label="Close form"
             >
               <X size={17} />
@@ -316,17 +335,42 @@ function StaffDirectoryView({
                 </select>
               </label>
               {requirePassword && (
-                <label className="text-xs font-semibold text-secondary">
-                  Temporary password
-                  <Input
-                    type="password"
-                    className="mt-1.5"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    placeholder={`At least ${MIN_STAFF_PASSWORD} characters`}
-                    autoComplete="new-password"
-                  />
-                </label>
+                <div>
+                  <label htmlFor={passwordId} className="text-xs font-semibold text-secondary">
+                    Temporary password
+                  </label>
+                  <div className="relative mt-1.5">
+                    <Input
+                      id={passwordId}
+                      type={showPassword ? "text" : "password"}
+                      className="pr-11"
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                      placeholder={`At least ${MIN_STAFF_PASSWORD} characters`}
+                      minLength={MIN_STAFF_PASSWORD}
+                      maxLength={72}
+                      autoComplete="new-password"
+                      disabled={busy}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((visible) => !visible)}
+                      className="absolute inset-y-0 right-0 flex w-10 items-center justify-center rounded-r-xl text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-50"
+                      aria-label={
+                        showPassword ? "Hide temporary password" : "Show temporary password"
+                      }
+                      aria-pressed={showPassword}
+                      aria-controls={passwordId}
+                      disabled={busy}
+                    >
+                      {showPassword ? (
+                        <EyeOff size={17} aria-hidden="true" />
+                      ) : (
+                        <Eye size={17} aria-hidden="true" />
+                      )}
+                    </button>
+                  </div>
+                </div>
               )}
               {(!existing || canCustomize(existing)) && (
                 <div className="md:col-span-2 xl:col-span-full">
