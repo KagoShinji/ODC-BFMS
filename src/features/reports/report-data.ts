@@ -25,7 +25,7 @@ export interface ReportDefinition {
   note?: string;
 }
 
-export function buildReports(data: FinanceData): ReportDefinition[] {
+export function buildReports(data: FinanceData, demo = true): ReportDefinition[] {
   const collections = data.collections.filter((item) => item.status === "issued");
   const paid = data.vouchers.filter((item) => item.status === "paid");
   const budgetRows = data.budgetLines.map((line) => [
@@ -122,7 +122,7 @@ export function buildReports(data: FinanceData): ReportDefinition[] {
     [
       "Opening balance",
       "—",
-      "At start of demo period",
+      demo ? "At start of demo period" : "Opening balance for loaded records",
       "—",
       "—",
       formatMoney(cash),
@@ -198,11 +198,11 @@ export function buildReports(data: FinanceData): ReportDefinition[] {
     {
       id: "cashbook",
       title: "Cashbook",
-      description: "Cash and bank movement from posted demo records",
+      description: `Cash and bank movement from posted ${demo ? "demo" : "live"} records`,
       status: "preview",
       columns: ["Date", "Reference", "Particulars", "In", "Out", "Cash on hand", "Cash in bank"],
       rows: cashRows,
-      note: "Opening balances are synthetic. Official cashbook columns and posting rules require finance approval.",
+      note: `${demo ? "Opening balances are synthetic." : "Opening balances and coverage must be verified before official use."} Official cashbook columns and posting rules require finance approval.`,
     },
     {
       id: "transmittal",

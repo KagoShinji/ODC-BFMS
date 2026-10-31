@@ -3,6 +3,8 @@
 import { useState, type FormEvent } from "react";
 import { ArrowRight, BookOpen, Wallet } from "lucide-react";
 import { useFinance } from "@/data/demo/finance-provider";
+import { PdfButton } from "@/components/financial/pdf-button";
+import { advanceDocument, advanceRegister } from "@/features/reports/financial-documents";
 import { dashboardTotals, parseMoney } from "@/domain/finance";
 import type { LiquidationEntry } from "@/domain/types";
 import { displayDate, formatMoney } from "@/lib/utils";
@@ -54,6 +56,7 @@ export function AdvancesView() {
         eyebrow="SPENDING · ACCOUNTABILITY"
         title="Cash advances & liquidation"
         description="Track travel advances, accepted expenses, refunds, and the balance each accountable person must settle."
+        action={<PdfButton documents={[advanceRegister(data)]} />}
       />
       <ActionError error={actions.error} />
       <div className="mb-6 grid gap-4 sm:grid-cols-2">
@@ -162,6 +165,7 @@ export function AdvancesView() {
                       {formatMoney(advance.amount - settled)}
                     </td>
                     <td className={tdClass}>
+                      <PdfButton documents={[advanceDocument(data, advance)]} label="PDF" />
                       <Button variant="ghost" size="sm" onClick={() => setSelectedId(advance.id)}>
                         View
                       </Button>

@@ -3,6 +3,8 @@
 import { useState, type FormEvent } from "react";
 import { Plus, Wallet, X } from "lucide-react";
 import { useFinance } from "@/data/demo/finance-provider";
+import { PdfButton } from "@/components/financial/pdf-button";
+import { budgetDocument } from "@/features/reports/financial-documents";
 import { availableForLine, committedForLine, dashboardTotals, parseMoney } from "@/domain/finance";
 import type { BudgetLine } from "@/domain/types";
 import { formatMoney } from "@/lib/utils";
@@ -49,9 +51,12 @@ export function BudgetView() {
         title="Budget overview"
         description="Monitor appropriations and spending authority for the current fiscal year."
         action={
-          <Button variant="accent" onClick={() => setOpen(!open)}>
-            <Plus size={16} /> Add budget line
-          </Button>
+          <>
+            <PdfButton documents={[budgetDocument(data, filtered)]} />
+            <Button variant="accent" onClick={() => setOpen(!open)}>
+              <Plus size={16} /> Add budget line
+            </Button>
+          </>
         }
       />
       <div className="mb-6 grid gap-4 sm:grid-cols-3">

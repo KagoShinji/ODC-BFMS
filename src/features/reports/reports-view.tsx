@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Download, FileBarChart2, Printer } from "lucide-react";
+import { Download, FileBarChart2 } from "lucide-react";
+import { PdfButton } from "@/components/financial/pdf-button";
 import { useFinance } from "@/data/demo/finance-provider";
 import { buildReports, type ReportId } from "./report-data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,9 +15,9 @@ function csvCell(value: string) {
 }
 
 export function ReportsView() {
-  const { data } = useFinance();
+  const { data, preview } = useFinance();
   const [selectedId, setSelectedId] = useState<ReportId>("rao");
-  const reports = buildReports(data);
+  const reports = buildReports(data, !preview);
   const selected = reports.find((item) => item.id === selectedId)!;
   function downloadCsv() {
     if (!selected.columns.length) return;
@@ -25,7 +26,7 @@ export function ReportsView() {
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = `${selected.id}-${data.fiscalYear}-demo.csv`;
+    anchor.download = `${selected.id}-${data.fiscalYear}-${preview ? "live" : "demo"}.csv`;
     anchor.click();
     URL.revokeObjectURL(url);
   }
@@ -34,7 +35,13 @@ export function ReportsView() {
       <PageHeading
         eyebrow="FINANCIAL REPORTING"
         title="Reports center"
-        description="Explore working reports drawn from the demo records. Official layouts and signatories are finalized with approved forms."
+        description={`Explore working reports drawn from ${preview ? "live" : "demo"} records. Official layouts and signatories are finalized with approved forms.`}
+        action={
+          <PdfButton
+            documents={reports.filter((item) => item.columns.length)}
+            label="Print / Save all reports"
+          />
+        }
       />
       <div className="grid gap-5 xl:grid-cols-[275px_1fr]">
         <Card className="h-fit">
@@ -72,14 +79,7 @@ export function ReportsView() {
               </p>
             </div>
             <div className="no-print flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => window.print()}
-                disabled={!selected.columns.length}
-              >
-                <Printer size={14} /> Print
-              </Button>
+              <PdfButton documents={[selected]} disabled={!selected.columns.length} />
               <Button
                 variant="outline"
                 size="sm"

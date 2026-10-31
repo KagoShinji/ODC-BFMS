@@ -4,6 +4,8 @@ import { useEffect, useState, type FormEvent } from "react";
 import { PageLink as Link } from "@/components/layout/page-access-provider";
 import { ArrowRight, Check, ChevronRight, Plus, X } from "lucide-react";
 import { useFinance } from "@/data/demo/finance-provider";
+import { PdfButton } from "@/components/financial/pdf-button";
+import { expenseDocument, expenseRegister } from "@/features/reports/financial-documents";
 import { availableForLine, parseMoney } from "@/domain/finance";
 import { expenseKinds, kindLabel, type ExpenseKind } from "@/domain/types";
 import { displayDate, formatMoney } from "@/lib/utils";
@@ -70,9 +72,12 @@ export function ExpenseCasesView({ kind }: { kind?: ExpenseKind }) {
             : "Create an expense case, track its source documents, and prepare a linked disbursement voucher."
         }
         action={
-          <Button variant="accent" onClick={() => setOpen(!open)}>
-            <Plus size={16} /> New {kind ? kindLabel[kind].toLowerCase() : "expense case"}
-          </Button>
+          <>
+            <PdfButton documents={[expenseRegister(data, cases)]} />
+            <Button variant="accent" onClick={() => setOpen(!open)}>
+              <Plus size={16} /> New {kind ? kindLabel[kind].toLowerCase() : "expense case"}
+            </Button>
+          </>
         }
       />
       <ActionError error={actions.error} />
@@ -240,6 +245,7 @@ export function ExpenseCasesView({ kind }: { kind?: ExpenseKind }) {
                     {formatMoney(item.amount)}
                   </td>
                   <td className={`${tdClass} text-right`}>
+                    <PdfButton documents={[expenseDocument(data, item)]} label="PDF" />
                     {item.voucherId ? (
                       <Link
                         className="inline-flex items-center gap-1 font-bold text-brand-ink hover:underline"

@@ -5,6 +5,8 @@ import { PageLink as Link } from "@/components/layout/page-access-provider";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Banknote, Check, FileText, Plus, X } from "lucide-react";
 import { useFinance } from "@/data/demo/finance-provider";
+import { PdfButton } from "@/components/financial/pdf-button";
+import { voucherDocument, voucherRegister } from "@/features/reports/financial-documents";
 import { availableForLine } from "@/domain/finance";
 import { kindLabel } from "@/domain/types";
 import { displayDate, formatMoney } from "@/lib/utils";
@@ -68,11 +70,14 @@ export function DisbursementsView() {
         title="Disbursement vouchers"
         description="Review supporting cases, check budget coding, approve, and record authorized payments."
         action={
-          <Button asChild variant="accent">
-            <Link href="/spending">
-              <Plus size={16} /> New expense case
-            </Link>
-          </Button>
+          <>
+            <PdfButton documents={[voucherRegister(data, rows)]} />
+            <Button asChild variant="accent">
+              <Link href="/spending">
+                <Plus size={16} /> New expense case
+              </Link>
+            </Button>
+          </>
         }
       />
       <ActionError error={actions.error} />
@@ -203,8 +208,9 @@ export function DisbursementsView() {
                 <X size={20} />
               </Button>
             </div>
-            <div className="mt-4">
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
               <StatusBadge status={selected.status} />
+              <PdfButton documents={[voucherDocument(data, selected)]} />
             </div>
             <div className="mt-6 grid grid-cols-2 gap-5 rounded-xl bg-muted p-5">
               <div>
@@ -303,7 +309,8 @@ export function DisbursementsView() {
               )}
               {selected.status === "approved" && preview && !livePayment && (
                 <p className="rounded-lg bg-muted p-3 text-xs text-muted-foreground">
-                  This voucher is approved. A Treasurer records the check or transfer reference after payment is issued.
+                  This voucher is approved. A Treasurer records the check or transfer reference
+                  after payment is issued.
                 </p>
               )}
               {selected.status === "approved" && (!preview || livePayment) && (
@@ -346,10 +353,10 @@ export function DisbursementsView() {
                   : liveApproval && livePayment
                     ? "Your approver role can approve or reject submitted vouchers, and your treasurer role can record approved payments. Other live transactions remain read-only."
                     : liveApproval
-                    ? "Your approver role can approve or reject submitted vouchers. Other live transaction recording is disabled."
-                    : livePayment
-                      ? "Your treasurer role can record payments for approved vouchers. Other live transaction recording is disabled."
-                      : "Your account has read-only access to these live records."
+                      ? "Your approver role can approve or reject submitted vouchers. Other live transaction recording is disabled."
+                      : livePayment
+                        ? "Your treasurer role can record payments for approved vouchers. Other live transaction recording is disabled."
+                        : "Your account has read-only access to these live records."
                 : "Demo approval and payment actions illustrate the workflow using browser data."}
             </div>
           </section>

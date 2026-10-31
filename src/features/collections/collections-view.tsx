@@ -4,6 +4,8 @@ import { useState, type FormEvent } from "react";
 import { PageLink as Link } from "@/components/layout/page-access-provider";
 import { ArrowRight, Plus, ReceiptText, X } from "lucide-react";
 import { useFinance } from "@/data/demo/finance-provider";
+import { PdfButton } from "@/components/financial/pdf-button";
+import { collectionDocument, collectionRegister } from "@/features/reports/financial-documents";
 import { dashboardTotals, parseMoney, receiptUnmatched } from "@/domain/finance";
 import { displayDate, formatMoney } from "@/lib/utils";
 import { usePendingAction } from "@/hooks/use-pending-action";
@@ -62,9 +64,12 @@ export function CollectionsView() {
         title="Collections & receipts"
         description="Record every collection with a traceable receipt and keep undeposited amounts visible."
         action={
-          <Button variant="accent" onClick={() => setOpen(!open)}>
-            <Plus size={16} /> Record collection
-          </Button>
+          <>
+            <PdfButton documents={[collectionRegister(data, rows)]} />
+            <Button variant="accent" onClick={() => setOpen(!open)}>
+              <Plus size={16} /> Record collection
+            </Button>
+          </>
         }
       />
       <ActionError error={actions.error} />
@@ -214,6 +219,7 @@ export function CollectionsView() {
                     {formatMoney(receiptUnmatched(data, item.id))}
                   </td>
                   <td className={tdClass}>
+                    <PdfButton documents={[collectionDocument(data, item)]} label="PDF" />
                     {item.status === "issued" &&
                       receiptUnmatched(data, item.id) === item.amount && (
                         <Button

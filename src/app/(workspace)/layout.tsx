@@ -39,6 +39,7 @@ export default async function WorkspaceLayout({ children }: { children: React.Re
         key={active?.id ?? "none"}
         preview
         initialData={live.data}
+        exportError={active ? live.error : "Select a barangay before exporting documents."}
         liveRecording={Boolean(active) && canRecordLive(account.level)}
         liveApproval={canApproveVoucherForBarangay(account, active?.id ?? null)}
         livePayment={canRecordPaymentForBarangay(account, active?.id ?? null)}

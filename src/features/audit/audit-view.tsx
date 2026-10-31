@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useFinance } from "@/data/demo/finance-provider";
+import { PdfButton } from "@/components/financial/pdf-button";
+import { auditDocument } from "@/features/reports/financial-documents";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeading, SearchField } from "@/components/financial/shared";
 
@@ -16,6 +18,7 @@ export function AuditView() {
       <PageHeading
         eyebrow="ACCOUNTABILITY"
         title="Activity & audit trail"
+        action={<PdfButton documents={[auditDocument(events)]} />}
         description={
           preview
             ? "Follow the history of actions and the records they changed."

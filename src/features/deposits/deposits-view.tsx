@@ -4,6 +4,8 @@ import { useState, type FormEvent } from "react";
 import { PageLink as Link } from "@/components/layout/page-access-provider";
 import { ArrowRight, Landmark, Plus, X } from "lucide-react";
 import { useFinance } from "@/data/demo/finance-provider";
+import { PdfButton } from "@/components/financial/pdf-button";
+import { depositDocument, depositRegister } from "@/features/reports/financial-documents";
 import type { Deposit } from "@/domain/types";
 import { parseMoney, receiptUnmatched } from "@/domain/finance";
 import { displayDate, formatMoney } from "@/lib/utils";
@@ -60,9 +62,12 @@ export function DepositsView() {
         title="Deposits & remittances"
         description="Allocate issued receipts to a bank deposit or treasury remittance and see every unmatched balance."
         action={
-          <Button variant="accent" onClick={() => setOpen(!open)}>
-            <Plus size={16} /> New matching batch
-          </Button>
+          <>
+            <PdfButton documents={[depositRegister(data)]} />
+            <Button variant="accent" onClick={() => setOpen(!open)}>
+              <Plus size={16} /> New matching batch
+            </Button>
+          </>
         }
       />
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
@@ -228,6 +233,7 @@ export function DepositsView() {
                 <th className={thClass}>Receipts matched</th>
                 <th className={thClass}>Status</th>
                 <th className={`${thClass} text-right`}>Amount</th>
+                <th className={thClass}>Document</th>
               </tr>
             </thead>
             <tbody>
@@ -257,6 +263,9 @@ export function DepositsView() {
                   </td>
                   <td className={`${tdClass} money text-right font-bold text-foreground`}>
                     {formatMoney(item.amount)}
+                  </td>
+                  <td className={tdClass}>
+                    <PdfButton documents={[depositDocument(data, item)]} label="PDF" />
                   </td>
                 </tr>
               ))}

@@ -37,6 +37,8 @@ type NewCollection = Pick<Collection, "payer" | "purpose" | "revenueCategory" | 
 interface FinanceContextValue {
   data: FinanceData;
   loaded: boolean;
+  /** Prevent exporting incomplete or unscoped live records. */
+  exportError?: string;
   preview: boolean;
   /** Live mode where this account records transactions in Supabase. */
   liveRecording: boolean;
@@ -97,6 +99,7 @@ export function FinanceProvider({
   liveRecording = false,
   liveApproval = false,
   livePayment = false,
+  exportError,
 }: {
   children: ReactNode;
   /** Live mode: shows `initialData`; changes are blocked unless `liveRecording`. */
@@ -108,6 +111,7 @@ export function FinanceProvider({
   liveApproval?: boolean;
   /** Allows payment recording for a treasurer without enabling other writes. */
   livePayment?: boolean;
+  exportError?: string;
 }) {
   const router = useRouter();
   const { confirm, success: showSuccess, error: showError } = useFeedback();
@@ -550,11 +554,7 @@ export function FinanceProvider({
         allowTreasurer = false,
       ) =>
       async (...input: A): Promise<Result> => {
-        if (
-          !liveRecording &&
-          !(allowApprover && liveApproval) &&
-          !(allowTreasurer && livePayment)
-        )
+        if (!liveRecording && !(allowApprover && liveApproval) && !(allowTreasurer && livePayment))
           return blocked();
         try {
           const response = await fetch("/api/finance", {
@@ -575,6 +575,7 @@ export function FinanceProvider({
       ...value,
       data: live,
       loaded: true,
+      exportError,
       liveRecording,
       liveApproval,
       livePayment,
@@ -590,14 +591,24 @@ export function FinanceProvider({
         id,
         version: version(id),
       })),
-      approveVoucher: record("approveVoucher", "Voucher approved.", (id: string) => ({
-        id,
-        version: version(id),
-      }), true),
-      rejectVoucher: record("rejectVoucher", "Voucher rejected.", (id: string) => ({
-        id,
-        version: version(id),
-      }), true),
+      approveVoucher: record(
+        "approveVoucher",
+        "Voucher approved.",
+        (id: string) => ({
+          id,
+          version: version(id),
+        }),
+        true,
+      ),
+      rejectVoucher: record(
+        "rejectVoucher",
+        "Voucher rejected.",
+        (id: string) => ({
+          id,
+          version: version(id),
+        }),
+        true,
+      ),
       recordPayment: record(
         "recordPayment",
         "Payment recorded.",
@@ -617,7 +628,18 @@ export function FinanceProvider({
         (input) => input,
       ),
     };
-  }, [value, preview, fail, success, initialData, liveRecording, liveApproval, livePayment, router]);
+  }, [
+    value,
+    preview,
+    fail,
+    success,
+    initialData,
+    liveRecording,
+    liveApproval,
+    livePayment,
+    exportError,
+    router,
+  ]);
 
   const confirmedValue = useMemo<FinanceContextValue>(() => {
     const records = providerValue.data;

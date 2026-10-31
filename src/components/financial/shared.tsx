@@ -29,7 +29,9 @@ export function PageHeading({
           <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">{description}</p>
         )}
       </div>
-      {action && <div className="flex shrink-0 items-center gap-2">{action}</div>}
+      {action && (
+        <div className="flex max-w-full shrink-0 flex-wrap items-center gap-2">{action}</div>
+      )}
     </div>
   );
 }
