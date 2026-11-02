@@ -1,5 +1,8 @@
 "use client";
 
+import { usePagination } from "@/hooks/use-pagination";
+import { TablePagination } from "@/components/ui/table-pagination";
+
 import { useState, type FormEvent } from "react";
 import { ArrowRight, BookOpen, Wallet } from "lucide-react";
 import { useFinance } from "@/data/demo/finance-provider";
@@ -17,6 +20,7 @@ import { PageHeading, tableClass, tdClass, thClass } from "@/components/financia
 
 export function AdvancesView() {
   const { data, openAdvance, recordLiquidation } = useFinance();
+  const pagination = usePagination(data.cashAdvances, JSON.stringify([data.barangay]));
   const actions = usePendingAction();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [kind, setKind] = useState<LiquidationEntry["kind"]>("expense");
@@ -148,7 +152,7 @@ export function AdvancesView() {
               </tr>
             </thead>
             <tbody>
-              {data.cashAdvances.map((advance) => {
+              {pagination.items.map((advance) => {
                 const settled = data.liquidationEntries
                   .filter((entry) => entry.advanceId === advance.id)
                   .reduce((sum, entry) => sum + entry.amount, 0);
@@ -181,6 +185,7 @@ export function AdvancesView() {
             </p>
           )}
         </div>
+        <TablePagination pagination={pagination} label="Cash advances" />
       </Card>
       {selected && (
         <Card className="mt-6">
@@ -259,7 +264,7 @@ export function AdvancesView() {
                 </label>
                 <div className="flex justify-end sm:col-span-4">
                   <Button variant="accent" type="submit">
-                    Record demo entry
+                    Record entry
                   </Button>
                 </div>
               </Form>
@@ -270,8 +275,8 @@ export function AdvancesView() {
               </p>
             )}
             <p className="mt-4 text-[11px] leading-5 text-muted-foreground">
-              Demo entries show the balance effect. Official liquidation requires supporting
-              evidence, review, approval and accounting validation.
+              Entries reduce the outstanding advance. Keep supporting evidence for each accepted
+              expense or cash refund and complete the required review before recording it.
             </p>
           </CardContent>
         </Card>

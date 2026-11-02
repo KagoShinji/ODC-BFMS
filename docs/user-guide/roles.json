@@ -219,7 +219,7 @@
       },
       {
         "title": "Coordinate receipt recording",
-        "text": "Give the Super admin the checked details for Record collection → Issue demo receipt. In live mode that action saves a live receipt record.",
+        "text": "Give the Super admin the checked details for Record collection → Issue receipt. In live mode that action saves a live receipt record.",
         "screen": "collection-form"
       },
       {

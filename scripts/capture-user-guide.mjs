@@ -13,6 +13,12 @@ await fs.mkdir(directory, { recursive: true });
 const browser = await guideBrowser();
 const { call, evaluate, until, screenshot } = browser;
 const pages = [];
+const capturedOn = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  timeZone: "Asia/Manila",
+}).format(new Date());
 const button = (text) =>
   `[...document.querySelectorAll('button')].find(b => b.textContent.trim() === ${JSON.stringify(text)})`;
 const label = (text) =>
@@ -82,7 +88,7 @@ async function shot(chapter, id, title, steps, result, focus) {
   }
   await screenshot(path.join(directory, `${id}.png`));
   await evaluate("document.getElementById('guide-highlight')?.remove()");
-  pages.push({ chapter, id, title, steps, result });
+  pages.push({ chapter, id, title, steps, result, capturedOn });
   console.log(`Captured ${id}`);
 }
 try {
@@ -94,7 +100,7 @@ try {
   });
   await call("Network.clearBrowserCookies");
   await navigate("/login");
-  if (!(await evaluate("document.body.innerText.includes('Demo workspace')"))) {
+  if (!(await evaluate("!!document.getElementById('login-level')"))) {
     throw new Error("Refusing to capture or change records outside demo mode.");
   }
   await evaluate("localStorage.clear()");
@@ -531,12 +537,12 @@ try {
     [
       "Choose View on the advance to open Liquidation.",
       "Keep Entry type as Accepted expense; enter the evidence reference and amount.",
-      "Choose Record demo entry. This example accepts ₱8,000.00 against ₱8,900.00.",
+      "Choose Record entry. This example accepts ₱8,000.00 against ₱8,900.00.",
     ],
     "The remaining outstanding amount will be ₱900.00. Record accepted amounts only.",
-    button("Record demo entry"),
+    button("Record entry"),
   );
-  await click("Record demo entry");
+  await click("Record entry");
   await fill("Entry type", "refund");
   await fill("Description / evidence reference", "Training cash return acknowledgment");
   await fill("Amount", "900");
@@ -547,12 +553,12 @@ try {
     [
       "Choose Cash refund as Entry type.",
       "Enter the return acknowledgment and the unused amount, here ₱900.00.",
-      "Choose Record demo entry and confirm the advance becomes fully settled.",
+      "Choose Record entry and confirm the advance becomes fully settled.",
     ],
     "Accepted expenses plus refunds must equal the advance before its balance reaches zero.",
-    button("Record demo entry"),
+    button("Record entry"),
   );
-  await click("Record demo entry");
+  await click("Record entry");
   await until("document.body.innerText.includes('This advance is fully settled.')");
   await shot(
     "advances",
@@ -589,12 +595,12 @@ try {
     [
       "Enter the payer and choose the collection category.",
       "Enter the amount in pesos and describe the particulars.",
-      "Choose Issue demo receipt. The example records ₱1,000.00 for Training Payer.",
+      "Choose Issue receipt. The example records ₱1,000.00 for Training Payer.",
     ],
     "The application assigns the receipt number; the new receipt starts with an unmatched balance.",
-    button("Issue demo receipt"),
+    button("Issue receipt"),
   );
-  await click("Issue demo receipt");
+  await click("Issue receipt");
   await until("!document.querySelector('main form')");
   await shot(
     "collections",
@@ -623,9 +629,9 @@ try {
       "Select the receipt checkbox; adjust the allocation in pesos for a partial match.",
     ],
     "This image allocates the complete ₱1,000.00 training receipt. Batch total equals the selected allocations.",
-    button("Confirm demo batch"),
+    button("Confirm batch"),
   );
-  await click("Confirm demo batch");
+  await click("Confirm batch");
   await until("!document.querySelector('main form')");
   await shot(
     "deposits",
@@ -697,11 +703,11 @@ try {
     "audit-trail",
     "Trace the actions in the audit trail",
     [
-      "Open Audit trail.",
-      "Find the record reference or action you need to review.",
-      "Compare its time, actor and details with the expense, receipt or treasury register.",
+      "Open Audit trail. Search by name, email or record, then narrow the log with Action, Account and Manila date filters.",
+      "Events are grouped by date. Expand Event details to inspect the account ID, event ID and full recorded details.",
+      "Use Next / Previous and Rows per page to browse. Export filtered log includes all matching loaded events across pages.",
     ],
-    "Use the audit trail with the linked financial records when reconciling or following up a discrepancy.",
+    "Super admin actions identify the Super admin account; actions are not attributed to the staff member whose access is being changed.",
   );
   await navigate("/settings");
   await shot(

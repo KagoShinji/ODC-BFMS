@@ -1,5 +1,8 @@
 "use client";
 
+import { usePagination } from "@/hooks/use-pagination";
+import { TablePagination } from "@/components/ui/table-pagination";
+
 import { useState, type FormEvent } from "react";
 import { Plus, Wallet, X } from "lucide-react";
 import { useFinance } from "@/data/demo/finance-provider";
@@ -21,7 +24,7 @@ import {
 } from "@/components/financial/shared";
 
 export function BudgetView() {
-  const { data, addBudgetLine } = useFinance();
+  const { data, preview, addBudgetLine } = useFinance();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [code, setCode] = useState("");
@@ -32,6 +35,7 @@ export function BudgetView() {
   const filtered = data.budgetLines.filter((line) =>
     `${line.code} ${line.name} ${line.category}`.toLowerCase().includes(query.toLowerCase()),
   );
+  const pagination = usePagination(filtered, JSON.stringify([query, data.barangay]));
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const centavos = parseMoney(amount);
@@ -97,7 +101,7 @@ export function BudgetView() {
       {open && (
         <Card className="mb-6 border-warning/30">
           <CardHeader className="flex-row items-center justify-between">
-            <CardTitle>Add a demo budget line</CardTitle>
+            <CardTitle>Add a budget line</CardTitle>
             <Button
               variant="ghost"
               size="icon"
@@ -166,8 +170,10 @@ export function BudgetView() {
               </div>
             </Form>
             <p className="mt-3 text-xs text-muted-foreground">
-              Demo entries are stored in this browser. Official budget approval and versioning
-              require the live workflow.
+              {preview
+                ? "Budget lines are saved to this barangay’s live records."
+                : "Demo entries are stored in this browser."}{" "}
+              Keep the supporting budget approval with your records.
             </p>
           </CardContent>
         </Card>
@@ -195,7 +201,7 @@ export function BudgetView() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((line) => {
+              {pagination.items.map((line) => {
                 const committed = committedForLine(data, line.id);
                 const usage = line.appropriation
                   ? Math.min(100, (committed / line.appropriation) * 100)
@@ -236,6 +242,7 @@ export function BudgetView() {
             </p>
           )}
         </div>
+        <TablePagination pagination={pagination} label="Budget lines" />
       </Card>
     </>
   );

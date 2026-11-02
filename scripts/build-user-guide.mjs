@@ -64,7 +64,7 @@ for (const chapter of [...new Set(screens.map((screen) => screen.chapter))]) {
     <div class="visual-layout">
       <figure class="system-figure">
         <a href="user-guide/${escape(screen.id)}.png" target="_blank" rel="noopener" aria-label="Open full-size screenshot: ${escape(screen.title)}"><img src="user-guide/${escape(screen.id)}.png" width="1920" height="1230" alt="${escape(screen.title)} — actual BFMS screen with synthetic training records" /></a>
-        <figcaption>Actual application capture · Super admin demo · 31 October 2026. Names, references and amounts are training examples. <span class="screen-tip-inline">Open the image to zoom.</span></figcaption>
+        <figcaption>Actual application capture · Super admin demo · ${escape(screen.capturedOn || "31 October 2026")}. Names, references and amounts are training examples. <span class="screen-tip-inline">Open the image to zoom.</span></figcaption>
       </figure>
       <aside class="visual-instructions" aria-label="Steps and expected result">
         <ol>${screen.steps.map((step) => `<li>${escape(step)}</li>`).join("")}</ol>

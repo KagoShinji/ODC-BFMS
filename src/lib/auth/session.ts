@@ -37,7 +37,13 @@ export const getWorkspaceSession = cache(async (): Promise<WorkspaceSession> => 
     if (!session) return { status: "signed-out" };
     return {
       status: "ready",
-      account: { mode: "demo", level: session.level, adminBarangayIds: [], barangayIds: [] },
+      account: {
+        mode: "demo",
+        level: session.level,
+        email: process.env.DEMO_LOGIN_EMAIL || "demo@odc.local",
+        adminBarangayIds: [],
+        barangayIds: [],
+      },
     };
   }
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)

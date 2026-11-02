@@ -8,7 +8,8 @@
       "Enter your email and password, then choose Sign in. The Sign in as selector appears only in demo mode.",
       "Live accounts receive their access from saved roles; use your own account details."
     ],
-    "result": "A successful sign-in opens your first permitted page."
+    "result": "A successful sign-in opens your first permitted page.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "signin",
@@ -19,7 +20,8 @@
       "Use the left sidebar to open your task. The selected page is highlighted.",
       "Read the summary cards and recent transactions before starting work."
     ],
-    "result": "Your sidebar reflects your saved page access. These screenshots use a Super admin demo account."
+    "result": "Your sidebar reflects your saved page access. These screenshots use a Super admin demo account.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "setup",
@@ -30,7 +32,8 @@
       "Edit the system name, organization, logo mark or logo image, and accent color.",
       "Check the preview before saving. This image shows the demo system branding editor."
     ],
-    "result": "Live mode also provides Onboard barangay and a branding scope selector; follow the setup chapter for those live-only controls."
+    "result": "Live mode also provides Onboard barangay and a branding scope selector; follow the setup chapter for those live-only controls.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "staff",
@@ -41,7 +44,8 @@
       "Search the directory to check whether the person already exists.",
       "Choose Add account (Super admin) or Add staff (Administrator)."
     ],
-    "result": "The directory shows each person’s role, status and page access."
+    "result": "The directory shows each person’s role, status and page access.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "staff",
@@ -52,7 +56,8 @@
       "Review Page access. Check a page to include it or uncheck it to remove it.",
       "Scroll to Add to [barangay], review the confirmation, then save when the details are correct."
     ],
-    "result": "The demo form omits the live initial-password field. Page choices change viewing access; they do not grant financial posting authority."
+    "result": "The demo form omits the live initial-password field. Page choices change viewing access; they do not grant financial posting authority.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "staff",
@@ -63,7 +68,8 @@
       "Keep the intended pages selected. Use role defaults restores the role’s standard selection.",
       "Choose Add to Barangay San Isidro, review the confirmation and choose Add account."
     ],
-    "result": "The role and page selection will be saved for this person in this barangay."
+    "result": "The role and page selection will be saved for this person in this barangay.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "staff",
@@ -74,7 +80,8 @@
       "Check the Encoder role and active status.",
       "Use Customize pages to review or change viewing access, or Deactivate if this access must end."
     ],
-    "result": "Demo accounts are practice entries in this browser. Live mode creates or links a sign-in account."
+    "result": "Demo accounts are practice entries in this browser. Live mode creates or links a sign-in account.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "staff",
@@ -85,7 +92,8 @@
       "Adjust the checkboxes, or choose Use role defaults to restore their role’s pages.",
       "Choose Save page access to apply the selection. Settings remains available."
     ],
-    "result": "Custom choices replace that account’s role defaults for the selected barangay."
+    "result": "Custom choices replace that account’s role defaults for the selected barangay.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "budget",
@@ -96,7 +104,8 @@
       "Read Total appropriation, Obligated and Available to commit.",
       "Find the intended budget line, then choose Add budget line if a new line is needed."
     ],
-    "result": "Available to commit is the amount still available after submitted vouchers."
+    "result": "Available to commit is the amount still available after submitted vouchers.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "budget",
@@ -107,7 +116,8 @@
       "Choose the Category and enter the appropriation in pesos. Example: 50000 means ₱50,000.00.",
       "Choose Save budget line and confirm the line appears in Budget lines."
     ],
-    "result": "This example adds MOOE-004 / Community programs with ₱50,000.00."
+    "result": "This example adds MOOE-004 / Community programs with ₱50,000.00.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "budget",
@@ -118,7 +128,8 @@
       "Check the code, name and amount. Choose Cancel to go back and correct a mistake.",
       "Choose Add budget line to confirm. Similar confirmations appear for financial actions throughout the system."
     ],
-    "result": "The action is applied only after you confirm the details."
+    "result": "The action is applied only after you confirm the details.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "budget",
@@ -129,7 +140,8 @@
       "Verify the name, category and appropriation match your entry.",
       "For a new unused line, its available amount should equal its appropriation."
     ],
-    "result": "The saved line is ready to select when creating an expense case."
+    "result": "The saved line is ready to select when creating an expense case.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "procurement",
@@ -140,7 +152,8 @@
       "Use the document path to see PR → RFQ → PO → AIR → Ready for DV.",
       "Choose New procurement to enter the purchase request."
     ],
-    "result": "Existing records show their current step and the next available action."
+    "result": "Existing records show their current step and the next available action.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "procurement",
@@ -151,7 +164,8 @@
       "Select the correct Budget line and check Available beneath it.",
       "Choose Create case. This example requests ₱1,500.00 for training office supplies."
     ],
-    "result": "The request is saved at PR and appears in the procurement register."
+    "result": "The request is saved at PR and appears in the procurement register.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "procurement",
@@ -162,7 +176,8 @@
       "Check its payee, amount and PR status.",
       "Choose Complete PR after the corresponding work is complete."
     ],
-    "result": "The next status is RFQ. Demo buttons illustrate the sequence; retain the required evidence in live operations."
+    "result": "The next status is RFQ. Demo buttons illustrate the sequence; retain the required evidence in live operations.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "procurement",
@@ -173,7 +188,8 @@
       "Complete the quotation work, then choose Complete RFQ on the same row.",
       "At PO, complete the purchase order and choose Complete PO."
     ],
-    "result": "Each completed stage advances this same expense case; do not create a duplicate request."
+    "result": "Each completed stage advances this same expense case; do not create a duplicate request.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "procurement",
@@ -184,7 +200,8 @@
       "Complete the acceptance and inspection work.",
       "Choose Complete AIR on the same request."
     ],
-    "result": "The case becomes Ready for DV and its action changes to Create DV."
+    "result": "The case becomes Ready for DV and its action changes to Create DV.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "procurement",
@@ -195,7 +212,8 @@
       "Choose Create DV once for this case.",
       "Open Disbursements and locate the new draft by payee and purpose."
     ],
-    "result": "The source case and draft voucher remain linked."
+    "result": "The source case and draft voucher remain linked.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "other-expenses",
@@ -206,7 +224,8 @@
       "Enter the payee, amount and purpose; select the matching budget line.",
       "Choose Create case, then Create DV on the Ready for DV record. Continue in Disbursements."
     ],
-    "result": "These routes use the same linked voucher review and payment steps as procurement."
+    "result": "These routes use the same linked voucher review and payment steps as procurement.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "other-expenses",
@@ -217,7 +236,8 @@
       "Enter the payee, amount and purpose; select the matching budget line.",
       "Choose Create case, then Create DV on the Ready for DV record. Continue in Disbursements."
     ],
-    "result": "These routes use the same linked voucher review and payment steps as procurement."
+    "result": "These routes use the same linked voucher review and payment steps as procurement.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "other-expenses",
@@ -228,7 +248,8 @@
       "Enter the payee, amount and purpose; select the matching budget line.",
       "Choose Create case, then Create DV on the Ready for DV record. Continue in Disbursements."
     ],
-    "result": "If the paid travel voucher represents a cash advance, continue to Cash advances after payment."
+    "result": "If the paid travel voucher represents a cash advance, continue to Cash advances after payment.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "other-expenses",
@@ -239,7 +260,8 @@
       "Enter the payee, amount and purpose; select the matching budget line.",
       "Choose Create case, then Create DV on the Ready for DV record. Continue in Disbursements."
     ],
-    "result": "These routes use the same linked voucher review and payment steps as procurement."
+    "result": "These routes use the same linked voucher review and payment steps as procurement.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "vouchers",
@@ -250,7 +272,8 @@
       "Search by payee, purpose or voucher number, and use the status filter if needed.",
       "Select the Training Supply Co. voucher row to open the linked voucher panel."
     ],
-    "result": "Draft, submitted, approved and paid vouchers appear in the same register."
+    "result": "Draft, submitted, approved and paid vouchers appear in the same register.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "vouchers",
@@ -261,7 +284,8 @@
       "Confirm the source case is the intended purchase request.",
       "Choose Submit for review."
     ],
-    "result": "The voucher changes from draft to submitted and commits budget availability."
+    "result": "The voucher changes from draft to submitted and commits budget availability.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "vouchers",
@@ -272,7 +296,8 @@
       "Choose Approve when correct, or Reject when a correction is needed.",
       "In live mode, an assigned Approver in this barangay or a Super admin can approve/reject. Ordinary self-approval is blocked."
     ],
-    "result": "Approval records the obligation and makes the voucher ready for payment."
+    "result": "Approval records the obligation and makes the voucher ready for payment.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "vouchers",
@@ -283,7 +308,8 @@
       "Choose Cancel to return to the submitted voucher if anything is wrong.",
       "Choose Approve voucher to save the decision, then check the approved status."
     ],
-    "result": "An assigned Approver can do this in their barangay; ordinary self-approval is blocked. The pictured account is a Super admin demo."
+    "result": "An assigned Approver can do this in their barangay; ordinary self-approval is blocked. The pictured account is a Super admin demo.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "vouchers",
@@ -294,7 +320,8 @@
       "Check the voucher number and amount again.",
       "As the assigned Treasurer or Super admin, choose Record payment and review its confirmation."
     ],
-    "result": "This training example uses TRAINING-CHK-0001. Use the real payment reference in live work."
+    "result": "This training example uses TRAINING-CHK-0001. Use the real payment reference in live work.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "vouchers",
@@ -305,7 +332,8 @@
       "Choose Cancel if the payment or reference needs checking.",
       "Choose Record payment to confirm, then check paid status and the saved reference."
     ],
-    "result": "An assigned Treasurer can record the payment in their barangay. Recording this entry does not initiate a bank transfer or issue a check."
+    "result": "An assigned Treasurer can record the payment in their barangay. Recording this entry does not initiate a bank transfer or issue a check.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "vouchers",
@@ -316,7 +344,8 @@
       "Verify the payment reference and recorded payment date.",
       "Use Print / Save PDF if you need a system record copy."
     ],
-    "result": "The paid voucher remains linked to its expense case and appears in reporting."
+    "result": "The paid voucher remains linked to its expense case and appears in reporting.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "advances",
@@ -327,7 +356,8 @@
       "Find the eligible voucher and accountable person.",
       "Choose Open advance only if this payment was cash given to that person."
     ],
-    "result": "Opening tracking does not create a second payment. The example advance is ₱8,900.00."
+    "result": "Opening tracking does not create a second payment. The example advance is ₱8,900.00.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "advances",
@@ -336,9 +366,10 @@
     "steps": [
       "Choose View on the advance to open Liquidation.",
       "Keep Entry type as Accepted expense; enter the evidence reference and amount.",
-      "Choose Record demo entry. This example accepts ₱8,000.00 against ₱8,900.00."
+      "Choose Record entry. This example accepts ₱8,000.00 against ₱8,900.00."
     ],
-    "result": "The remaining outstanding amount will be ₱900.00. Record accepted amounts only."
+    "result": "The remaining outstanding amount will be ₱900.00. Record accepted amounts only.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "advances",
@@ -347,9 +378,10 @@
     "steps": [
       "Choose Cash refund as Entry type.",
       "Enter the return acknowledgment and the unused amount, here ₱900.00.",
-      "Choose Record demo entry and confirm the advance becomes fully settled."
+      "Choose Record entry and confirm the advance becomes fully settled."
     ],
-    "result": "Accepted expenses plus refunds must equal the advance before its balance reaches zero."
+    "result": "Accepted expenses plus refunds must equal the advance before its balance reaches zero.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "advances",
@@ -360,7 +392,8 @@
       "Confirm the fully settled message.",
       "Keep the evidence references with the case; use PDF for a system record copy."
     ],
-    "result": "₱8,000.00 accepted + ₱900.00 refunded = ₱8,900.00 settled."
+    "result": "₱8,000.00 accepted + ₱900.00 refunded = ₱8,900.00 settled.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "collections",
@@ -371,7 +404,8 @@
       "Check the receipt register for an existing entry.",
       "Choose Record collection to record a new receipt."
     ],
-    "result": "Awaiting matching is the collection balance still to allocate to a deposit or remittance."
+    "result": "Awaiting matching is the collection balance still to allocate to a deposit or remittance.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "collections",
@@ -380,9 +414,10 @@
     "steps": [
       "Enter the payer and choose the collection category.",
       "Enter the amount in pesos and describe the particulars.",
-      "Choose Issue demo receipt. The example records ₱1,000.00 for Training Payer."
+      "Choose Issue receipt. The example records ₱1,000.00 for Training Payer."
     ],
-    "result": "The application assigns the receipt number; the new receipt starts with an unmatched balance."
+    "result": "The application assigns the receipt number; the new receipt starts with an unmatched balance.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "collections",
@@ -393,7 +428,8 @@
       "Verify the receipt number, amount, category and particulars.",
       "Continue to Deposits & remittances when the real treasury movement is ready."
     ],
-    "result": "Saving a receipt does not automatically match it to a bank deposit."
+    "result": "Saving a receipt does not automatically match it to a bank deposit.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "deposits",
@@ -404,7 +440,8 @@
       "Enter the bank and the real reference or acknowledgment.",
       "Select the receipt checkbox; adjust the allocation in pesos for a partial match."
     ],
-    "result": "This image allocates the complete ₱1,000.00 training receipt. Batch total equals the selected allocations."
+    "result": "This image allocates the complete ₱1,000.00 training receipt. Batch total equals the selected allocations.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "deposits",
@@ -415,7 +452,8 @@
       "Verify its type, bank, total and allocated receipt.",
       "Check that the receipt’s unmatched balance has decreased by the allocation."
     ],
-    "result": "A confirmed bank deposit moves the selected amount from cash to bank."
+    "result": "A confirmed bank deposit moves the selected amount from cash to bank.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "deposits",
@@ -426,7 +464,8 @@
       "Enter the receiving treasury and acknowledgment reference.",
       "Select the receipts and allocations, review Batch total, then confirm when correct."
     ],
-    "result": "A remittance reduces cash and increases remitted collections. Use a bank deposit for movements into the bank."
+    "result": "A remittance reduces cash and increases remitted collections. Use a bank deposit for movements into the bank.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "reports",
@@ -437,7 +476,8 @@
       "Check the fiscal year, displayed columns and totals against the underlying registers.",
       "Choose CSV for data or Print / Save PDF for the selected report. Print / Save all reports combines the available previews."
     ],
-    "result": "The report shown is a working preview drawn from the demo records."
+    "result": "The report shown is a working preview drawn from the demo records.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "reports",
@@ -448,18 +488,20 @@
       "In the browser print dialog, choose Save as PDF as the destination.",
       "Review the pages, then choose Save and select the file location."
     ],
-    "result": "This image shows the printable document; the browser’s print dialog varies by device. System copies do not replace prescribed official forms."
+    "result": "This image shows the printable document; the browser’s print dialog varies by device. System copies do not replace prescribed official forms.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "reports",
     "id": "audit-trail",
     "title": "Trace the actions in the audit trail",
     "steps": [
-      "Open Audit trail.",
-      "Find the record reference or action you need to review.",
-      "Compare its time, actor and details with the expense, receipt or treasury register."
+      "Open Audit trail. Search by name, email or record, then narrow the log with Action, Account and Manila date filters.",
+      "Events are grouped by date. Expand Event details to inspect the account ID, event ID and full recorded details.",
+      "Use Next / Previous and Rows per page to browse. Export filtered log includes all matching loaded events across pages."
     ],
-    "result": "Use the audit trail with the linked financial records when reconciling or following up a discrepancy."
+    "result": "Super admin actions identify the Super admin account; actions are not attributed to the staff member whose access is being changed.",
+    "capturedOn": "3 November 2026"
   },
   {
     "chapter": "signin",
@@ -470,6 +512,7 @@
       "In live mode, use the account section to change your password when needed.",
       "Restore demo data resets this browser’s training records; use it only when you intend to restart practice."
     ],
-    "result": "Settings remains available even when an account has no selected financial pages."
+    "result": "Settings remains available even when an account has no selected financial pages.",
+    "capturedOn": "3 November 2026"
   }
 ]

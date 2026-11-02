@@ -17,6 +17,24 @@ registerHooks({
 const builders = await import("../src/features/reports/financial-documents.ts");
 const { buildReports } = await import("../src/features/reports/report-data.ts");
 
+test("audit exports retain performer name, email and account ID", () => {
+  const document = builders.auditDocument([
+    {
+      ...seedData.audit[0],
+      actor: "Auditor Person",
+      actorEmail: "audit@example.test",
+      actorId: "user-id",
+    },
+  ]);
+  const record = Object.fromEntries(
+    document.columns.map((column, i) => [column, document.rows[0][i]]),
+  );
+  assert.equal(record["Performed by"], "Auditor Person");
+  assert.equal(record["Account email"], "audit@example.test");
+  assert.equal(record["Account ID"], "user-id");
+  assert.equal(document.columns.length, document.rows[0].length);
+});
+
 test("register exports include only the supplied filtered records", () => {
   const documents = [
     builders.budgetDocument(seedData, seedData.budgetLines.slice(0, 1)),

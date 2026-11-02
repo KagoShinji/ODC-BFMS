@@ -12,6 +12,7 @@ import {
 } from "react";
 import type {
   BudgetLine,
+  AuditEvent,
   CashAdvance,
   Collection,
   Deposit,
@@ -75,7 +76,16 @@ interface FinanceContextValue {
 
 const FinanceContext = createContext<FinanceContextValue | null>(null);
 
-function audit(data: FinanceData, action: string, subject: string, detail: string): FinanceData {
+type DemoActor = Pick<AuditEvent, "actor" | "actorEmail" | "actorId">;
+const defaultDemoActor: DemoActor = { actor: "Demo user", actorEmail: "demo@odc.local" };
+
+function appendAudit(
+  data: FinanceData,
+  action: string,
+  subject: string,
+  detail: string,
+  actor: DemoActor,
+): FinanceData {
   return {
     ...data,
     audit: [
@@ -85,7 +95,7 @@ function audit(data: FinanceData, action: string, subject: string, detail: strin
         subject,
         detail,
         at: new Date().toISOString(),
-        actor: "Demo user",
+        ...actor,
       },
       ...data.audit,
     ],
@@ -100,6 +110,7 @@ export function FinanceProvider({
   liveApproval = false,
   livePayment = false,
   exportError,
+  demoActor = defaultDemoActor,
 }: {
   children: ReactNode;
   /** Live mode: shows `initialData`; changes are blocked unless `liveRecording`. */
@@ -112,11 +123,17 @@ export function FinanceProvider({
   /** Allows payment recording for a treasurer without enabling other writes. */
   livePayment?: boolean;
   exportError?: string;
+  demoActor?: DemoActor;
 }) {
   const router = useRouter();
   const { confirm, success: showSuccess, error: showError } = useFeedback();
   const [data, setData] = useState<FinanceData>(initialData ?? seedData);
   const [loaded, setLoaded] = useState(preview);
+  const audit = useCallback(
+    (current: FinanceData, action: string, subject: string, detail: string) =>
+      appendAudit(current, action, subject, detail, demoActor),
+    [demoActor],
+  );
 
   useEffect(() => {
     if (preview) return;
@@ -537,7 +554,7 @@ export function FinanceProvider({
         return success(`${line.code} added to the budget.`, line.id);
       },
     }),
-    [data, loaded, preview, fail, success],
+    [data, loaded, preview, fail, success, audit],
   );
 
   const providerValue = useMemo<FinanceContextValue>(() => {

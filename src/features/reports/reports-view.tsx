@@ -1,5 +1,8 @@
 "use client";
 
+import { usePagination } from "@/hooks/use-pagination";
+import { TablePagination } from "@/components/ui/table-pagination";
+
 import { useState } from "react";
 import { Download, FileBarChart2 } from "lucide-react";
 import { PdfButton } from "@/components/financial/pdf-button";
@@ -19,6 +22,7 @@ export function ReportsView() {
   const [selectedId, setSelectedId] = useState<ReportId>("rao");
   const reports = buildReports(data, !preview);
   const selected = reports.find((item) => item.id === selectedId)!;
+  const pagination = usePagination(selected.rows, JSON.stringify([data.barangay, selectedId]));
   function downloadCsv() {
     if (!selected.columns.length) return;
     const lines = [selected.columns, ...selected.rows].map((row) => row.map(csvCell).join(","));
@@ -92,35 +96,38 @@ export function ReportsView() {
           </CardHeader>
           <CardContent>
             {selected.columns.length ? (
-              <div className="odc-scrollbar overflow-x-auto rounded-lg border border-border">
-                <table className={tableClass}>
-                  <thead>
-                    <tr>
-                      {selected.columns.map((column) => (
-                        <th key={column} className={thClass}>
-                          {column}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selected.rows.map((row, index) => (
-                      <tr key={index}>
-                        {row.map((cell, cellIndex) => (
-                          <td key={cellIndex} className={tdClass}>
-                            {cell}
-                          </td>
+              <>
+                <div className="odc-scrollbar overflow-x-auto rounded-lg border border-border">
+                  <table className={tableClass}>
+                    <thead>
+                      <tr>
+                        {selected.columns.map((column) => (
+                          <th key={column} className={thClass}>
+                            {column}
+                          </th>
                         ))}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-                {!selected.rows.length && (
-                  <p className="p-8 text-center text-sm text-muted-foreground">
-                    No records for this report yet.
-                  </p>
-                )}
-              </div>
+                    </thead>
+                    <tbody>
+                      {pagination.items.map((row, index) => (
+                        <tr key={index}>
+                          {row.map((cell, cellIndex) => (
+                            <td key={cellIndex} className={tdClass}>
+                              {cell}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {!selected.rows.length && (
+                    <p className="p-8 text-center text-sm text-muted-foreground">
+                      No records for this report yet.
+                    </p>
+                  )}
+                </div>
+                <TablePagination pagination={pagination} label="Report rows" />
+              </>
             ) : (
               <div className="flex min-h-64 flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted p-6 text-center">
                 <FileBarChart2 size={27} className="text-muted-foreground" />

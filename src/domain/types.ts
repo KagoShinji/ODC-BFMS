@@ -93,6 +93,8 @@ export interface AuditEvent {
   detail: string;
   at: string;
   actor: string;
+  actorEmail?: string;
+  actorId?: string;
 }
 
 export interface FinanceData {

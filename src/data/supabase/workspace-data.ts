@@ -1,6 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type {
-  AuditEvent,
   BudgetLine,
   ExpenseKind,
   ExpenseStep,
@@ -8,6 +7,7 @@ import type {
   VoucherStatus,
 } from "@/domain/types";
 import { todayManila } from "@/lib/utils";
+import { auditEventFromRow, type AuditRow } from "@/lib/audit";
 
 const lineColors = ["#f56618", "#3a86a2", "#698765", "#aa7b53", "#8e719b", "#b65d4e"];
 const categories: BudgetLine["category"][] = [
@@ -23,8 +23,41 @@ const centavos = (value: unknown) => Math.round(Number(value) * 100);
 const manilaDate = (value: string) =>
   new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Manila" }).format(new Date(value));
 
-const humanize = (value: string) =>
-  value.replace(/_/g, " ").replace(/^\w/, (char) => char.toUpperCase());
+async function loadAuditRows(supabase: SupabaseClient, barangayId: string) {
+  const result = await supabase.rpc("get_audit_events", {
+    p_barangay_id: barangayId,
+    p_limit: 200,
+  });
+  if (!result.error || !["PGRST202", "42883"].includes(result.error.code)) {
+    return { data: (result.data ?? []) as AuditRow[], error: result.error };
+  }
+  // Compatibility before the identity migration: retain the existing RLS read.
+  // Only profiles this caller already has permission to see are resolved.
+  const legacy = await supabase
+    .from("audit_events")
+    .select("id, actor_id, action, subject_type, detail, created_at")
+    .eq("barangay_id", barangayId)
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
+    .limit(200);
+  const rows = (legacy.data ?? []) as AuditRow[];
+  if (!rows.length) return { data: rows, error: legacy.error };
+  const profiles = await supabase
+    .from("staff_profiles")
+    .select("user_id, full_name, email")
+    .in("user_id", [...new Set(rows.map((row) => row.actor_id))]);
+  const actors = new Map<string, { full_name: string; email: string }>(
+    (profiles.data ?? []).map((profile) => [profile.user_id, profile]),
+  );
+  return {
+    data: rows.map((row) => ({
+      ...row,
+      actor_name: actors.get(row.actor_id)?.full_name,
+      actor_email: actors.get(row.actor_id)?.email,
+    })),
+    error: legacy.error,
+  };
+}
 
 export function emptyFinanceData(barangay: string): FinanceData {
   return {
@@ -98,12 +131,7 @@ export async function loadFinanceData(
       .from("deposit_allocations")
       .select("deposit_id, collection_id, amount")
       .eq("barangay_id", id),
-    supabase
-      .from("audit_events")
-      .select("id, actor_id, action, subject_type, detail, created_at")
-      .eq("barangay_id", id)
-      .order("created_at", { ascending: false })
-      .limit(200),
+    loadAuditRows(supabase, id),
     supabase
       .from("cash_advances")
       .select("id, voucher_id, accountable_person, amount, opened_at")
@@ -201,25 +229,7 @@ export async function loadFinanceData(
       })),
   }));
 
-  const actorIds = [...new Set((audit.data ?? []).map((item) => item.actor_id as string))];
-  const actors = new Map<string, string>();
-  if (actorIds.length) {
-    const { data: profiles } = await supabase
-      .from("staff_profiles")
-      .select("user_id, full_name")
-      .in("user_id", actorIds);
-    (profiles ?? []).forEach((profile) => actors.set(profile.user_id, profile.full_name));
-  }
-  data.audit = (audit.data ?? []).map((item): AuditEvent => ({
-    id: item.id,
-    action: humanize(item.action),
-    subject: humanize(item.subject_type),
-    detail: Object.entries((item.detail ?? {}) as Record<string, unknown>)
-      .map(([key, value]) => `${humanize(key)}: ${String(value)}`)
-      .join(" · "),
-    at: item.created_at,
-    actor: actors.get(item.actor_id) ?? "Staff member",
-  }));
+  data.audit = (audit.data ?? []).map(auditEventFromRow);
 
   return {
     data,

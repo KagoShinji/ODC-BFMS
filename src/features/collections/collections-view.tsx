@@ -1,5 +1,8 @@
 "use client";
 
+import { usePagination } from "@/hooks/use-pagination";
+import { TablePagination } from "@/components/ui/table-pagination";
+
 import { useState, type FormEvent } from "react";
 import { PageLink as Link } from "@/components/layout/page-access-provider";
 import { ArrowRight, Plus, ReceiptText, X } from "lucide-react";
@@ -45,6 +48,7 @@ export function CollectionsView() {
       .toLowerCase()
       .includes(query.toLowerCase()),
   );
+  const pagination = usePagination(rows, JSON.stringify([query, data.barangay]));
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const cents = parseMoney(amount);
@@ -164,7 +168,7 @@ export function CollectionsView() {
               </label>
               <div className="flex justify-end sm:col-span-2 xl:col-span-3">
                 <Button type="submit" variant="accent">
-                  Issue demo receipt
+                  Issue receipt
                 </Button>
               </div>
             </Form>
@@ -200,7 +204,7 @@ export function CollectionsView() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((item) => (
+              {pagination.items.map((item) => (
                 <tr key={item.id} className="hover:bg-accent">
                   <td className={tdClass}>
                     <div className="font-bold text-foreground">{item.receiptNumber}</div>
@@ -252,6 +256,7 @@ export function CollectionsView() {
             </Link>
           </Button>
         </div>
+        <TablePagination pagination={pagination} label="Collections" />
       </Card>
     </>
   );

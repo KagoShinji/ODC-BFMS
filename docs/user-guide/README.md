@@ -1,6 +1,6 @@
 # Handbook screenshots
 
-The handbook contains actual application screenshots captured on 31 October 2026 with synthetic records in a dedicated local **Super admin demo** session. Orange outlines identify the relevant control or record. Each image has numbered instructions and an expected result in the handbook. Open an image in the HTML edition to view it at full size.
+The handbook contains actual application screenshots with synthetic records in a dedicated local **Super admin demo** session. Each screen’s capture date is recorded in `screens.json` and shown in its caption. Orange outlines identify the relevant control or record. Each image has numbered instructions and an expected result in the handbook. Open an image in the HTML edition to view it at full size.
 
 The demo omits live-only barangay onboarding, branding scope selection, initial staff passwords and password changes. The handbook identifies these differences instead of presenting a demo screen as a live screen. No live financial records or environment secrets are captured.
 

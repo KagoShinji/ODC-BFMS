@@ -1,5 +1,8 @@
 "use client";
 
+import { usePagination } from "@/hooks/use-pagination";
+import { TablePagination } from "@/components/ui/table-pagination";
+
 import { useState, type FormEvent } from "react";
 import { PageLink as Link } from "@/components/layout/page-access-provider";
 import { ArrowRight, Landmark, Plus, X } from "lucide-react";
@@ -23,6 +26,7 @@ import {
 
 export function DepositsView() {
   const { data, createDeposit } = useFinance();
+  const pagination = usePagination(data.deposits, JSON.stringify([data.barangay]));
   const [open, setOpen] = useState(false);
   const [kind, setKind] = useState<Deposit["kind"]>("deposit");
   const [bank, setBank] = useState("Land Bank");
@@ -207,7 +211,7 @@ export function DepositsView() {
                   </div>
                 </div>
                 <Button type="submit" variant="accent" disabled={!allocationEntries.length}>
-                  Confirm demo batch <ArrowRight size={15} />
+                  Confirm batch <ArrowRight size={15} />
                 </Button>
               </div>
             </Form>
@@ -237,7 +241,7 @@ export function DepositsView() {
               </tr>
             </thead>
             <tbody>
-              {data.deposits.map((item) => (
+              {pagination.items.map((item) => (
                 <tr key={item.id} className="hover:bg-accent">
                   <td className={`${tdClass} font-bold text-foreground`}>{item.number}</td>
                   <td className={tdClass}>
@@ -272,6 +276,7 @@ export function DepositsView() {
             </tbody>
           </table>
         </div>
+        <TablePagination pagination={pagination} label="Deposits and remittances" />
       </Card>
     </>
   );

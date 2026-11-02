@@ -146,7 +146,7 @@ export function DashboardView() {
                     <span className="rounded-lg bg-brand-soft px-2 py-1 font-bold text-brand-ink">
                       {formatMoney(totals.paid)} paid
                     </span>
-                    <span>to date in this demo</span>
+                    <span>to date</span>
                   </div>
                 </div>
               </div>

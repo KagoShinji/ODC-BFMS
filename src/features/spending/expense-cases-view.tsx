@@ -1,5 +1,8 @@
 "use client";
 
+import { usePagination } from "@/hooks/use-pagination";
+import { TablePagination } from "@/components/ui/table-pagination";
+
 import { useEffect, useState, type FormEvent } from "react";
 import { PageLink as Link } from "@/components/layout/page-access-provider";
 import { ArrowRight, Check, ChevronRight, Plus, X } from "lucide-react";
@@ -43,6 +46,7 @@ export function ExpenseCasesView({ kind }: { kind?: ExpenseKind }) {
       (!kind || item.kind === kind) &&
       `${item.reference} ${item.purpose} ${item.payee}`.toLowerCase().includes(query.toLowerCase()),
   );
+  const pagination = usePagination(cases, JSON.stringify([query, kind, data.barangay]));
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const cents = parseMoney(amount);
@@ -100,8 +104,8 @@ export function ExpenseCasesView({ kind }: { kind?: ExpenseKind }) {
               ))}
             </div>
             <p className="mt-3 text-[11px] text-muted-foreground">
-              This demo advances document stages. Required quotations, approvals, and inspection
-              evidence are specified in the implementation plan for the live workflow.
+              Track the request through its document stages. Keep the corresponding quotations,
+              approvals and inspection evidence with your records.
             </p>
           </CardContent>
         </Card>
@@ -227,7 +231,7 @@ export function ExpenseCasesView({ kind }: { kind?: ExpenseKind }) {
               </tr>
             </thead>
             <tbody>
-              {cases.map((item) => (
+              {pagination.items.map((item) => (
                 <tr key={item.id} className="hover:bg-accent">
                   <td className={tdClass}>
                     <div className="font-bold text-foreground">{item.reference}</div>
@@ -245,41 +249,43 @@ export function ExpenseCasesView({ kind }: { kind?: ExpenseKind }) {
                     {formatMoney(item.amount)}
                   </td>
                   <td className={`${tdClass} text-right`}>
-                    <PdfButton documents={[expenseDocument(data, item)]} label="PDF" />
-                    {item.voucherId ? (
-                      <Link
-                        className="inline-flex items-center gap-1 font-bold text-brand-ink hover:underline"
-                        href="/disbursements"
-                      >
-                        View DV <ArrowRight size={13} />
-                      </Link>
-                    ) : item.step === "Ready for DV" ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        loading={actions.pending === `voucher:${item.id}`}
-                        loadingText="Creating…"
-                        disabled={actions.pending !== null}
-                        onClick={() =>
-                          actions.run(`voucher:${item.id}`, () => createVoucher(item.id))
-                        }
-                      >
-                        Create DV
-                      </Button>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        loading={actions.pending === `advance:${item.id}`}
-                        loadingText="Updating…"
-                        disabled={actions.pending !== null}
-                        onClick={() =>
-                          actions.run(`advance:${item.id}`, () => advanceCase(item.id))
-                        }
-                      >
-                        Complete {item.step} <Check size={13} />
-                      </Button>
-                    )}
+                    <div className="flex items-center justify-end gap-3">
+                      <PdfButton documents={[expenseDocument(data, item)]} label="PDF" />
+                      {item.voucherId ? (
+                        <Link
+                          className="inline-flex items-center gap-1 whitespace-nowrap font-bold text-brand-ink hover:underline"
+                          href="/disbursements"
+                        >
+                          View DV <ArrowRight size={13} />
+                        </Link>
+                      ) : item.step === "Ready for DV" ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          loading={actions.pending === `voucher:${item.id}`}
+                          loadingText="Creating…"
+                          disabled={actions.pending !== null}
+                          onClick={() =>
+                            actions.run(`voucher:${item.id}`, () => createVoucher(item.id))
+                          }
+                        >
+                          Create DV
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          loading={actions.pending === `advance:${item.id}`}
+                          loadingText="Updating…"
+                          disabled={actions.pending !== null}
+                          onClick={() =>
+                            actions.run(`advance:${item.id}`, () => advanceCase(item.id))
+                          }
+                        >
+                          Complete {item.step} <Check size={13} />
+                        </Button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -291,6 +297,7 @@ export function ExpenseCasesView({ kind }: { kind?: ExpenseKind }) {
             </p>
           )}
         </div>
+        <TablePagination pagination={pagination} label="Expense cases" />
       </Card>
     </>
   );

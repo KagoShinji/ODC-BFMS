@@ -254,7 +254,15 @@ export function advanceDocument(data: FinanceData, item: CashAdvance): PrintDocu
 export function auditDocument(items: AuditEvent[]): PrintDocument {
   return {
     title: "Activity and audit trail",
-    columns: ["Time (Asia/Manila)", "Actor", "Action", "Subject", "Detail"],
+    columns: [
+      "Time (Asia/Manila)",
+      "Performed by",
+      "Account email",
+      "Account ID",
+      "Action",
+      "Subject",
+      "Detail",
+    ],
     rows: items.map((item) => [
       new Date(item.at).toLocaleString("en-PH", {
         timeZone: "Asia/Manila",
@@ -262,6 +270,8 @@ export function auditDocument(items: AuditEvent[]): PrintDocument {
         timeStyle: "short",
       }),
       item.actor,
+      item.actorEmail || "Unavailable",
+      item.actorId || "Unavailable",
       item.action,
       item.subject,
       item.detail,

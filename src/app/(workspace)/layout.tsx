@@ -9,6 +9,7 @@ import {
   canApproveVoucherForBarangay,
   canRecordLive,
   canRecordPaymentForBarangay,
+  accessLabel,
 } from "@/lib/auth/roles";
 import { getWorkspaceSession } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
@@ -23,7 +24,9 @@ export default async function WorkspaceLayout({ children }: { children: React.Re
   if (account.mode === "demo")
     return (
       <PageAccessProvider pages={pages}>
-        <FinanceProvider>
+        <FinanceProvider
+          demoActor={{ actor: `Demo ${accessLabel[account.level]}`, actorEmail: account.email }}
+        >
           <AppShell account={account}>{children}</AppShell>
         </FinanceProvider>
       </PageAccessProvider>

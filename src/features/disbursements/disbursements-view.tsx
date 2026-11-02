@@ -1,5 +1,8 @@
 "use client";
 
+import { usePagination } from "@/hooks/use-pagination";
+import { TablePagination } from "@/components/ui/table-pagination";
+
 import { useEffect, useState } from "react";
 import { PageLink as Link } from "@/components/layout/page-access-provider";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -56,6 +59,7 @@ export function DisbursementsView() {
       (status === "all" || item.status === status) &&
       `${item.number} ${item.payee} ${item.purpose}`.toLowerCase().includes(query.toLowerCase()),
   );
+  const pagination = usePagination(rows, JSON.stringify([query, status, data.barangay]));
   async function pay() {
     if (!selected) return;
     await actions.run("payment", async () => {
@@ -149,7 +153,7 @@ export function DisbursementsView() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((item) => (
+              {pagination.items.map((item) => (
                 <tr
                   key={item.id}
                   onClick={() => setSelectedId(item.id)}
@@ -183,6 +187,7 @@ export function DisbursementsView() {
             </p>
           )}
         </div>
+        <TablePagination pagination={pagination} label="Disbursement vouchers" />
       </Card>
       {selected && (
         <div
@@ -342,7 +347,7 @@ export function DisbursementsView() {
               )}
               {selected.status === "rejected" && (
                 <p className="rounded-lg bg-danger-soft p-3 text-xs text-danger">
-                  This demo voucher was rejected. Create a new expense case to revise the request.
+                  This voucher was rejected. Create a new expense case to revise the request.
                 </p>
               )}
             </div>

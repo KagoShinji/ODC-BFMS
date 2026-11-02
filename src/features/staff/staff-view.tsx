@@ -1,5 +1,8 @@
 "use client";
 
+import { usePagination } from "@/hooks/use-pagination";
+import { TablePagination } from "@/components/ui/table-pagination";
+
 import { useId, useState, type FormEvent, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -154,6 +157,7 @@ function StaffDirectoryView({
       .toLowerCase()
       .includes(query.toLowerCase()),
   );
+  const pagination = usePagination(filtered, JSON.stringify([query, scope]));
   const activeAdmins = members.filter((member) => member.active && member.role === "admin");
   const activeStaff = members.filter((member) => member.active && member.role !== "admin");
   const people = new Set(members.map((member) => member.userId)).size;
@@ -452,7 +456,7 @@ function StaffDirectoryView({
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((member) => {
+                {pagination.items.map((member) => {
                   const allowed = canManageRole(level, member.role);
                   return (
                     <tr key={`${member.userId}-${member.role}`}>
@@ -540,6 +544,7 @@ function StaffDirectoryView({
             />
           )}
         </CardContent>
+        <TablePagination pagination={pagination} label="Staff accounts" />
       </Card>
       <p className="mt-4 text-xs leading-5 text-muted-foreground">{footnote}</p>
       <Dialog
