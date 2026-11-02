@@ -87,6 +87,32 @@ test("batch reports have a header per document, page breaks and landscape for wi
   assert.throws(() => renderPrintDocument([], identity), /Choose at least one/);
 });
 
+test("formal copies retain safe references, blank signatories and right-aligned amounts", () => {
+  const html = renderPrintDocument(
+    [
+      {
+        ...report,
+        reference: "<DV-2026-001>",
+        signatureLabels: ["Prepared by <staff>", "Reviewed by"],
+        rows: [
+          ["ACCOUNT-001", "₱1,000.00"],
+          ["ACCOUNT-002", "-₱250.00"],
+        ],
+      },
+    ],
+    identity,
+  );
+  assert.match(html, /Reference:<\/strong> &lt;DV-2026-001&gt;/);
+  assert.match(html, /Prepared by &lt;staff&gt;:/);
+  assert.equal((html.match(/Signature over printed name/g) ?? []).length, 2);
+  assert.match(html, /<th scope="col" class="amount">Amount<\/th>/);
+  assert.match(html, /<td class="amount">-₱250.00<\/td>/);
+  assert.match(html, /<td>ACCOUNT-001<\/td>/);
+  assert.match(html, /counter\(page\).*counter\(pages\)/);
+  assert.match(html, /End of schedule · 2 entries/);
+  assert.doesNotMatch(html, /DEMO — sample records|Approved by|Certified correct/);
+});
+
 test("print waits for logo decode, prints only the isolated frame, and cleans up", async () => {
   const original = globalThis.document;
   const calls = [];

@@ -3,6 +3,8 @@ import type { Branding } from "./branding";
 export interface PrintDocument {
   title: string;
   description?: string;
+  reference?: string;
+  signatureLabels?: string[];
   fields?: [string, string][];
   columns?: string[];
   rows?: string[][];
@@ -23,6 +25,13 @@ function escapeHtml(value: string) {
   });
 }
 
+/** Give narrative columns room while keeping amounts readable in narrow schedules. */
+function columnWeight(label: string) {
+  if (/detail|description|particulars|purpose|budget line/i.test(label)) return 2.5;
+  if (/account id|email|time/i.test(label)) return 1.8;
+  return 1.3;
+}
+
 /** A self-contained document: no app navigation, controls, scripts or remote styles. */
 export function renderPrintDocument(documents: PrintDocument[], identity: PrintIdentity) {
   if (!documents.length) throw new Error("Choose at least one document to export.");
@@ -40,40 +49,92 @@ export function renderPrintDocument(documents: PrintDocument[], identity: PrintI
   const content = documents
     .map((item) => {
       const fields = item.fields?.length
-        ? `<dl>${item.fields.map(([key, value]) => `<div><dt>${escapeHtml(key)}</dt><dd>${escapeHtml(value)}</dd></div>`).join("")}</dl>`
+        ? `<section class="particulars"><h3>I. Record particulars</h3><dl>${item.fields.map(([key, value]) => `<div><dt>${escapeHtml(key)}</dt><dd>${escapeHtml(value)}</dd></div>`).join("")}</dl></section>`
         : "";
-      const table = item.columns?.length
-        ? `<table><thead><tr>${item.columns.map((column) => `<th scope="col">${escapeHtml(column)}</th>`).join("")}</tr></thead><tbody>${item.rows?.length ? item.rows.map((row) => `<tr>${row.map((cell) => `<td>${escapeHtml(cell)}</td>`).join("")}</tr>`).join("") : `<tr><td colspan="${item.columns.length}">No records for this document.</td></tr>`}</tbody></table>`
+      const columns = item.columns ?? [];
+      const rows = item.rows ?? [];
+      const totalWeight = columns.reduce((sum, column) => sum + columnWeight(column), 0);
+      const numeric = (cell: string) => /^-?₱[\d,]+\.\d{2}$/.test(cell.trim());
+      const moneyColumns = columns.map((_, index) => rows.some((row) => numeric(row[index] ?? "")));
+      const table = columns.length
+        ? `<section class="schedule"><h3>${fields ? "II" : "I"}. Schedule of records</h3><table><caption class="sr-only">${escapeHtml(item.title)}</caption><colgroup>${columns.map((column) => `<col style="width:${((columnWeight(column) / totalWeight) * 100).toFixed(2)}%">`).join("")}</colgroup><thead><tr>${columns.map((column, index) => `<th scope="col"${moneyColumns[index] ? ' class="amount"' : ""}>${escapeHtml(column)}</th>`).join("")}</tr></thead><tbody>${rows.length ? rows.map((row) => `<tr>${row.map((cell, index) => `<td${moneyColumns[index] ? ' class="amount"' : ""}>${escapeHtml(cell)}</td>`).join("")}</tr>`).join("") : `<tr><td class="empty" colspan="${columns.length}">No records for this document.</td></tr>`}</tbody></table><p class="record-count">End of schedule · ${rows.length} ${rows.length === 1 ? "entry" : "entries"}</p></section>`
         : "";
+      const signatures = (item.signatureLabels ?? ["Prepared by", "Reviewed by"])
+        .map(
+          (label) =>
+            `<div class="signature"><p class="signature-label">${escapeHtml(label)}:</p><div class="signature-space"></div><p class="signature-name">Signature over printed name</p><div class="signature-details"><p class="designation">Position / designation: <span></span></p><p class="designation">Date: <span></span></p></div></div>`,
+        )
+        .join("");
       return `<article>
-      <header>${logo}<div><p>Republic of the Philippines</p><h1>${escapeHtml(identity.barangay)}</h1><p>Fiscal year ${identity.fiscalYear} · ${identity.demo ? "DEMO — sample records" : "Live records"}</p></div></header>
-      <h2>${escapeHtml(item.title)}</h2>
-      ${item.description ? `<p>${escapeHtml(item.description)}</p>` : ""}
+      ${identity.demo ? '<div class="demo-banner">DEMO — sample records</div>' : ""}
+      <header>${logo}<div class="letterhead"><p>Republic of the Philippines</p><h1>${escapeHtml(identity.barangay)}</h1><p class="office">Barangay Government</p></div><div aria-hidden="true"></div></header>
+      <div class="document-heading"><h2>${escapeHtml(item.title)}</h2>${item.description ? `<p class="description">${escapeHtml(item.description)}</p>` : ""}</div>
+      <div class="document-meta"><p>Fiscal year ${identity.fiscalYear} · ${identity.demo ? "DEMO — sample records" : "Live records"}</p><p><strong>Copy:</strong> System record copy</p>${item.reference ? `<p><strong>Reference:</strong> ${escapeHtml(item.reference)}</p>` : ""}<p><strong>Generated:</strong> ${escapeHtml(generated)} (Asia/Manila)</p></div>
       ${fields}${table}
-      ${item.note ? `<p class="note">${escapeHtml(item.note)}</p>` : ""}
-      <footer>${escapeHtml(branding.appName)}${branding.organizationName ? ` · ${escapeHtml(branding.organizationName)}` : ""}<br>Generated ${escapeHtml(generated)} (Asia/Manila)</footer>
+      ${item.note ? `<aside class="note"><strong>Record notes.</strong> ${escapeHtml(item.note)}</aside>` : ""}
+      <div class="document-closing">${signatures ? `<section class="signatures" aria-label="Preparation and review signatures">${signatures}</section>` : ""}
+      <footer><span>${escapeHtml(branding.appName)}${branding.organizationName ? ` · ${escapeHtml(branding.organizationName)}` : ""}</span><span>Computer-generated record · FY ${identity.fiscalYear}</span></footer></div>
     </article>`;
     })
     .join("");
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${escapeHtml(title)}</title>
     <style>
-      @page { size: A4 ${landscape ? "landscape" : "portrait"}; margin: 14mm; }
+      @page {
+        size: A4 ${landscape ? "landscape" : "portrait"}; margin: 15mm 14mm 18mm;
+        @bottom-left { content: "System record copy"; font: 8pt Arial, sans-serif; color: #444; }
+        @bottom-right { content: "Page " counter(page) " of " counter(pages); font: 8pt Arial, sans-serif; color: #444; }
+      }
       * { box-sizing: border-box; }
-      body { margin: 0; color: #172a3b; background: white; font: 11px/1.5 Arial, sans-serif; }
+      body { margin: 0; color: #111; background: #fff; font: 10pt/1.4 Arial, sans-serif; }
       article + article { break-before: page; }
-      header { display: flex; align-items: center; justify-content: center; gap: 18px; text-align: center; border-bottom: 2px solid #172a3b; padding-bottom: 16px; margin-bottom: 20px; break-inside: avoid; }
-      header img, .mark { width: 72px; height: 72px; object-fit: contain; flex-shrink: 0; }
-      .mark { display: grid; place-items: center; border: 1px solid #526575; border-radius: 50%; font-size: 20px; font-weight: bold; }
-      h1 { font-size: 21px; margin: 4px 0; } h2 { font-size: 17px; margin: 0 0 8px; }
-      p { margin: 4px 0 12px; } header p { margin: 0; }
-      dl { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; border: 1px solid #ccd2d6; padding: 16px; margin: 16px 0; }
-      dl div { break-inside: avoid; } dt { font-size: 10px; color: #526575; } dd { margin: 3px 0 0; font-size: 12px; font-weight: bold; white-space: pre-wrap; overflow-wrap: anywhere; }
-      table { width: 100%; border-collapse: collapse; margin-top: 16px; table-layout: fixed; }
+      header { display: grid; grid-template-columns: 22mm minmax(0, 1fr) 22mm; align-items: center; gap: 5mm; text-align: center; border-bottom: 3px double #111; padding: 0 0 4mm; margin-bottom: 5mm; break-inside: avoid; }
+      header img, .mark { width: 21mm; height: 21mm; object-fit: contain; }
+      .mark { display: grid; place-items: center; border: 1px solid #777; font: bold 16pt Arial, sans-serif; }
+      .letterhead { font-family: "Times New Roman", Times, serif; }
+      header p { margin: 0; font-size: 11pt; }
+      h1 { font-size: 17pt; line-height: 1.2; margin: 1.5mm 0; text-transform: uppercase; overflow-wrap: anywhere; }
+      .office { font-size: 9pt; letter-spacing: 1.5px; text-transform: uppercase; }
+      .document-heading { text-align: center; margin: 0 0 5mm; break-inside: avoid; break-after: avoid; }
+      h2 { font: bold 14pt/1.3 "Times New Roman", Times, serif; text-transform: uppercase; letter-spacing: .6px; margin: 0; }
+      .description { margin: 2mm auto 0; max-width: 85%; font-size: 9pt; }
+      .document-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 2mm 5mm; border-top: 1px solid #111; border-bottom: 1px solid #111; padding: 2.5mm 0; margin-bottom: 5mm; font-size: 8.5pt; break-inside: avoid; }
+      .document-meta p { margin: 0; overflow-wrap: anywhere; }
+      h3 { font-size: 9pt; letter-spacing: .5px; text-transform: uppercase; margin: 5mm 0 2mm; break-after: avoid; }
+      dl { display: grid; grid-template-columns: 1fr 1fr; margin: 0; border-left: 1px solid #555; border-top: 1px solid #555; }
+      dl div { padding: 2.5mm 3mm; border-right: 1px solid #555; border-bottom: 1px solid #555; break-inside: avoid; }
+      dl div:last-child:nth-child(odd) { grid-column: 1 / -1; }
+      dt { font-size: 8pt; color: #444; } dd { margin: 1mm 0 0; font-size: 10pt; font-weight: bold; white-space: pre-wrap; overflow-wrap: anywhere; }
+      table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: ${landscape ? "8" : "9"}pt; }
       thead { display: table-header-group; } tr { break-inside: avoid; }
-      th, td { padding: 8px; border: 1px solid #ccd2d6; text-align: left; vertical-align: top; overflow-wrap: anywhere; white-space: pre-wrap; }
-      th { background: #f1f3f1; font-size: 10px; } .note { margin-top: 16px; padding: 10px; border: 1px solid #ccd2d6; }
-      footer { margin-top: 24px; color: #526575; font-size: 9px; border-top: 1px solid #ccd2d6; padding-top: 8px; }
-      h2 { break-after: avoid; }
+      th, td { padding: 2.2mm 2mm; border: .6pt solid #555; text-align: left; vertical-align: top; overflow-wrap: anywhere; white-space: pre-wrap; }
+      th { background: #eee; color: #111; font-size: 8pt; font-weight: bold; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .amount { text-align: right; font-variant-numeric: tabular-nums; } td.amount { white-space: nowrap; }
+      .empty { text-align: center; padding: 6mm; } .record-count { text-align: right; margin: 2mm 0 0; font-size: 8pt; color: #444; }
+      .note { margin-top: 5mm; padding: 2.5mm 0; border-top: 1px solid #888; font-size: 8pt; line-height: 1.5; overflow-wrap: anywhere; }
+      .document-closing { break-inside: avoid; }
+      .signatures { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12mm; margin-top: 7mm; break-inside: avoid; }
+      .signature { font-size: 9pt; } .signature-label { margin: 0; font-weight: bold; }
+      .signature-space { height: 13mm; border-bottom: 1px solid #111; }
+      .signature-name { margin: 1mm 0 3mm; text-align: center; font-size: 8pt; }
+      .signature-details { display: grid; grid-template-columns: 1.5fr 1fr; gap: 4mm; }
+      .designation { display: flex; gap: 2mm; margin: 2mm 0 0; font-size: 8pt; }
+      .designation span { flex: 1; border-bottom: 1px solid #888; }
+      footer { display: flex; justify-content: space-between; gap: 5mm; margin-top: 7mm; border-top: 1px solid #555; padding-top: 2mm; color: #444; font-size: 7pt; break-inside: avoid; }
+      .demo-banner { border: 1.5px solid #111; padding: 1.5mm; margin-bottom: 4mm; text-align: center; font-size: 9pt; font-weight: bold; letter-spacing: 1px; }
+      .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); }
+      ${
+        landscape
+          ? `header { grid-template-columns: 18mm minmax(0, 1fr) 18mm; padding-bottom: 3mm; margin-bottom: 2mm; }
+      header img, .mark { width: 16mm; height: 16mm; } h1 { font-size: 15pt; } header p { font-size: 10pt; }
+      .document-heading { margin-bottom: 3mm; } h2 { font-size: 13pt; }
+      .document-meta { gap: 1mm 5mm; padding: 2mm 0; margin-bottom: 3mm; }
+      h3 { margin-top: 2mm; } th, td { padding: 1.2mm 2mm; }
+      .note { margin-top: 3mm; padding: 1.5mm 0; line-height: 1.4; }
+      .signatures { margin-top: 3mm; } .signature-space { height: 8mm; }
+      .signature-name { margin-bottom: 1mm; } .designation { margin-top: 1.5mm; }
+      footer { margin-top: 3mm; padding-top: 1.5mm; } .demo-banner { padding: 1mm; margin-bottom: 3mm; }`
+          : ""
+      }
     </style></head><body>${content}</body></html>`;
 }
 

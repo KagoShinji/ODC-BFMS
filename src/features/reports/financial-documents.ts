@@ -70,7 +70,8 @@ export function expenseRegister(
 
 export function expenseDocument(data: FinanceData, item: ExpenseCase): PrintDocument {
   return {
-    title: `Expense case · ${item.reference}`,
+    title: "Expense case record",
+    reference: item.reference,
     fields: [
       ["Reference", item.reference],
       ["Type", kindLabel[item.kind]],
@@ -111,7 +112,8 @@ export function voucherRegister(
 
 export function voucherDocument(data: FinanceData, item: Voucher): PrintDocument {
   return {
-    title: `Disbursement voucher · ${item.number}`,
+    title: "Disbursement voucher",
+    reference: item.number,
     fields: [
       ["Voucher number", item.number],
       ["Status", item.status.toUpperCase()],
@@ -154,7 +156,8 @@ export function collectionRegister(
 
 export function collectionDocument(data: FinanceData, item: Collection): PrintDocument {
   return {
-    title: `Collection record · ${item.receiptNumber}`,
+    title: "Collection record",
+    reference: item.receiptNumber,
     fields: [
       ["Receipt reference", item.receiptNumber],
       ["Status", item.status.toUpperCase()],
@@ -188,7 +191,8 @@ export function depositRegister(data: FinanceData): PrintDocument {
 
 export function depositDocument(data: FinanceData, item: Deposit): PrintDocument {
   return {
-    title: `${item.kind === "deposit" ? "Bank deposit" : "Treasury remittance"} · ${item.number}`,
+    title: item.kind === "deposit" ? "Bank deposit" : "Treasury remittance",
+    reference: item.number,
     fields: [
       ["Number", item.number],
       ["Status", item.status.toUpperCase()],
@@ -232,6 +236,7 @@ export function advanceDocument(data: FinanceData, item: CashAdvance): PrintDocu
   const settled = entries.reduce((sum, entry) => sum + entry.amount, 0);
   return {
     title: "Cash advance and liquidation record",
+    reference: data.vouchers.find((voucher) => voucher.id === item.voucherId)?.number,
     fields: [
       ["Voucher", data.vouchers.find((voucher) => voucher.id === item.voucherId)?.number ?? "—"],
       ["Accountable person", item.accountablePerson],
@@ -254,6 +259,7 @@ export function advanceDocument(data: FinanceData, item: CashAdvance): PrintDocu
 export function auditDocument(items: AuditEvent[]): PrintDocument {
   return {
     title: "Activity and audit trail",
+    signatureLabels: ["Extracted by", "Reviewed by"],
     columns: [
       "Time (Asia/Manila)",
       "Performed by",

@@ -319,8 +319,8 @@ export function DisbursementsView() {
                 </p>
               )}
               {selected.status === "approved" && (!preview || livePayment) && (
-                <div className="space-y-2">
-                  <label className="text-xs font-semibold text-secondary">
+                <div className="flex flex-col gap-4">
+                  <label className="block text-xs font-semibold text-secondary">
                     Check / payment reference
                     <Input
                       className="mt-1.5"

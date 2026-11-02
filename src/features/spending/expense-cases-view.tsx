@@ -5,7 +5,8 @@ import { TablePagination } from "@/components/ui/table-pagination";
 
 import { useEffect, useState, type FormEvent } from "react";
 import { PageLink as Link } from "@/components/layout/page-access-provider";
-import { ArrowRight, Check, ChevronRight, Plus, X } from "lucide-react";
+import { ArrowRight, Check, Plus, X } from "lucide-react";
+import { ProcurementPath } from "./procurement-path";
 import { useFinance } from "@/data/demo/finance-provider";
 import { PdfButton } from "@/components/financial/pdf-button";
 import { expenseDocument, expenseRegister } from "@/features/reports/financial-documents";
@@ -25,8 +26,6 @@ import {
   tdClass,
   thClass,
 } from "@/components/financial/shared";
-
-const stages = ["PR", "RFQ", "PO", "AIR", "Ready for DV"] as const;
 
 export function ExpenseCasesView({ kind }: { kind?: ExpenseKind }) {
   const { data, createCase, advanceCase, createVoucher } = useFinance();
@@ -85,31 +84,7 @@ export function ExpenseCasesView({ kind }: { kind?: ExpenseKind }) {
         }
       />
       <ActionError error={actions.error} />
-      {kind === "procurement" && (
-        <Card className="mb-6 border-border bg-brand-soft">
-          <CardContent className="p-4 sm:p-5">
-            <div className="mb-3 text-xs font-bold uppercase tracking-wider text-warning">
-              Procurement document path
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              {stages.map((stage, index) => (
-                <div key={stage} className="flex items-center gap-2">
-                  <span className="rounded-lg border border-warning/30 bg-card px-3 py-2 text-xs font-bold text-secondary">
-                    {stage}
-                  </span>
-                  {index < stages.length - 1 && (
-                    <ChevronRight size={14} className="text-brand-ink" />
-                  )}
-                </div>
-              ))}
-            </div>
-            <p className="mt-3 text-[11px] text-muted-foreground">
-              Track the request through its document stages. Keep the corresponding quotations,
-              approvals and inspection evidence with your records.
-            </p>
-          </CardContent>
-        </Card>
-      )}
+      {kind === "procurement" && <ProcurementPath />}
       {open && (
         <Card className="mb-6 border-warning/30">
           <CardHeader className="flex-row items-center justify-between">

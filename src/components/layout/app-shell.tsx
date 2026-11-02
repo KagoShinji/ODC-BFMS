@@ -40,6 +40,7 @@ import { canAccessPath, type PageKey } from "@/lib/auth/page-access";
 import { usePageAccess } from "@/components/layout/page-access-provider";
 import { BrandLockup } from "@/components/layout/brand";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { SidebarPendingWork } from "@/components/layout/sidebar-pending-work";
 import { Notifications } from "@/components/layout/notifications";
 import { LinkPending } from "@/components/layout/link-pending";
 import { PageSkeleton } from "@/components/layout/page-skeleton";
@@ -227,7 +228,6 @@ function BarangaySwitcher({
 function Sidebar({
   groups,
   close,
-  preview = false,
   workspace,
   canOnboard = false,
   activePath,
@@ -235,7 +235,6 @@ function Sidebar({
 }: {
   groups: ReturnType<typeof groupsFor>;
   close?: () => void;
-  preview?: boolean;
   workspace?: LiveWorkspace;
   canOnboard?: boolean;
   activePath?: string;
@@ -293,26 +292,7 @@ function Sidebar({
       </nav>
       <div className="shrink-0 border-t border-border px-4 py-4">
         {!illustration && <ThemeToggle />}
-        <div className="rounded-2xl bg-card p-3.5 shadow-[0_1px_8px_rgba(24,35,40,.035)]">
-          <div className="flex items-center justify-between gap-2">
-            <div className="text-[11px] font-bold text-foreground">
-              {preview ? "Live workspace" : "Demo workspace"}
-            </div>
-            <span className="h-2 w-2 rounded-full bg-brand" />
-          </div>
-          <p className="mt-1 text-[10px] leading-4 text-muted-foreground">
-            {preview
-              ? "Financial records for the selected barangay."
-              : "Sample financial records for walkthroughs."}
-          </p>
-          <Link
-            href="/settings"
-            onClick={close}
-            className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold text-brand-ink hover:underline"
-          >
-            Workspace settings <ArrowUpRight size={11} />
-          </Link>
-        </div>
+        <SidebarPendingWork close={close} />
       </div>
     </div>
   );
@@ -361,12 +341,7 @@ export function AppShell({
     <div className={cn("workspace-root w-full bg-background", illustration ? "h-full" : "h-dvh")}>
       <div className="app-frame flex h-full w-full overflow-hidden bg-background">
         <aside className="hidden h-full w-[244px] shrink-0 border-r border-border lg:block">
-          <Sidebar
-            groups={groups}
-            preview={preview}
-            activePath={pathname}
-            illustration={illustration}
-          />
+          <Sidebar groups={groups} activePath={pathname} illustration={illustration} />
         </aside>
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetContent className="lg:hidden">
@@ -374,7 +349,6 @@ export function AppShell({
             <Sidebar
               groups={groups}
               close={() => setMobileOpen(false)}
-              preview={preview}
               workspace={workspace}
               canOnboard={account.level === "superadmin"}
               illustration={illustration}
