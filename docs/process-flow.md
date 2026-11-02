@@ -1,5 +1,7 @@
 # Barangay Financial Management System by ODC — Process Flow
 
+For the current application’s roles, actions and handoffs, use the [role-based flowcharts](role-flowcharts.html), [seven-page chart PDF](role-flowcharts.pdf), or [editable diagrams](role-flowcharts.md). The diagrams below retain the original source interpretation and proposed operational scope; the role-based charts identify which actions the current app supports.
+
 ## 1. Reading of the supplied image
 
 The image describes a financial management system with spending and revenue workflows, supported by a budget module and financial reports.

@@ -1,0 +1,1446 @@
+[
+  {
+    "id": "system",
+    "title": "The whole system: roles, actions and handoffs.",
+    "description": "Start at 1. Complete setup, follow the spending or collection branch, then reconcile the resulting records. Each box names the responsible role and who saves in the current live app.",
+    "height": 470,
+    "nodes": [
+      {
+        "id": "s1",
+        "x": 10,
+        "y": 15,
+        "role": "Super admin",
+        "roleId": "superadmin",
+        "lines": ["1. Onboard barangay", "and set branding"],
+        "save": "Live save: Super admin",
+        "tone": "live"
+      },
+      {
+        "id": "s2",
+        "x": 220,
+        "y": 15,
+        "role": "Administrator",
+        "roleId": "administrator",
+        "lines": ["2. Assign staff roles", "and allowed pages"],
+        "save": "Super admin assigns Admin",
+        "tone": "live"
+      },
+      {
+        "id": "s3",
+        "x": 430,
+        "y": 15,
+        "role": "All users",
+        "roleId": "all-users",
+        "lines": ["3. Sign in; confirm", "barangay and year"],
+        "save": "Use assigned account access",
+        "tone": "check"
+      },
+      {
+        "id": "s4",
+        "x": 640,
+        "y": 15,
+        "kind": "decision",
+        "roleId": "all-users",
+        "lines": ["Expense or", "collection?"],
+        "save": "Choose the record path"
+      },
+      {
+        "id": "s5",
+        "x": 850,
+        "y": 15,
+        "role": "Budget officer",
+        "roleId": "budget",
+        "lines": ["4A. Check budget line", "and available balance"],
+        "save": "Budget entry: Super admin",
+        "tone": "check"
+      },
+      {
+        "id": "s6",
+        "x": 850,
+        "y": 180,
+        "role": "Encoder / Procurement",
+        "roleId": "encoder",
+        "lines": ["5A. Prepare source", "case and linked DV"],
+        "save": "Create / submit: Super admin",
+        "tone": "check"
+      },
+      {
+        "id": "s7",
+        "x": 640,
+        "y": 180,
+        "role": "Approver",
+        "roleId": "approver",
+        "lines": ["6A. Review submitted", "DV; approve / reject"],
+        "save": "Assigned Approver or SA",
+        "tone": "live"
+      },
+      {
+        "id": "s8",
+        "x": 430,
+        "y": 180,
+        "role": "Treasurer",
+        "roleId": "treasurer",
+        "lines": ["7A. Record issued", "payment reference"],
+        "save": "Assigned Treasurer or SA",
+        "tone": "live"
+      },
+      {
+        "id": "s9",
+        "x": 220,
+        "y": 180,
+        "role": "Treasurer / Super admin",
+        "roleId": "treasurer",
+        "lines": ["8A. Settle advance", "if applicable"],
+        "save": "Settlement save: Super admin",
+        "tone": "check"
+      },
+      {
+        "id": "s10",
+        "x": 850,
+        "y": 345,
+        "role": "Collector",
+        "roleId": "collector",
+        "lines": ["4B. Check payer and", "receipt details"],
+        "save": "Issue receipt: Super admin",
+        "tone": "check"
+      },
+      {
+        "id": "s11",
+        "x": 640,
+        "y": 345,
+        "role": "Treasurer / Collector",
+        "roleId": "treasurer",
+        "lines": ["5B. Match receipts to", "deposit / remittance"],
+        "save": "Confirm batch: Super admin",
+        "tone": "check"
+      },
+      {
+        "id": "s12",
+        "x": 10,
+        "y": 345,
+        "role": "Auditor / Administrator",
+        "roleId": "auditor",
+        "lines": ["9. Reconcile reports", "and follow up findings"],
+        "save": "Auditor checks; owners fix",
+        "tone": "check"
+      }
+    ],
+    "edges": [
+      {
+        "from": "s1",
+        "to": "s2"
+      },
+      {
+        "from": "s2",
+        "to": "s3"
+      },
+      {
+        "from": "s3",
+        "to": "s4"
+      },
+      {
+        "from": "s4",
+        "to": "s5",
+        "label": "Expense",
+        "labelAt": [835, 46]
+      },
+      {
+        "from": "s5",
+        "to": "s6",
+        "fromPort": "bottom",
+        "toPort": "top",
+        "label": "Prepare",
+        "labelAt": [940, 145]
+      },
+      {
+        "from": "s6",
+        "to": "s7",
+        "fromPort": "left",
+        "toPort": "right",
+        "label": "Submitted",
+        "labelAt": [835, 165]
+      },
+      {
+        "from": "s7",
+        "to": "s8",
+        "fromPort": "left",
+        "toPort": "right",
+        "label": "Approved",
+        "labelAt": [625, 165]
+      },
+      {
+        "from": "s8",
+        "to": "s9",
+        "fromPort": "left",
+        "toPort": "right",
+        "label": "Paid advance",
+        "labelAt": [415, 165]
+      },
+      {
+        "from": "s9",
+        "to": "s12",
+        "fromPort": "left",
+        "toPort": "top",
+        "via": [[100, 226]],
+        "label": "Paid / settled",
+        "labelAt": [100, 305]
+      },
+      {
+        "from": "s4",
+        "to": "s10",
+        "fromPort": "top",
+        "toPort": "right",
+        "via": [
+          [730, 4],
+          [1038, 4],
+          [1038, 391]
+        ],
+        "label": "Collection",
+        "labelAt": [975, 315],
+        "dashed": true
+      },
+      {
+        "from": "s10",
+        "to": "s11",
+        "fromPort": "left",
+        "toPort": "right",
+        "label": "Receipt",
+        "labelAt": [835, 330]
+      },
+      {
+        "from": "s11",
+        "to": "s12",
+        "fromPort": "left",
+        "toPort": "right",
+        "label": "Confirmed allocations and report previews",
+        "labelAt": [415, 375]
+      }
+    ],
+    "notes": [
+      "The named staff role checks and coordinates its work; the save line identifies who can perform the current live action. SA means Super admin.",
+      "Rejected DVs return to the preparer for a corrected new case. Detailed charts below show rejection, budget shortfalls, partial matching and advance balances."
+    ],
+    "links": ["setup", "spending", "procurement", "advances", "collections", "oversight"]
+  },
+  {
+    "id": "setup",
+    "title": "Setup and access: put the right people in the right barangay.",
+    "description": "Follow the account setup sequence before any financial work. A barangay sign-in link identifies the workspace; saved membership and page choices determine access.",
+    "height": 455,
+    "nodes": [
+      {
+        "id": "a1",
+        "x": 10,
+        "y": 15,
+        "role": "Super admin",
+        "roleId": "superadmin",
+        "lines": ["1. Onboard barangay", "White label screen"],
+        "save": "Save name and sign-in slug",
+        "tone": "live"
+      },
+      {
+        "id": "a2",
+        "x": 220,
+        "y": 15,
+        "role": "Super admin",
+        "roleId": "superadmin",
+        "lines": ["2. Set logo, name", "and accent color"],
+        "save": "Save barangay branding",
+        "tone": "live"
+      },
+      {
+        "id": "a3",
+        "x": 430,
+        "y": 15,
+        "role": "Super admin",
+        "roleId": "superadmin",
+        "lines": ["3. Add barangay", "Administrator"],
+        "save": "Staff & access → Add account",
+        "tone": "live"
+      },
+      {
+        "id": "a4",
+        "x": 640,
+        "y": 15,
+        "role": "Administrator",
+        "roleId": "administrator",
+        "lines": ["4. Add staff; choose", "roles and page access"],
+        "save": "Review → confirm Add account",
+        "tone": "live"
+      },
+      {
+        "id": "a5",
+        "x": 850,
+        "y": 15,
+        "role": "All users",
+        "roleId": "all-users",
+        "lines": ["5. Sign in using", "barangay link"],
+        "save": "Use your email and password",
+        "tone": "check"
+      },
+      {
+        "id": "a6",
+        "x": 850,
+        "y": 180,
+        "kind": "decision",
+        "roleId": "all-users",
+        "lines": ["Access", "available?"],
+        "save": "Account / page check"
+      },
+      {
+        "id": "a7",
+        "x": 640,
+        "y": 180,
+        "role": "All users",
+        "roleId": "all-users",
+        "lines": ["6. Change temporary", "password in Settings"],
+        "save": "Live: Account password",
+        "tone": "live"
+      },
+      {
+        "id": "a8",
+        "x": 430,
+        "y": 180,
+        "role": "All users",
+        "roleId": "all-users",
+        "lines": ["7. Confirm barangay", "and fiscal year"],
+        "save": "Open your permitted work area",
+        "tone": "check"
+      },
+      {
+        "id": "a9",
+        "x": 220,
+        "y": 180,
+        "role": "Assigned staff",
+        "roleId": "encoder",
+        "lines": ["8. Follow your", "role playbook"],
+        "save": "Keep the same record reference",
+        "tone": "check"
+      },
+      {
+        "id": "a10",
+        "x": 850,
+        "y": 340,
+        "role": "Administrator",
+        "roleId": "administrator",
+        "lines": ["Check membership", "and selected pages"],
+        "save": "Super admin fixes Admin access",
+        "tone": "live"
+      },
+      {
+        "id": "a11",
+        "x": 220,
+        "y": 340,
+        "role": "All users",
+        "roleId": "all-users",
+        "lines": ["9. Finish work", "and sign out"],
+        "save": "Profile menu → Sign out",
+        "tone": "check"
+      }
+    ],
+    "edges": [
+      {
+        "from": "a1",
+        "to": "a2"
+      },
+      {
+        "from": "a2",
+        "to": "a3"
+      },
+      {
+        "from": "a3",
+        "to": "a4"
+      },
+      {
+        "from": "a4",
+        "to": "a5"
+      },
+      {
+        "from": "a5",
+        "to": "a6",
+        "fromPort": "bottom",
+        "toPort": "top"
+      },
+      {
+        "from": "a6",
+        "to": "a7",
+        "fromPort": "left",
+        "toPort": "right",
+        "label": "Yes",
+        "labelAt": [835, 165]
+      },
+      {
+        "from": "a7",
+        "to": "a8",
+        "fromPort": "left",
+        "toPort": "right"
+      },
+      {
+        "from": "a8",
+        "to": "a9",
+        "fromPort": "left",
+        "toPort": "right"
+      },
+      {
+        "from": "a9",
+        "to": "a11",
+        "fromPort": "bottom",
+        "toPort": "top",
+        "label": "After work",
+        "labelAt": [310, 310]
+      },
+      {
+        "from": "a6",
+        "to": "a10",
+        "fromPort": "bottom",
+        "toPort": "top",
+        "label": "No",
+        "labelAt": [940, 310],
+        "failure": true
+      },
+      {
+        "from": "a10",
+        "to": "a5",
+        "fromPort": "right",
+        "toPort": "right",
+        "via": [
+          [1030, 386],
+          [1030, 61]
+        ],
+        "dashed": true
+      }
+    ],
+    "notes": [
+      "Custom page selections replace the account’s role defaults for the selected barangay. Settings remains available when no financial pages are selected.",
+      "An Administrator can manage staff; only a Super admin manages Administrator roles or White label. A role’s page access does not add financial posting authority."
+    ],
+    "links": ["system"],
+    "roles": ["superadmin", "administrator"]
+  },
+  {
+    "id": "spending",
+    "title": "Spending: from request to approval and recorded payment.",
+    "description": "All five expense sources converge on a linked disbursement voucher (DV). Follow the decision labels before passing the same case and voucher references to the next role.",
+    "height": 470,
+    "nodes": [
+      {
+        "id": "v1",
+        "x": 10,
+        "y": 15,
+        "role": "Encoder",
+        "roleId": "encoder",
+        "lines": ["1. Check request", "and existing records"],
+        "save": "Payee · purpose · amount",
+        "tone": "check"
+      },
+      {
+        "id": "v2",
+        "x": 220,
+        "y": 15,
+        "role": "Budget officer",
+        "roleId": "budget",
+        "lines": ["2. Check coding", "and available budget"],
+        "save": "Budget screen / source case",
+        "tone": "check"
+      },
+      {
+        "id": "v3",
+        "x": 430,
+        "y": 15,
+        "kind": "decision",
+        "roleId": "budget",
+        "lines": ["Budget", "sufficient?"],
+        "save": "Check; enforced on submission"
+      },
+      {
+        "id": "v4",
+        "x": 640,
+        "y": 15,
+        "role": "Encoder / Procurement",
+        "roleId": "encoder",
+        "lines": ["3. Prepare source", "case and evidence"],
+        "save": "Create case: Super admin",
+        "tone": "check"
+      },
+      {
+        "id": "v5",
+        "x": 850,
+        "y": 15,
+        "role": "Encoder / Super admin",
+        "roleId": "superadmin",
+        "lines": ["4. Create linked DV", "and Submit for review"],
+        "save": "Live save: Super admin",
+        "tone": "live"
+      },
+      {
+        "id": "v6",
+        "x": 850,
+        "y": 180,
+        "role": "Approver",
+        "roleId": "approver",
+        "lines": ["5. Open Submitted DV", "and review evidence"],
+        "save": "Verify amount, source, coding",
+        "tone": "check"
+      },
+      {
+        "id": "v7",
+        "x": 640,
+        "y": 180,
+        "kind": "decision",
+        "roleId": "approver",
+        "lines": ["Approve", "or Reject?"],
+        "save": "Confirm the chosen action"
+      },
+      {
+        "id": "v8",
+        "x": 430,
+        "y": 180,
+        "role": "Treasurer",
+        "roleId": "treasurer",
+        "lines": ["6. Verify issued", "payment evidence"],
+        "save": "Approved DV only",
+        "tone": "check"
+      },
+      {
+        "id": "v9",
+        "x": 220,
+        "y": 180,
+        "role": "Treasurer",
+        "roleId": "treasurer",
+        "lines": ["7. Enter reference", "Record payment"],
+        "save": "Confirm → check Paid status",
+        "tone": "live"
+      },
+      {
+        "id": "v10",
+        "x": 10,
+        "y": 180,
+        "role": "Auditor / finance users",
+        "roleId": "auditor",
+        "lines": ["8. Reconcile records", "and report previews"],
+        "save": "Travel advance? See next chart",
+        "tone": "check"
+      },
+      {
+        "id": "v11",
+        "x": 430,
+        "y": 345,
+        "role": "Budget officer / SA",
+        "roleId": "budget",
+        "lines": ["Resolve shortfall", "or incorrect coding"],
+        "save": "Budget changes: Super admin",
+        "tone": "check"
+      },
+      {
+        "id": "v12",
+        "x": 640,
+        "y": 345,
+        "role": "Encoder / Super admin",
+        "roleId": "encoder",
+        "lines": ["Retain rejected DV", "Correct via a new case"],
+        "save": "New case / submission: SA",
+        "tone": "check"
+      }
+    ],
+    "edges": [
+      {
+        "from": "v1",
+        "to": "v2"
+      },
+      {
+        "from": "v2",
+        "to": "v3"
+      },
+      {
+        "from": "v3",
+        "to": "v4",
+        "label": "Yes",
+        "labelAt": [625, 46]
+      },
+      {
+        "from": "v4",
+        "to": "v5"
+      },
+      {
+        "from": "v5",
+        "to": "v6",
+        "fromPort": "bottom",
+        "toPort": "top",
+        "label": "Submitted",
+        "labelAt": [940, 145]
+      },
+      {
+        "from": "v6",
+        "to": "v7",
+        "fromPort": "left",
+        "toPort": "right"
+      },
+      {
+        "from": "v7",
+        "to": "v8",
+        "fromPort": "left",
+        "toPort": "right",
+        "label": "Approved",
+        "labelAt": [625, 165]
+      },
+      {
+        "from": "v8",
+        "to": "v9",
+        "fromPort": "left",
+        "toPort": "right"
+      },
+      {
+        "from": "v9",
+        "to": "v10",
+        "fromPort": "left",
+        "toPort": "right",
+        "label": "Paid",
+        "labelAt": [205, 165]
+      },
+      {
+        "from": "v3",
+        "to": "v11",
+        "fromPort": "bottom",
+        "toPort": "left",
+        "via": [
+          [520, 143],
+          [405, 143],
+          [405, 391]
+        ],
+        "label": "No",
+        "labelAt": [455, 143],
+        "failure": true
+      },
+      {
+        "from": "v7",
+        "to": "v12",
+        "fromPort": "bottom",
+        "toPort": "top",
+        "label": "Rejected",
+        "labelAt": [730, 315],
+        "failure": true
+      },
+      {
+        "from": "v12",
+        "to": "v1",
+        "fromPort": "bottom",
+        "toPort": "left",
+        "via": [
+          [730, 455],
+          [2, 455],
+          [2, 61]
+        ],
+        "label": "Fresh request / evidence; keep old history",
+        "labelAt": [405, 455],
+        "dashed": true
+      },
+      {
+        "from": "v11",
+        "to": "v2",
+        "fromPort": "bottom",
+        "toPort": "bottom",
+        "via": [
+          [520, 445],
+          [205, 445],
+          [205, 130],
+          [310, 130]
+        ],
+        "label": "Recheck budget / coding",
+        "labelAt": [310, 430],
+        "dashed": true
+      }
+    ],
+    "notes": [
+      "Sources: Procurement (PR → RFQ → Purchase Order → AIR), Payroll, Recurring fees, Travel or SK transfer. Non-procurement cases start Ready for DV.",
+      "Assigned Approvers can approve/reject; assigned Treasurers can record payment. Ordinary self-approval is blocked. The app has no Return/edit/resubmit path for a rejected DV; payment records the full amount and does not send money."
+    ],
+    "links": ["procurement", "advances", "oversight"],
+    "roles": ["encoder", "budget", "approver", "treasurer"]
+  },
+  {
+    "id": "procurement",
+    "title": "Procurement: PR, quotations, Purchase Order and inspection.",
+    "description": "Procurement officer (PO) coordinates the document work; Super admin advances the current system stages. A Purchase Order is a document stage, distinct from the PO role abbreviation.",
+    "height": 455,
+    "nodes": [
+      {
+        "id": "p1",
+        "x": 10,
+        "y": 15,
+        "role": "Encoder / Procurement",
+        "roleId": "procurement",
+        "lines": ["1. Identify purchase", "and existing PR"],
+        "save": "Check supplier and purpose",
+        "tone": "check"
+      },
+      {
+        "id": "p2",
+        "x": 220,
+        "y": 15,
+        "role": "Budget officer",
+        "roleId": "budget",
+        "lines": ["2. Confirm budget", "coding and availability"],
+        "save": "Refer shortfall before proceeding",
+        "tone": "check"
+      },
+      {
+        "id": "p3",
+        "x": 430,
+        "y": 15,
+        "role": "Super admin",
+        "roleId": "superadmin",
+        "lines": ["3. New procurement", "Create case → PR"],
+        "save": "Review and confirm creation",
+        "tone": "live"
+      },
+      {
+        "id": "p4",
+        "x": 640,
+        "y": 15,
+        "role": "Procurement officer",
+        "roleId": "procurement",
+        "lines": ["4. Check PR work", "and request details"],
+        "save": "SA clicks Complete PR",
+        "tone": "check"
+      },
+      {
+        "id": "p5",
+        "x": 850,
+        "y": 15,
+        "role": "Procurement officer",
+        "roleId": "procurement",
+        "lines": ["5. Coordinate RFQ", "and quotation records"],
+        "save": "SA clicks Complete RFQ",
+        "tone": "check"
+      },
+      {
+        "id": "p6",
+        "x": 850,
+        "y": 180,
+        "role": "Procurement officer",
+        "roleId": "procurement",
+        "lines": ["6. Check supplier", "and Purchase Order"],
+        "save": "SA clicks Complete PO",
+        "tone": "check"
+      },
+      {
+        "id": "p7",
+        "x": 640,
+        "y": 180,
+        "role": "Procurement officer",
+        "roleId": "procurement",
+        "lines": ["7. Coordinate delivery", "and AIR inspection"],
+        "save": "SA clicks Complete AIR",
+        "tone": "check"
+      },
+      {
+        "id": "p8",
+        "x": 430,
+        "y": 180,
+        "kind": "decision",
+        "roleId": "procurement",
+        "lines": ["Documents", "ready?"],
+        "save": "Office check of evidence"
+      },
+      {
+        "id": "p9",
+        "x": 220,
+        "y": 180,
+        "role": "Encoder / Super admin",
+        "roleId": "encoder",
+        "lines": ["8. Ready for DV", "Check linked source"],
+        "save": "SA clicks Create DV once",
+        "tone": "live"
+      },
+      {
+        "id": "p10",
+        "x": 10,
+        "y": 180,
+        "role": "Super admin / Approver",
+        "roleId": "approver",
+        "lines": ["9. Submit draft DV", "then review / decide"],
+        "save": "Continue in spending chart",
+        "tone": "check"
+      },
+      {
+        "id": "p11",
+        "x": 430,
+        "y": 340,
+        "role": "Procurement officer",
+        "roleId": "procurement",
+        "lines": ["Resolve missing", "supporting evidence"],
+        "save": "Coordinate through office process",
+        "tone": "check"
+      }
+    ],
+    "edges": [
+      {
+        "from": "p1",
+        "to": "p2"
+      },
+      {
+        "from": "p2",
+        "to": "p3"
+      },
+      {
+        "from": "p3",
+        "to": "p4"
+      },
+      {
+        "from": "p4",
+        "to": "p5"
+      },
+      {
+        "from": "p5",
+        "to": "p6",
+        "fromPort": "bottom",
+        "toPort": "top"
+      },
+      {
+        "from": "p6",
+        "to": "p7",
+        "fromPort": "left",
+        "toPort": "right"
+      },
+      {
+        "from": "p7",
+        "to": "p8",
+        "fromPort": "left",
+        "toPort": "right"
+      },
+      {
+        "from": "p8",
+        "to": "p9",
+        "fromPort": "left",
+        "toPort": "right",
+        "label": "Yes",
+        "labelAt": [415, 165]
+      },
+      {
+        "from": "p9",
+        "to": "p10",
+        "fromPort": "left",
+        "toPort": "right"
+      },
+      {
+        "from": "p8",
+        "to": "p11",
+        "fromPort": "bottom",
+        "toPort": "top",
+        "label": "No",
+        "labelAt": [520, 310],
+        "failure": true
+      },
+      {
+        "from": "p11",
+        "to": "p8",
+        "fromPort": "right",
+        "toPort": "right",
+        "via": [
+          [625, 386],
+          [625, 300],
+          [610, 300]
+        ],
+        "dashed": true
+      }
+    ],
+    "notes": [
+      "Send the same procurement case reference, supplier details and supporting records to the Encoder / Super admin for DV preparation. Procurement alone does not grant the Disbursements page.",
+      "The document-readiness diamond is an office check, not an implemented certification button. Stage changes track progress; they do not produce official PR, RFQ, PO or AIR documents or validate their evidence."
+    ],
+    "links": ["spending"],
+    "roles": ["procurement", "encoder", "budget"]
+  },
+  {
+    "id": "advances",
+    "title": "Travel advances: settle the amount already paid.",
+    "description": "Start only after a travel voucher is paid. Track the accountable person’s use of the advance, accepted expenses and returned cash without recording a second payment.",
+    "height": 455,
+    "nodes": [
+      {
+        "id": "l1",
+        "x": 10,
+        "y": 15,
+        "role": "Treasurer",
+        "roleId": "treasurer",
+        "lines": ["1. Confirm travel DV", "is already Paid"],
+        "save": "Check amount and payee",
+        "tone": "check"
+      },
+      {
+        "id": "l2",
+        "x": 220,
+        "y": 15,
+        "kind": "decision",
+        "roleId": "treasurer",
+        "lines": ["Cash advance", "to a person?"],
+        "save": "Office classification check"
+      },
+      {
+        "id": "l3",
+        "x": 430,
+        "y": 15,
+        "role": "Super admin",
+        "roleId": "superadmin",
+        "lines": ["2. Open advance", "from paid travel DV"],
+        "save": "Cash advances → Open advance",
+        "tone": "live"
+      },
+      {
+        "id": "l4",
+        "x": 640,
+        "y": 15,
+        "role": "Accountable person",
+        "roleId": "accountable-person",
+        "lines": ["3. Provide receipts", "and cash-return proof"],
+        "save": "Office handoff of evidence",
+        "tone": "check"
+      },
+      {
+        "id": "l5",
+        "x": 850,
+        "y": 15,
+        "role": "Treasurer / Super admin",
+        "roleId": "treasurer",
+        "lines": ["4. Check accepted", "amounts and evidence"],
+        "save": "Coordinate the accepted entries",
+        "tone": "check"
+      },
+      {
+        "id": "l6",
+        "x": 850,
+        "y": 180,
+        "role": "Super admin",
+        "roleId": "superadmin",
+        "lines": ["5. Record accepted", "expense / cash refund"],
+        "save": "View advance → record entry",
+        "tone": "live"
+      },
+      {
+        "id": "l7",
+        "x": 640,
+        "y": 180,
+        "kind": "decision",
+        "roleId": "treasurer",
+        "lines": ["Outstanding", "balance zero?"],
+        "save": "Advance − expenses − refunds"
+      },
+      {
+        "id": "l8",
+        "x": 430,
+        "y": 180,
+        "role": "Treasurer / Auditor",
+        "roleId": "auditor",
+        "lines": ["6. Verify settled", "advance and reports"],
+        "save": "Retain DV and evidence refs",
+        "tone": "check"
+      },
+      {
+        "id": "l9",
+        "x": 640,
+        "y": 340,
+        "role": "Accountable person",
+        "roleId": "accountable-person",
+        "lines": ["Supply remaining", "evidence / unused cash"],
+        "save": "Keep the balance outstanding",
+        "tone": "check"
+      },
+      {
+        "id": "l10",
+        "x": 10,
+        "y": 180,
+        "role": "Treasurer / Auditor",
+        "roleId": "treasurer",
+        "lines": ["Standard paid case", "No advance to open"],
+        "save": "Continue normal reconciliation",
+        "tone": "check"
+      }
+    ],
+    "edges": [
+      {
+        "from": "l1",
+        "to": "l2"
+      },
+      {
+        "from": "l2",
+        "to": "l3",
+        "label": "Yes",
+        "labelAt": [415, 46]
+      },
+      {
+        "from": "l3",
+        "to": "l4"
+      },
+      {
+        "from": "l4",
+        "to": "l5"
+      },
+      {
+        "from": "l5",
+        "to": "l6",
+        "fromPort": "bottom",
+        "toPort": "top"
+      },
+      {
+        "from": "l6",
+        "to": "l7",
+        "fromPort": "left",
+        "toPort": "right"
+      },
+      {
+        "from": "l7",
+        "to": "l8",
+        "fromPort": "left",
+        "toPort": "right",
+        "label": "Yes",
+        "labelAt": [625, 165]
+      },
+      {
+        "from": "l7",
+        "to": "l9",
+        "fromPort": "bottom",
+        "toPort": "top",
+        "label": "No",
+        "labelAt": [730, 310],
+        "failure": true
+      },
+      {
+        "from": "l9",
+        "to": "l4",
+        "fromPort": "right",
+        "toPort": "right",
+        "via": [
+          [835, 386],
+          [835, 61]
+        ],
+        "dashed": true
+      },
+      {
+        "from": "l2",
+        "to": "l10",
+        "fromPort": "bottom",
+        "toPort": "top",
+        "via": [
+          [310, 145],
+          [100, 145]
+        ],
+        "label": "No",
+        "labelAt": [205, 145]
+      }
+    ],
+    "notes": [
+      "Current live saves for opening an advance and recording liquidation/refund entries require Super admin access. Treasurer reviews the balance and evidence; the accountable person is an office participant, not an additional app role.",
+      "Example: ₱8,900 advance − ₱8,000 accepted expenses − ₱900 refund = zero. Formal liquidation submission, due-date review and separate approval are not implemented; follow your established review process."
+    ],
+    "links": ["spending", "oversight"],
+    "roles": ["treasurer", "auditor"]
+  },
+  {
+    "id": "collections",
+    "title": "Collections: from payer details to confirmed treasury matching.",
+    "description": "Follow each receipt into its bank deposit or treasury remittance. Collector prepares and checks; Treasurer checks treasury evidence; Super admin records receipts and matching batches in the current live app.",
+    "height": 470,
+    "nodes": [
+      {
+        "id": "c1",
+        "x": 10,
+        "y": 15,
+        "role": "Collector",
+        "roleId": "collector",
+        "lines": ["1. Check payer", "category and amount"],
+        "save": "Search for an existing receipt",
+        "tone": "check"
+      },
+      {
+        "id": "c2",
+        "x": 220,
+        "y": 15,
+        "role": "Super admin",
+        "roleId": "superadmin",
+        "lines": ["2. Record collection", "and issue receipt"],
+        "save": "Confirm details → save receipt",
+        "tone": "live"
+      },
+      {
+        "id": "c3",
+        "x": 430,
+        "y": 15,
+        "role": "Collector",
+        "roleId": "collector",
+        "lines": ["3. Verify receipt", "and unmatched amount"],
+        "save": "Keep generated receipt number",
+        "tone": "check"
+      },
+      {
+        "id": "c4",
+        "x": 640,
+        "y": 15,
+        "role": "Treasurer / Collector",
+        "roleId": "treasurer",
+        "lines": ["4. Check real deposit", "or remittance evidence"],
+        "save": "Bank / recipient and reference",
+        "tone": "check"
+      },
+      {
+        "id": "c5",
+        "x": 850,
+        "y": 15,
+        "role": "Super admin",
+        "roleId": "superadmin",
+        "lines": ["5. New matching batch", "Select receipt amounts"],
+        "save": "Choose deposit or remittance",
+        "tone": "live"
+      },
+      {
+        "id": "c6",
+        "x": 850,
+        "y": 180,
+        "kind": "decision",
+        "roleId": "treasurer",
+        "lines": ["Evidence and", "allocations agree?"],
+        "save": "Office check + amount validation"
+      },
+      {
+        "id": "c7",
+        "x": 640,
+        "y": 180,
+        "role": "Super admin",
+        "roleId": "superadmin",
+        "lines": ["6. Confirm matching", "batch and reference"],
+        "save": "Check saved batch / allocations",
+        "tone": "live"
+      },
+      {
+        "id": "c8",
+        "x": 430,
+        "y": 180,
+        "kind": "decision",
+        "roleId": "collector",
+        "lines": ["Receipt fully", "matched?"],
+        "save": "Check remaining unmatched"
+      },
+      {
+        "id": "c9",
+        "x": 220,
+        "y": 180,
+        "role": "Collector / Auditor",
+        "roleId": "auditor",
+        "lines": ["7. Reconcile matching", "RCD / RCR and cashbook"],
+        "save": "Match receipt + batch references",
+        "tone": "check"
+      },
+      {
+        "id": "c10",
+        "x": 430,
+        "y": 345,
+        "role": "Collector / Treasurer",
+        "roleId": "collector",
+        "lines": ["Carry unmatched", "balance to later batch"],
+        "save": "Partial allocation stays visible",
+        "tone": "check"
+      },
+      {
+        "id": "c11",
+        "x": 850,
+        "y": 345,
+        "role": "Treasurer / Super admin",
+        "roleId": "treasurer",
+        "lines": ["Correct allocation", "or investigate evidence"],
+        "save": "Keep batch unconfirmed",
+        "tone": "check"
+      }
+    ],
+    "edges": [
+      {
+        "from": "c1",
+        "to": "c2"
+      },
+      {
+        "from": "c2",
+        "to": "c3"
+      },
+      {
+        "from": "c3",
+        "to": "c4"
+      },
+      {
+        "from": "c4",
+        "to": "c5"
+      },
+      {
+        "from": "c5",
+        "to": "c6",
+        "fromPort": "bottom",
+        "toPort": "top"
+      },
+      {
+        "from": "c6",
+        "to": "c7",
+        "fromPort": "left",
+        "toPort": "right",
+        "label": "Yes",
+        "labelAt": [835, 165]
+      },
+      {
+        "from": "c7",
+        "to": "c8",
+        "fromPort": "left",
+        "toPort": "right"
+      },
+      {
+        "from": "c8",
+        "to": "c9",
+        "fromPort": "left",
+        "toPort": "right",
+        "label": "Yes",
+        "labelAt": [415, 165]
+      },
+      {
+        "from": "c8",
+        "to": "c10",
+        "fromPort": "bottom",
+        "toPort": "top",
+        "label": "No",
+        "labelAt": [520, 315],
+        "failure": true
+      },
+      {
+        "from": "c6",
+        "to": "c11",
+        "fromPort": "bottom",
+        "toPort": "top",
+        "label": "No",
+        "labelAt": [940, 315],
+        "failure": true
+      },
+      {
+        "from": "c11",
+        "to": "c5",
+        "fromPort": "right",
+        "toPort": "right",
+        "via": [
+          [1030, 391],
+          [1030, 61]
+        ],
+        "dashed": true
+      },
+      {
+        "from": "c10",
+        "to": "c4",
+        "fromPort": "bottom",
+        "toPort": "bottom",
+        "via": [
+          [520, 455],
+          [1038, 455],
+          [1038, 130],
+          [730, 130]
+        ],
+        "label": "Next actual treasury movement",
+        "labelAt": [700, 455],
+        "dashed": true
+      }
+    ],
+    "notes": [
+      "A bank deposit moves previously collected cash into the bank; it is not additional revenue. A treasury remittance reduces cash and increases remitted collections. Allocations may be partial and cannot exceed unmatched amounts.",
+      "To correct an issued receipt, coordinate with Super admin: an unallocated issued receipt can be voided and stays in history. A receipt already allocated to a batch cannot be voided through that action."
+    ],
+    "links": ["oversight"],
+    "roles": ["collector", "treasurer"]
+  },
+  {
+    "id": "oversight",
+    "title": "Reports and oversight: trace records, investigate and follow up.",
+    "description": "Review the spending and revenue branches together. Findings return to the responsible owner; staff access issues return to the Administrator or Super admin.",
+    "height": 455,
+    "nodes": [
+      {
+        "id": "o1",
+        "x": 10,
+        "y": 15,
+        "role": "Finance users",
+        "roleId": "all-users",
+        "lines": ["1. Confirm barangay", "year and visible data"],
+        "save": "Resolve load errors before review",
+        "tone": "check"
+      },
+      {
+        "id": "o2",
+        "x": 220,
+        "y": 15,
+        "role": "Budget officer / Auditor",
+        "roleId": "budget",
+        "lines": ["2. Trace source case", "DV and budget use"],
+        "save": "Compare amount, payee, coding",
+        "tone": "check"
+      },
+      {
+        "id": "o3",
+        "x": 430,
+        "y": 15,
+        "role": "Treasurer / Auditor",
+        "roleId": "treasurer",
+        "lines": ["3. Trace paid DV", "and advance balance"],
+        "save": "Check payment and settlement",
+        "tone": "check"
+      },
+      {
+        "id": "o4",
+        "x": 640,
+        "y": 15,
+        "role": "Collector / Auditor",
+        "roleId": "collector",
+        "lines": ["4. Trace receipt", "and batch allocations"],
+        "save": "Matched + unmatched = receipt",
+        "tone": "check"
+      },
+      {
+        "id": "o5",
+        "x": 850,
+        "y": 15,
+        "role": "Auditor",
+        "roleId": "auditor",
+        "lines": ["5. Inspect audit", "actor, time and action"],
+        "save": "Check linked record references",
+        "tone": "check"
+      },
+      {
+        "id": "o6",
+        "x": 850,
+        "y": 180,
+        "kind": "decision",
+        "roleId": "auditor",
+        "lines": ["Figures and", "history agree?"],
+        "save": "Review against source evidence"
+      },
+      {
+        "id": "o7",
+        "x": 640,
+        "y": 180,
+        "role": "Permitted finance users",
+        "roleId": "all-users",
+        "lines": ["6. Export working", "report previews"],
+        "save": "CSV / Print / Save PDF",
+        "tone": "check"
+      },
+      {
+        "id": "o8",
+        "x": 430,
+        "y": 180,
+        "role": "Administrator",
+        "roleId": "administrator",
+        "lines": ["7. Review outstanding", "work and staff access"],
+        "save": "Correct staff roles / pages",
+        "tone": "check"
+      },
+      {
+        "id": "o9",
+        "x": 220,
+        "y": 180,
+        "role": "All users",
+        "roleId": "all-users",
+        "lines": ["8. Retain references", "and sign out"],
+        "save": "Follow office retention process",
+        "tone": "check"
+      },
+      {
+        "id": "o10",
+        "x": 850,
+        "y": 340,
+        "role": "Auditor / record owner",
+        "roleId": "auditor",
+        "lines": ["Document findings", "and request correction"],
+        "save": "Authorized role / SA investigates",
+        "tone": "check"
+      },
+      {
+        "id": "o11",
+        "x": 430,
+        "y": 340,
+        "role": "Super admin",
+        "roleId": "superadmin",
+        "lines": ["Resolve Admin access", "or supported corrections"],
+        "save": "Retain audit history",
+        "tone": "live"
+      }
+    ],
+    "edges": [
+      {
+        "from": "o1",
+        "to": "o2"
+      },
+      {
+        "from": "o2",
+        "to": "o3"
+      },
+      {
+        "from": "o3",
+        "to": "o4"
+      },
+      {
+        "from": "o4",
+        "to": "o5"
+      },
+      {
+        "from": "o5",
+        "to": "o6",
+        "fromPort": "bottom",
+        "toPort": "top"
+      },
+      {
+        "from": "o6",
+        "to": "o7",
+        "fromPort": "left",
+        "toPort": "right",
+        "label": "Yes",
+        "labelAt": [835, 165]
+      },
+      {
+        "from": "o7",
+        "to": "o8",
+        "fromPort": "left",
+        "toPort": "right"
+      },
+      {
+        "from": "o8",
+        "to": "o9",
+        "fromPort": "left",
+        "toPort": "right"
+      },
+      {
+        "from": "o6",
+        "to": "o10",
+        "fromPort": "bottom",
+        "toPort": "top",
+        "label": "No",
+        "labelAt": [940, 310],
+        "failure": true
+      },
+      {
+        "from": "o10",
+        "to": "o5",
+        "fromPort": "right",
+        "toPort": "right",
+        "via": [
+          [1030, 386],
+          [1030, 61]
+        ],
+        "dashed": true
+      },
+      {
+        "from": "o8",
+        "to": "o11",
+        "fromPort": "bottom",
+        "toPort": "top",
+        "label": "Escalate if needed",
+        "labelAt": [520, 310],
+        "dashed": true
+      }
+    ],
+    "notes": [
+      "Auditor reviews and reports findings; it does not edit records. The current audit page shows the latest loaded events. Reports depend on the account’s visible records; check scope before comparing totals.",
+      "These are working report previews and system copies. Formal period lock/reopening, archived snapshots and several prescribed report templates remain pending. A review here does not complete an official period close."
+    ],
+    "links": ["system"],
+    "roles": ["auditor", "administrator", "superadmin"]
+  }
+]

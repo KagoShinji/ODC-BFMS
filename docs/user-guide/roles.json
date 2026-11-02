@@ -1,0 +1,371 @@
+[
+  {
+    "id": "encoder",
+    "group": "roles-request",
+    "name": "Encoder",
+    "image": "voucher-draft",
+    "flow": "Receive request → check budget → check expense case → check draft DV → arrange submission → Approver",
+    "access": "Current live access: view permitted budget, expense, voucher, advance and report pages. Creating cases, creating DVs and submitting vouchers still require a Super admin. The preparation and submission buttons pictured belong to the demo account.",
+    "steps": [
+      {
+        "title": "Receive and identify the request",
+        "text": "Confirm the barangay, payee, purpose, amount and expense type before preparing the record.",
+        "screen": "dashboard"
+      },
+      {
+        "title": "Check the budget line",
+        "text": "Open Budget. Match the expense to its account code and check Available to commit; raise a shortfall to the Budget officer.",
+        "screen": "budget-overview"
+      },
+      {
+        "title": "Check the source expense case",
+        "text": "Open Expense cases or its workflow. Search for an existing reference. Ask the Super admin to create any missing case; avoid duplicates.",
+        "screen": "procurement-form"
+      },
+      {
+        "title": "Prepare the linked draft DV",
+        "text": "For procurement, wait for Ready for DV. Coordinate Create DV with the Super admin, then locate the draft in Disbursements.",
+        "screen": "procurement-ready"
+      },
+      {
+        "title": "Verify and arrange submission",
+        "text": "Select the voucher row. Compare the payee, amount, source reference and budget line. Ask the Super admin to Submit for review and confirm submitted status.",
+        "screen": "voucher-draft"
+      },
+      {
+        "title": "Hand the reference to the Approver",
+        "text": "Provide the DV and source references with the supporting records. If rejected, coordinate a corrected new case; this version has no return-and-resubmit action.",
+        "screen": "voucher-review"
+      }
+    ],
+    "handoff": "Send: submitted DV number, source-case reference and supporting records. Next owner: assigned Approver. A handoff is coordination through your office’s usual process; the app does not automatically route a task."
+  },
+  {
+    "id": "procurement",
+    "group": "roles-request",
+    "name": "Procurement officer (PO)",
+    "image": "procurement-overview",
+    "flow": "Receive PR → RFQ → Purchase Order → AIR → Ready for DV → Encoder / Super admin",
+    "access": "Current live access: view Procurement, Budget, Dashboard and Reports by default. Advancing stages and creating a DV still require a Super admin. PO in the role name means Procurement officer; PO in the document path means Purchase Order.",
+    "steps": [
+      {
+        "title": "Find the purchase request",
+        "text": "Open Procurement. Search by PR reference, supplier/payee or purpose and check the amount and current stage.",
+        "screen": "procurement-overview"
+      },
+      {
+        "title": "Check the budget and PR",
+        "text": "Confirm the budget line and available balance. Coordinate completion of the PR with the authorized Super admin.",
+        "screen": "procurement-pr"
+      },
+      {
+        "title": "Coordinate RFQ work",
+        "text": "Arrange the quotation records and review work. The Super admin uses Complete RFQ after the stage is ready.",
+        "screen": "procurement-rfq"
+      },
+      {
+        "title": "Coordinate the Purchase Order",
+        "text": "Check the agreed supplier and purchase details. Have the authorized user complete PO on the same case.",
+        "screen": "procurement-rfq"
+      },
+      {
+        "title": "Check delivery and AIR",
+        "text": "Coordinate acceptance and inspection. Have the Super admin complete AIR, then verify Ready for DV.",
+        "screen": "procurement-air"
+      },
+      {
+        "title": "Hand off the ready case",
+        "text": "Give the Encoder / Super admin the case reference and supporting records for Create DV. Procurement alone does not grant Disbursements access.",
+        "screen": "procurement-ready"
+      }
+    ],
+    "handoff": "Send: ready procurement case reference, supplier details and supporting purchase/inspection records. Next owner: Encoder for checking and Super admin for DV creation. Stage buttons track progress; they do not generate or replace official PR, RFQ, PO or AIR documents."
+  },
+  {
+    "id": "budget",
+    "group": "roles-review",
+    "name": "Budget officer",
+    "image": "budget-overview",
+    "flow": "Receive coding request → find line → check availability → compare DV → report finding → Encoder / Super admin",
+    "access": "Current live access: view permitted budget, expense, voucher, advance and report pages. Adding a budget line or certifying a budget stage is not enabled for the Budget officer. Budget entry requires a Super admin.",
+    "steps": [
+      {
+        "title": "Confirm the financial context",
+        "text": "Check the barangay and fiscal year, then obtain the case or DV reference from the preparing user.",
+        "screen": "dashboard"
+      },
+      {
+        "title": "Find the budget line",
+        "text": "Open Budget and search the account code or name. Check the appropriation and category.",
+        "screen": "budget-overview"
+      },
+      {
+        "title": "Check available spending authority",
+        "text": "Compare the requested amount with Available to commit. Submitted, approved and paid vouchers consume availability.",
+        "screen": "budget-overview"
+      },
+      {
+        "title": "Compare the voucher coding",
+        "text": "Open Disbursements and select the voucher row. Match its budget line, amount, payee and source reference to the request.",
+        "screen": "voucher-draft"
+      },
+      {
+        "title": "Reconcile the report preview",
+        "text": "Open Reports → RAO or SAOB. Compare the visible figures with the budget and voucher registers.",
+        "screen": "reports-center"
+      },
+      {
+        "title": "Communicate the result",
+        "text": "Send the correct code and available balance, or the discrepancy, to the Encoder / Super admin. A new line must be entered by the Super admin.",
+        "screen": "budget-form"
+      }
+    ],
+    "handoff": "Send: budget code, amount checked, available balance and any mismatch. Next owner: Encoder / Super admin before submission. The current app has no separate Budget officer certification button."
+  },
+  {
+    "id": "approver",
+    "group": "roles-review",
+    "name": "Approver",
+    "image": "voucher-review",
+    "flow": "Submitted DV → select voucher → verify details / evidence → Approve or Reject → confirm → Treasurer or preparer",
+    "access": "Current live access: an assigned Approver can approve or reject submitted vouchers in that barangay when Disbursements is allowed. You cannot approve a voucher you created. Super admins have an audited self-approval exception. No payment authority is granted by Approver alone.",
+    "steps": [
+      {
+        "title": "Open the submitted queue",
+        "text": "Open Disbursements. Set the status filter to Submitted and locate the DV by reference or payee.",
+        "screen": "voucher-register"
+      },
+      {
+        "title": "Open the voucher and inspect it",
+        "text": "Check the payee, amount, purpose, source document and budget line in the voucher panel.",
+        "screen": "voucher-review"
+      },
+      {
+        "title": "Compare the supporting records",
+        "text": "Check the source case and required evidence through the established review process. Confirm this is a submitted voucher you may review independently.",
+        "screen": "voucher-draft"
+      },
+      {
+        "title": "Choose Approve or Reject",
+        "text": "Approve a correct voucher; reject one that cannot proceed. The app does not provide Return with reason or editing/resubmission of a rejected DV.",
+        "screen": "voucher-review"
+      },
+      {
+        "title": "Review and confirm the decision",
+        "text": "Read the confirmation’s voucher number, payee and amount. Confirm the intended action, then dismiss the completion message.",
+        "screen": "approval-confirmation"
+      },
+      {
+        "title": "Verify status and hand off",
+        "text": "For approval, confirm approved status and notify the Treasurer. For rejection, notify the preparing user with the DV reference and correction needed.",
+        "screen": "voucher-payment"
+      }
+    ],
+    "handoff": "Approved → send DV number and supporting records to Treasurer for actual payment. Rejected → send the reference and findings back to Encoder / Super admin for a corrected case. If an action fails, reread the current status/version before trying again."
+  },
+  {
+    "id": "treasurer",
+    "group": "roles-treasury",
+    "name": "Treasurer",
+    "image": "voucher-payment",
+    "flow": "Approved DV → verify actual payment → enter reference → confirm payment → reconcile → review advances / matching",
+    "access": "Current live access: an assigned Treasurer can record payment for an approved voucher in that barangay when Disbursements is allowed. Opening advances, liquidation entries, receipts and deposit/remittance matching still require a Super admin. Treasurer alone does not grant approval authority.",
+    "steps": [
+      {
+        "title": "Find the approved voucher",
+        "text": "Open Disbursements → Approved. Select the voucher row and verify the DV number, payee, amount and supporting source.",
+        "screen": "voucher-register"
+      },
+      {
+        "title": "Check actual payment evidence",
+        "text": "Confirm the payment has been issued and obtain the real check or transfer reference. The app records payment; it does not send money.",
+        "screen": "voucher-payment"
+      },
+      {
+        "title": "Record the payment reference",
+        "text": "Enter Check / payment reference and choose Record payment. Read and confirm the full amount and reference.",
+        "screen": "payment-confirmation"
+      },
+      {
+        "title": "Verify paid status",
+        "text": "Confirm the paid status, recorded date and reference. Check the checks-issued / cashbook report previews as applicable.",
+        "screen": "voucher-paid"
+      },
+      {
+        "title": "Review advance accountability",
+        "text": "For a paid travel advance, review Cash advances. Coordinate opening, accepted expenses and refunds with the Super admin and accountable person.",
+        "screen": "advance-settled"
+      },
+      {
+        "title": "Reconcile receipt matching",
+        "text": "Review Collections and Deposits & remittances. Give the Super admin the receipt allocations and bank/treasury evidence needed to confirm a batch.",
+        "screen": "deposit-form"
+      }
+    ],
+    "handoff": "Send: paid DV reference, payment evidence and any outstanding advance or matching items. Next owner: accountable person / Super admin for settlement and Auditor for review. Deposit and remittance entries are separate from voucher payment."
+  },
+  {
+    "id": "collector",
+    "group": "roles-treasury",
+    "name": "Collector",
+    "image": "collections-register",
+    "flow": "Receive collection details → check receipt → verify amount → review unmatched → prepare evidence → Treasurer / Super admin",
+    "access": "Current live access: view Collections, Deposits & remittances, Dashboard and Reports by default. Issuing or voiding a receipt and confirming a matching batch still require a Super admin. Demo receipt buttons illustrate the authorized-user workflow.",
+    "steps": [
+      {
+        "title": "Identify the collection",
+        "text": "Confirm the barangay, payer, category, amount and particulars. Open Collections and check whether a receipt already exists.",
+        "screen": "collections-register"
+      },
+      {
+        "title": "Coordinate receipt recording",
+        "text": "Give the Super admin the checked details for Record collection → Issue demo receipt. In live mode that action saves a live receipt record.",
+        "screen": "collection-form"
+      },
+      {
+        "title": "Verify the issued receipt",
+        "text": "Check the generated receipt number, payer, amount and issued status in the register. Keep its reference with the supporting records.",
+        "screen": "collection-saved"
+      },
+      {
+        "title": "Check its unmatched balance",
+        "text": "Review Unmatched on the receipt. Recording a collection does not automatically allocate it to a deposit or remittance.",
+        "screen": "collection-saved"
+      },
+      {
+        "title": "Prepare the treasury handoff",
+        "text": "List the receipt numbers, amounts and intended allocations. Provide the actual bank deposit or treasury acknowledgment evidence when available.",
+        "screen": "deposit-form"
+      },
+      {
+        "title": "Follow up the matching result",
+        "text": "Review Deposits & remittances and the Matching / RCD / RCR previews. Ask the Treasurer / Super admin to resolve an unmatched balance or discrepancy.",
+        "screen": "deposit-saved"
+      }
+    ],
+    "handoff": "Send: receipt numbers, collection summary, intended allocations and treasury evidence. Next owner: Treasurer for checking and Super admin for matching. Official receipt stock and prescribed accountable-form controls are outside this screen’s implemented workflow."
+  },
+  {
+    "id": "auditor",
+    "group": "roles-audit",
+    "name": "Auditor",
+    "image": "audit-trail",
+    "flow": "Confirm scope → trace spending → trace advances → trace collections → inspect audit events → report findings",
+    "access": "Current live access: view all financial pages and Audit trail by default, subject to account page choices. Auditor cannot change transactions, approve vouchers or record payments solely through this role. The visible audit list contains the latest loaded events, not a complete archive.",
+    "steps": [
+      {
+        "title": "Set the review context",
+        "text": "Confirm the barangay, fiscal year and the records available through your page access before comparing totals.",
+        "screen": "dashboard"
+      },
+      {
+        "title": "Trace an expense to payment",
+        "text": "Compare source case → linked DV → approval state → payment reference. Match the amount and payee across records.",
+        "screen": "voucher-paid"
+      },
+      {
+        "title": "Reconcile an advance",
+        "text": "Compare the paid travel DV with accepted expenses, refunds and outstanding balance. Do not count liquidation as a second payment.",
+        "screen": "advance-settled"
+      },
+      {
+        "title": "Trace the receipt allocation",
+        "text": "Compare issued/voided receipts with deposit/remittance allocations. Check that matched plus unmatched equals the valid receipt amount.",
+        "screen": "deposit-saved"
+      },
+      {
+        "title": "Inspect the audit trail",
+        "text": "Search action, subject or details and compare actor/time with the financial record. Super admin self-approvals carry an audit exception.",
+        "screen": "audit-trail"
+      },
+      {
+        "title": "Document and send findings",
+        "text": "Use report CSV or Print / Save PDF and include record references in follow-up. Ask the responsible owner to investigate any discrepancy.",
+        "screen": "reports-center"
+      }
+    ],
+    "handoff": "Send: affected record references, compared totals and findings. Next owner: responsible finance user / Administrator / Super admin. A review does not lock a period; formal closing and archived snapshots are not implemented in this interface."
+  },
+  {
+    "id": "administrator",
+    "group": "roles-audit",
+    "name": "Administrator",
+    "image": "staff-directory",
+    "flow": "Confirm barangay → find person → assign staff role → choose pages → confirm access → oversee handoffs",
+    "access": "Current live access: manage non-administrator staff in administered barangays and view permitted financial pages. Only a Super admin can add/change Administrator roles or White label. Financial authority requires its own assigned role; Administrator alone does not grant it.",
+    "steps": [
+      {
+        "title": "Confirm the administered barangay",
+        "text": "Open Staff & access and verify the barangay selector before adding or changing a person’s access.",
+        "screen": "staff-directory"
+      },
+      {
+        "title": "Search before adding",
+        "text": "Find the person by name or email. Choose Add staff for a new membership; use the existing account where appropriate.",
+        "screen": "staff-directory"
+      },
+      {
+        "title": "Assign the staff role",
+        "text": "Enter the person’s details, select Encoder, Procurement, Budget, Approver, Treasurer, Collector or Auditor, and set a temporary password for a new live account.",
+        "screen": "staff-form"
+      },
+      {
+        "title": "Choose the allowed pages",
+        "text": "Review the role defaults and check/uncheck pages. A custom selection replaces the account’s combined role defaults in this barangay.",
+        "screen": "staff-pages"
+      },
+      {
+        "title": "Save and verify access",
+        "text": "Choose Add to [barangay], review the confirmation and confirm Add account. Verify role and active status; use Customize pages for later changes.",
+        "screen": "staff-saved"
+      },
+      {
+        "title": "Oversee staff and work handoffs",
+        "text": "Review active access and daily outstanding work. Deactivate access when appropriate; refer administrator-role changes or financial corrections to the Super admin.",
+        "screen": "page-access"
+      }
+    ],
+    "handoff": "Send each user their barangay sign-in link and assigned responsibilities through your established process. Share temporary passwords privately. Next owners: assigned staff; request Super admin help for Administrator access and system setup."
+  },
+  {
+    "id": "superadmin",
+    "group": "roles-audit",
+    "name": "Super admin",
+    "image": "branding",
+    "flow": "Onboard barangay → set branding → assign Administrator → prepare records → support approval / payment → review audit",
+    "access": "Current live access: all pages and all supported financial actions across barangays, independent of barangay memberships or custom page restrictions. Own-voucher approval is allowed as an audited exception. Transaction state, amount, budget and duplicate-posting checks still apply.",
+    "steps": [
+      {
+        "title": "Onboard and identify the barangay",
+        "text": "In live White label, use Onboard barangay, choose its name and sign-in slug, then verify the saved scope. The screenshot shows the demo system editor.",
+        "screen": "branding"
+      },
+      {
+        "title": "Set branding and sign-in details",
+        "text": "Choose the barangay’s branding scope, set its name/logo/color, review the preview and save. Give the correct sign-in link to its Administrator.",
+        "screen": "branding"
+      },
+      {
+        "title": "Assign the Administrator and staff",
+        "text": "Open Staff & access for the correct barangay. Add its Administrator and staff roles and check their allowed pages.",
+        "screen": "staff-form"
+      },
+      {
+        "title": "Prepare the financial records",
+        "text": "Add needed budget lines, create source cases, complete procurement stages where applicable, create the linked DV and submit it for review.",
+        "screen": "procurement-ready"
+      },
+      {
+        "title": "Support approval and payment",
+        "text": "Use independent Approver and Treasurer handoffs where assigned. A Super admin can also complete the supported sequence directly; verify confirmations and references.",
+        "screen": "voucher-review"
+      },
+      {
+        "title": "Complete treasury work and review",
+        "text": "Record authorized collections, matching and advance settlements as needed. Review Reports and Audit trail for the selected barangay.",
+        "screen": "audit-trail"
+      }
+    ],
+    "handoff": "Send: configured barangay, sign-in link and Administrator access. Operational handoffs then follow the assigned roles. For support/testing with one account, retain record references and review the audit entries, especially self-approval overrides."
+  }
+]

@@ -81,4 +81,8 @@ docs/                     Implementation plan and process flows
 
 See the [implementation plan](docs/implementation-plan.md) and [process flows](docs/process-flow.md) for the full target scope and interpretation of the supplied image.
 
+The step-by-step user handbook includes actual application screenshots, highlighted controls, expected results and six-step playbooks for all nine roles: [open the HTML guide](docs/user-flow-and-role-guide.html) or [read the PDF](docs/user-flow-and-role-guide.pdf). Screens use synthetic demo records. See [screenshot maintenance](docs/user-guide/README.md) to refresh the images and regenerate the PDF.
+
+The [role-based system flowcharts](docs/role-flowcharts.html) show the whole process, the role responsible for each action, live save authority, decision branches and handoffs. Use the [seven-page flowchart PDF](docs/role-flowcharts.pdf) for a short printout or the [editable SVG/Mermaid reference](docs/role-flowcharts.md) to review the diagram source.
+
 The [implementation status](docs/implementation-status.md) distinguishes the working demo from the remaining live finance work.
