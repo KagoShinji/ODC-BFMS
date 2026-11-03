@@ -38,9 +38,12 @@ export function receiptUnmatched(data: FinanceData, collectionId: string) {
 
 export function dashboardTotals(data: FinanceData) {
   const appropriation = data.budgetLines.reduce((sum, line) => sum + line.appropriation, 0);
-  const obligated = data.vouchers
-    .filter((voucher) => !["draft", "rejected"].includes(voucher.status))
-    .reduce((sum, voucher) => sum + voucher.amount, 0);
+  // The loaded budget lines define the budget year. Keep older transactions for
+  // settlement/history, but do not subtract their obligations from this budget.
+  const obligated = data.budgetLines.reduce(
+    (sum, line) => sum + committedForLine(data, line.id),
+    0,
+  );
   const paid = data.vouchers
     .filter((voucher) => voucher.status === "paid")
     .reduce((sum, voucher) => sum + voucher.amount, 0);
@@ -68,8 +71,20 @@ export function dashboardTotals(data: FinanceData) {
     deposited,
     remitted,
     advanceOutstanding,
-    cash: data.cashOpening + collected + refunded - deposited - remitted,
-    bank: data.bankOpening + deposited - paid,
+    cash:
+      data.cashOpening +
+      (data.cashbookEntries
+        ? data.cashbookEntries
+            .filter((entry) => entry.account === "cash")
+            .reduce((sum, entry) => sum + entry.amount, 0)
+        : collected + refunded - deposited - remitted),
+    bank:
+      data.bankOpening +
+      (data.cashbookEntries
+        ? data.cashbookEntries
+            .filter((entry) => entry.account === "bank")
+            .reduce((sum, entry) => sum + entry.amount, 0)
+        : deposited - paid),
     pending: data.vouchers.filter((voucher) => voucher.status === "submitted").length,
     readyToPay: data.vouchers.filter((voucher) => voucher.status === "approved").length,
     undeposited: collected - deposited - remitted,

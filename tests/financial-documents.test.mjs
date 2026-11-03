@@ -15,6 +15,7 @@ registerHooks({
   },
 });
 const builders = await import("../src/features/reports/financial-documents.ts");
+const { dashboardTotals } = await import("../src/domain/finance.ts");
 const { buildReports } = await import("../src/features/reports/report-data.ts");
 
 test("audit exports retain performer name, email and account ID", () => {
@@ -133,4 +134,94 @@ test("all available reports can export; pending templates remain excluded and li
   const cashbook = reports.find((item) => item.id === "cashbook");
   assert.doesNotMatch(JSON.stringify(cashbook), /demo|synthetic/);
   assert.match(cashbook.description, /live records/);
+});
+
+test("cashbook retains original receipts, later dated voids, transfer legs and ledger balances", () => {
+  const receipt = {
+    ...seedData.collections[0],
+    id: "receipt",
+    receiptNumber: "OR-HISTORY",
+    status: "voided",
+    amount: 10000,
+    date: "2026-01-01",
+  };
+  const data = {
+    ...seedData,
+    cashOpening: 0,
+    bankOpening: 0,
+    collections: [receipt],
+    deposits: [{ ...seedData.deposits[0], id: "deposit" }],
+    vouchers: [],
+    liquidationEntries: [],
+    cashbookEntries: [
+      {
+        id: "a",
+        date: "2026-01-01",
+        createdAt: "2026-01-01T08:00:00Z",
+        sourceType: "collection",
+        sourceId: "receipt",
+        account: "cash",
+        amount: 10000,
+      },
+      {
+        id: "b",
+        date: "2026-01-03",
+        createdAt: "2026-01-03T08:00:00Z",
+        sourceType: "collection_void",
+        sourceId: "receipt",
+        account: "cash",
+        amount: -10000,
+      },
+      {
+        id: "c",
+        date: "2026-01-02",
+        createdAt: "2026-01-02T08:00:00Z",
+        sourceType: "deposit",
+        sourceId: "deposit",
+        account: "cash",
+        amount: -5000,
+      },
+      {
+        id: "d",
+        date: "2026-01-02",
+        createdAt: "2026-01-02T08:00:00Z",
+        sourceType: "deposit",
+        sourceId: "deposit",
+        account: "bank",
+        amount: 5000,
+      },
+    ],
+  };
+  const rows = buildReports(data, false).find((r) => r.id === "cashbook").rows;
+  assert.equal(rows.length, 4, "opening plus collection, grouped transfer and void");
+  assert.equal(rows[1][1], "OR-HISTORY");
+  assert.equal(rows[1][5], "₱100.00");
+  assert.match(rows[3][2], /Receipt void/);
+  assert.equal(rows[3][5], "-₱50.00");
+  assert.equal(rows[3][6], "₱50.00");
+  const totals = dashboardTotals(data);
+  assert.equal(totals.cash, -5000);
+  assert.equal(totals.bank, 5000);
+});
+
+test("legacy demo void history is retained without inventing an unknown void date", () => {
+  const data = {
+    ...seedData,
+    collections: [{ ...seedData.collections[0], status: "voided" }],
+    vouchers: [],
+    deposits: [],
+    liquidationEntries: [],
+    cashOpening: 0,
+    bankOpening: 0,
+  };
+  const rows = buildReports(data, true).find((r) => r.id === "cashbook").rows;
+  assert.equal(rows.length, 3);
+  assert.equal(rows[2][0], "Date unavailable");
+  assert.match(rows[2][2], /void date not recorded/);
+  assert.equal(rows[2][5], "₱0.00");
+  const dated = { ...data, collections: [{ ...data.collections[0], voidedAt: "2026-11-03" }] };
+  assert.notEqual(
+    buildReports(dated, true).find((r) => r.id === "cashbook").rows[2][0],
+    "Date unavailable",
+  );
 });

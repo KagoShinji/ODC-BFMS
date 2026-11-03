@@ -315,7 +315,7 @@ export function AppShell({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const signOutForm = useRef<HTMLFormElement>(null);
-  const { data, loaded, liveRecording, liveApproval, livePayment } = useFinance();
+  const { data, loaded, exportError, liveRecording, liveApproval, livePayment } = useFinance();
   const [navigating, startNavigation] = useTransition();
   const currentPath = usePathname();
   const pathname = illustration ? "/dashboard" : currentPath;
@@ -567,7 +567,15 @@ export function AppShell({
             aria-busy={!loaded || navigating}
             className="min-h-0 w-full flex-1 overflow-y-auto px-5 pb-8 sm:px-7 xl:px-9"
           >
-            {loaded ? (
+            {exportError && !["/settings", "/staff", "/branding"].includes(pathname) ? (
+              <section role="alert" className="my-5 rounded-2xl border border-border bg-card p-6">
+                <h2 className="text-lg font-bold">Financial records unavailable</h2>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{exportError}</p>
+                <Button className="mt-4" variant="outline" onClick={() => router.refresh()}>
+                  <RefreshCcw size={15} /> Reload records
+                </Button>
+              </section>
+            ) : loaded ? (
               children
             ) : (
               <PageSkeleton variant={pathname === "/dashboard" ? "dashboard" : "table"} />

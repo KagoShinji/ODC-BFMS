@@ -16,7 +16,7 @@ const pesos = (value: unknown) => {
     throw new Error("Enter a valid amount.");
   return ((value as number) / 100).toFixed(2);
 };
-const text = (value: unknown) => (typeof value === "string" ? value : "");
+const text = (value: unknown) => (typeof value === "string" ? value.trim() : "");
 
 /** Each workspace action and the database function that records it. */
 const actions: Record<string, (args: Args, barangayId: string) => [string, Args]> = {
@@ -110,10 +110,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "The request could not be read." }, { status: 400 });
   }
   const actionName = text(body?.action);
-  const action = actions[actionName];
+  const action = Object.hasOwn(actions, actionName) ? actions[actionName] : undefined;
   if (!action)
     return NextResponse.json(
       { error: "This action is not available for live records yet." },
+      { status: 400 },
+    );
+  const requestId = request.headers.get("idempotency-key");
+  if (
+    !requestId ||
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(requestId)
+  )
+    return NextResponse.json(
+      { error: "Reload this page before submitting the transaction." },
       { status: 400 },
     );
   const { active } = await getWorkspaceBarangays(account);
@@ -121,7 +130,8 @@ export async function POST(request: NextRequest) {
 
   const isVoucherApproval = actionName === "approveVoucher" || actionName === "rejectVoucher";
   const approverAccess = canApproveVoucherForBarangay(account, active.id);
-  const paymentAccess = actionName === "recordPayment" && canRecordPaymentForBarangay(account, active.id);
+  const paymentAccess =
+    actionName === "recordPayment" && canRecordPaymentForBarangay(account, active.id);
   if (!canRecordLive(account.level) && !(isVoucherApproval && approverAccess) && !paymentAccess)
     return NextResponse.json(
       {
@@ -139,8 +149,26 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: (cause as Error).message }, { status: 400 });
   }
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc(call[0], call[1]);
+  const { data, error } = await supabase.rpc("execute_finance_action", {
+    p_barangay_id: active.id,
+    p_request_id: requestId,
+    p_function: call[0],
+    p_arguments: call[1],
+  });
   // Database messages are written for people (for example "Insufficient appropriation").
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  return NextResponse.json({ ok: true, id: typeof data === "string" ? data : undefined });
+  if (error)
+    return NextResponse.json(
+      {
+        error: ["PGRST202", "42883"].includes(error.code)
+          ? "Transaction protection is not installed. Apply the finance request idempotency migration before posting."
+          : error.message,
+      },
+      { status: /^(22|23|28|42|P0)/.test(error.code) || error.code === "PGRST202" ? 400 : 503 },
+    );
+  if (data?.ok !== true)
+    return NextResponse.json(
+      { error: "The transaction result could not be confirmed. Retry the same submission." },
+      { status: 502 },
+    );
+  return NextResponse.json({ ok: true, id: typeof data.id === "string" ? data.id : undefined });
 }

@@ -24,6 +24,7 @@ import type {
   Voucher,
 } from "@/domain/types";
 import { availableForLine, canSubmitVoucher, nextNumber, receiptUnmatched } from "@/domain/finance";
+import { createFinanceRequester } from "@/lib/finance-request";
 import { seedData } from "./seed";
 import { formatMoney, todayManila } from "@/lib/utils";
 import { useFeedback } from "@/components/layout/feedback-context";
@@ -110,6 +111,7 @@ export function FinanceProvider({
   liveApproval = false,
   livePayment = false,
   exportError,
+  requestScope = "demo",
   demoActor = defaultDemoActor,
 }: {
   children: ReactNode;
@@ -123,9 +125,11 @@ export function FinanceProvider({
   /** Allows payment recording for a treasurer without enabling other writes. */
   livePayment?: boolean;
   exportError?: string;
+  requestScope?: string;
   demoActor?: DemoActor;
 }) {
   const router = useRouter();
+  const postFinance = useMemo(() => createFinanceRequester(requestScope), [requestScope]);
   const { confirm, success: showSuccess, error: showError } = useFeedback();
   const [data, setData] = useState<FinanceData>(initialData ?? seedData);
   const [loaded, setLoaded] = useState(preview);
@@ -414,7 +418,9 @@ export function FinanceProvider({
             {
               ...current,
               collections: current.collections.map((collection) =>
-                collection.id === id ? { ...collection, status: "voided" } : collection,
+                collection.id === id
+                  ? { ...collection, status: "voided", voidedAt: todayManila() }
+                  : collection,
               ),
             },
             "Receipt voided",
@@ -470,7 +476,10 @@ export function FinanceProvider({
             `${input.allocations.length} receipt(s) matched`,
           ),
         );
-        return success(`${number} confirmed.`, deposit.id);
+        return success(
+          `${formatMoney(amount)} ${input.kind === "deposit" ? "bank deposit" : "remittance"} recorded. Review the updated receipt balances below.`,
+          deposit.id,
+        );
       },
       openAdvance(voucherId) {
         const voucher = data.vouchers.find((item) => item.id === voucherId);
@@ -573,19 +582,12 @@ export function FinanceProvider({
       async (...input: A): Promise<Result> => {
         if (!liveRecording && !(allowApprover && liveApproval) && !(allowTreasurer && livePayment))
           return blocked();
-        try {
-          const response = await fetch("/api/finance", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action, args: toArgs(...input) }),
-          });
-          const result = await response.json().catch(() => ({}));
-          if (!response.ok) return fail(result.error || "The transaction could not be recorded.");
-          router.refresh();
-          return success(message, result.id);
-        } catch {
-          return fail("The server could not be reached. Try again.");
-        }
+        if (exportError)
+          return fail("Records are incomplete. Reload this page before recording a transaction.");
+        const result = await postFinance(action, toArgs(...input));
+        if (!result.ok) return fail(result.error);
+        router.refresh();
+        return success(message, result.id);
       };
     const version = (id: string) => live.vouchers.find((voucher) => voucher.id === id)?.version;
     return {
@@ -635,7 +637,12 @@ export function FinanceProvider({
       ),
       createCollection: record("createCollection", "Receipt issued.", (input) => input),
       voidCollection: record("voidCollection", "Receipt voided.", (id: string) => ({ id })),
-      createDeposit: record("createDeposit", "Deposit or remittance confirmed.", (input) => input),
+      createDeposit: (input) =>
+        record(
+          "createDeposit",
+          `${formatMoney(input.allocations.reduce((sum, allocation) => sum + allocation.amount, 0))} ${input.kind === "deposit" ? "bank deposit" : "remittance"} recorded. Review the updated receipt balances below.`,
+          (value: typeof input) => value,
+        )(input),
       openAdvance: record("openAdvance", "Cash advance opened.", (voucherId: string) => ({
         voucherId,
       })),
@@ -651,6 +658,7 @@ export function FinanceProvider({
     fail,
     success,
     initialData,
+    postFinance,
     liveRecording,
     liveApproval,
     livePayment,

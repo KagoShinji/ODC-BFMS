@@ -48,6 +48,20 @@ All register tables, report tables, Staff & access, and the Audit trail have pag
 
 Audit entries are grouped by Manila date, with performer names and emails visible and full account IDs, event IDs and recorded details under expandable Event details. Search, account/action selectors, inclusive date filters, newest/oldest sorting and one-click filter reset help narrow the loaded log. Export filtered log includes the same identity and all matching loaded events across pages. The audit notice is serialized by the server and timestamp labels are built from explicit Manila date parts for consistent hydration. Demo actions use the signed-in demo account, not the person whose access is being changed. Older demo events without account information remain unidentified rather than being assigned to the current user.
 
+Receipt matching now has a separate **Receipt matching progress** register with collected, matched-to-date and remaining amounts, matching statuses, search/filter controls and pagination. **Match remaining** opens the batch form with the receipt balance prefilled and previews the amount left after a partial allocation. Batch status stays **Confirmed** independently of receipt progress. **View details** shows every allocation in a batch with current receipt balances; PDF exports retain the complete batch. After saving, the page shows the recorded amount and actual updated receipt balances once the batch is loaded. Read-only accounts can inspect matching without entering an unavailable posting flow. These interface changes require no additional SQL migration.
+
+## Financial integrity fixes
+
+Dashboard budget commitments and RAO now use the same current-year budget-line scope. Older transactions stay available for cash history, payments, outstanding receipts and advance settlements. Transaction reports explicitly include all loaded dates; fiscal-year closing and continuing-budget policies remain pending office verification.
+
+The live cashbook reads posted `cashbook_entries`, including original receipts and their dated void movements. Financial queries load every page in stable order instead of stopping at Supabase's row limit. A failed financial/advance/liquidation/ledger load blocks balances, exports and new postings until records are reloaded. Setup and account-management pages remain accessible.
+
+Live app submissions use account/barangay-scoped request IDs. Unconfirmed submissions retain their ID in this tab's session storage and reuse it on retry; with browser storage disabled the same-page memory guard still applies. A confirmed success releases the ID so a deliberate new submission can proceed. The database stores the posting and replay response in one transaction, rechecks current permissions, and rejects reuse with different arguments or another barangay.
+
+**Deployment:** apply [202611060001_finance_request_idempotency.sql](supabase/migrations/202611060001_finance_request_idempotency.sql) after the preceding migrations before deploying this application's live posting changes. The API fails closed if the replay function is missing. Existing direct SQL/RPC callers keep their previous behavior; the protected boundary is the app's finance API. No remote migration is applied automatically.
+
+Run [finance_request_idempotency.sql](supabase/tests/finance_request_idempotency.sql) in an isolated database after all migrations; its fixtures and postings roll back. It checks all supported action replays, actor/barangay isolation, unchanged role restrictions, permission revocation, and single audit/ledger posting.
+
 ## Supabase connection
 
 The repository includes browser/server SSR clients, a login page, a connection check, a repository for the first live transaction slice, and [SQL migrations](supabase/migrations/202610280001_initial_finance.sql) with row level security and transactional posting functions.

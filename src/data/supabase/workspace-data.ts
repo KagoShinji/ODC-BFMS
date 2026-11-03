@@ -1,11 +1,14 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type {
   BudgetLine,
+  CashbookEntry,
   ExpenseKind,
   ExpenseStep,
   FinanceData,
   VoucherStatus,
 } from "@/domain/types";
+import type { PageKey } from "@/lib/auth/page-access";
+import { readAllRows } from "@/data/supabase/read-all";
 import { todayManila } from "@/lib/utils";
 import { auditEventFromRow, type AuditRow } from "@/lib/audit";
 
@@ -66,6 +69,7 @@ export function emptyFinanceData(barangay: string): FinanceData {
     fiscalYear: Number(todayManila().slice(0, 4)),
     cashOpening: 0,
     bankOpening: 0,
+    cashbookEntries: [],
     budgetLines: [],
     expenseCases: [],
     vouchers: [],
@@ -85,6 +89,7 @@ export function emptyFinanceData(barangay: string): FinanceData {
 export async function loadFinanceData(
   supabase: SupabaseClient,
   barangay: { id: string; name: string },
+  pages?: readonly PageKey[],
 ): Promise<{ data: FinanceData; error?: string }> {
   const data = emptyFinanceData(barangay.name);
   const id = barangay.id;
@@ -98,54 +103,114 @@ export async function loadFinanceData(
     audit,
     advances,
     liquidations,
+    ledger,
   ] = await Promise.all([
-    supabase
-      .from("budget_lines")
-      .select("id, code, name, category, fund, appropriation")
-      .eq("barangay_id", id)
-      .eq("fiscal_year", data.fiscalYear)
-      .order("code"),
-    supabase
-      .from("expense_cases")
-      .select("id, reference, kind, step, purpose, payee, budget_line_id, amount, business_date")
-      .eq("barangay_id", id)
-      .order("created_at", { ascending: false }),
-    supabase
-      .from("vouchers")
-      .select(
-        "id, number, source_case_id, kind, payee, purpose, budget_line_id, amount, status, business_date, paid_at, payment_reference, version",
-      )
-      .eq("barangay_id", id)
-      .order("created_at", { ascending: false }),
-    supabase
-      .from("collections")
-      .select("id, receipt_number, payer, purpose, revenue_category, amount, business_date, status")
-      .eq("barangay_id", id)
-      .order("created_at", { ascending: false }),
-    supabase
-      .from("deposits")
-      .select("id, number, kind, bank, reference, amount, business_date, status")
-      .eq("barangay_id", id)
-      .order("created_at", { ascending: false }),
-    supabase
-      .from("deposit_allocations")
-      .select("deposit_id, collection_id, amount")
-      .eq("barangay_id", id),
-    loadAuditRows(supabase, id),
-    supabase
-      .from("cash_advances")
-      .select("id, voucher_id, accountable_person, amount, opened_at")
-      .eq("barangay_id", id)
-      .order("opened_at", { ascending: false }),
-    supabase
-      .from("liquidation_entries")
-      .select("id, advance_id, kind, description, amount, business_date")
-      .eq("barangay_id", id)
-      .order("created_at", { ascending: false }),
+    readAllRows((from, to) =>
+      supabase
+        .from("budget_lines")
+        .select("id, code, name, category, fund, appropriation")
+        .eq("barangay_id", id)
+        .eq("fiscal_year", data.fiscalYear)
+        .order("code")
+        .order("id")
+        .range(from, to),
+    ),
+    readAllRows((from, to) =>
+      supabase
+        .from("expense_cases")
+        .select("id, reference, kind, step, purpose, payee, budget_line_id, amount, business_date")
+        .eq("barangay_id", id)
+        .order("created_at", { ascending: false })
+        .order("id")
+        .range(from, to),
+    ),
+    readAllRows((from, to) =>
+      supabase
+        .from("vouchers")
+        .select(
+          "id, number, source_case_id, kind, payee, purpose, budget_line_id, amount, status, business_date, paid_at, payment_reference, version",
+        )
+        .eq("barangay_id", id)
+        .order("created_at", { ascending: false })
+        .order("id")
+        .range(from, to),
+    ),
+    readAllRows((from, to) =>
+      supabase
+        .from("collections")
+        .select(
+          "id, receipt_number, payer, purpose, revenue_category, amount, business_date, status",
+        )
+        .eq("barangay_id", id)
+        .order("created_at", { ascending: false })
+        .order("id")
+        .range(from, to),
+    ),
+    readAllRows((from, to) =>
+      supabase
+        .from("deposits")
+        .select("id, number, kind, bank, reference, amount, business_date, status")
+        .eq("barangay_id", id)
+        .order("created_at", { ascending: false })
+        .order("id")
+        .range(from, to),
+    ),
+    readAllRows((from, to) =>
+      supabase
+        .from("deposit_allocations")
+        .select("deposit_id, collection_id, amount")
+        .eq("barangay_id", id)
+        .order("deposit_id")
+        .order("collection_id")
+        .range(from, to),
+    ),
+    pages && !pages.includes("audit")
+      ? { data: [], error: null }
+      : loadAuditRows(supabase, id).catch(() => ({
+          data: [],
+          error: { message: "Audit records could not be loaded." },
+        })),
+    readAllRows((from, to) =>
+      supabase
+        .from("cash_advances")
+        .select("id, voucher_id, accountable_person, amount, opened_at")
+        .eq("barangay_id", id)
+        .order("opened_at", { ascending: false })
+        .order("id")
+        .range(from, to),
+    ),
+    readAllRows((from, to) =>
+      supabase
+        .from("liquidation_entries")
+        .select("id, advance_id, kind, description, amount, business_date")
+        .eq("barangay_id", id)
+        .order("created_at", { ascending: false })
+        .order("id")
+        .range(from, to),
+    ),
+    readAllRows((from, to) =>
+      supabase
+        .from("cashbook_entries")
+        .select("id, business_date, created_at, source_type, source_id, account, amount")
+        .eq("barangay_id", id)
+        .order("business_date")
+        .order("created_at")
+        .order("id")
+        .range(from, to),
+    ),
   ]);
-  const failed = [lines, cases, vouchers, collections, deposits, allocations, audit].some(
-    (result) => result.error,
-  );
+  const failed = [
+    lines,
+    cases,
+    vouchers,
+    collections,
+    deposits,
+    allocations,
+    audit,
+    advances,
+    liquidations,
+    ledger,
+  ].some((result) => result.error);
 
   data.budgetLines = (lines.data ?? []).map((line, index) => ({
     id: line.id,
@@ -196,7 +261,6 @@ export async function loadFinanceData(
     date: item.business_date,
     status: item.status,
   }));
-  // Advances arrive with 202611020001_cash_advances.sql; before it they stay empty.
   data.cashAdvances = (advances.data ?? []).map((item) => ({
     id: item.id,
     voucherId: item.voucher_id,
@@ -229,6 +293,15 @@ export async function loadFinanceData(
       })),
   }));
 
+  data.cashbookEntries = (ledger.data ?? []).map((entry) => ({
+    id: entry.id,
+    date: entry.business_date,
+    createdAt: entry.created_at,
+    sourceType: entry.source_type as CashbookEntry["sourceType"],
+    sourceId: entry.source_id,
+    account: entry.account as CashbookEntry["account"],
+    amount: centavos(entry.amount),
+  }));
   data.audit = (audit.data ?? []).map(auditEventFromRow);
 
   return {

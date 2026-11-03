@@ -34,15 +34,16 @@ export default async function WorkspaceLayout({ children }: { children: React.Re
 
   // Live mode shows the selected barangay's records; approvers may approve/reject vouchers.
   const live = active
-    ? await loadFinanceData(await createClient(), active)
+    ? await loadFinanceData(await createClient(), active, pages)
     : { data: emptyFinanceData("No barangay yet"), error: undefined };
   return (
     <PageAccessProvider pages={pages}>
       <FinanceProvider
         key={active?.id ?? "none"}
         preview
+        requestScope={`${account.userId}:${active?.id ?? "none"}`}
         initialData={live.data}
-        exportError={active ? live.error : "Select a barangay before exporting documents."}
+        exportError={active ? live.error : "Select a barangay to load financial records."}
         liveRecording={Boolean(active) && canRecordLive(account.level)}
         liveApproval={canApproveVoucherForBarangay(account, active?.id ?? null)}
         livePayment={canRecordPaymentForBarangay(account, active?.id ?? null)}

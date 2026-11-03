@@ -148,6 +148,10 @@ export function ReportsView() {
           {data.barangay} · FY {data.fiscalYear} · {preview ? "Live records" : "Demo records"}
         </span>
       </div>
+      <p className="mb-5 text-xs leading-5 text-muted-foreground">
+        Budget reports use FY {data.fiscalYear} budget lines. Transaction reports include all loaded
+        dates, including older payments and settlements.
+      </p>
       <div className="grid items-start gap-5 xl:grid-cols-[310px_minmax(0,1fr)]">
         <Card className="min-w-0">
           <CardHeader className="gap-3">

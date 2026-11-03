@@ -51,6 +51,8 @@ export interface Collection {
   amount: number;
   date: string;
   status: "issued" | "voided";
+  /** Present for new browser demo voids; live history comes from the posted ledger. */
+  voidedAt?: string;
 }
 
 export interface DepositAllocation {
@@ -97,12 +99,25 @@ export interface AuditEvent {
   actorId?: string;
 }
 
+export interface CashbookEntry {
+  id: string;
+  date: string;
+  createdAt: string;
+  sourceType: "collection" | "deposit" | "payment" | "collection_void" | "advance_refund";
+  sourceId: string;
+  account: "cash" | "bank";
+  /** Signed integer centavos. */
+  amount: number;
+}
+
 export interface FinanceData {
   schemaVersion: 2;
   barangay: string;
   fiscalYear: number;
   cashOpening: number;
   bankOpening: number;
+  /** Authoritative posted movements in live mode; absent on legacy browser data. */
+  cashbookEntries?: CashbookEntry[];
   budgetLines: BudgetLine[];
   expenseCases: ExpenseCase[];
   vouchers: Voucher[];

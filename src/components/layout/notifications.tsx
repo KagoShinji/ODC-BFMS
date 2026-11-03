@@ -48,13 +48,16 @@ export function Notifications({
   scope: string;
   liveRefresh?: boolean;
 }) {
-  const { data, loaded } = useFinance();
+  const { data, loaded, exportError } = useFinance();
   const router = useRouter();
   const [refreshing, startRefresh] = useTransition();
   const { pages } = usePageAccess();
   const notifications = useMemo(
-    () => workspaceNotifications(data).filter((item) => canAccessPath(pages, item.href)),
-    [data, pages],
+    () =>
+      exportError
+        ? []
+        : workspaceNotifications(data).filter((item) => canAccessPath(pages, item.href)),
+    [data, pages, exportError],
   );
   const storageKey = `odc-notifications:${scope}`;
   const [open, setOpen] = useState(false);
@@ -63,7 +66,7 @@ export function Notifications({
   const [announcement, setAnnouncement] = useState("");
   const observed = useRef<{ key: string; ids: Set<string> } | null>(null);
   const lastRefresh = useRef(0);
-  const ready = loaded && readState.key === storageKey;
+  const ready = loaded && !exportError && readState.key === storageKey;
   const readIds = useMemo(
     () => new Set(readState.key === storageKey ? readState.ids : []),
     [readState, storageKey],
@@ -205,7 +208,11 @@ export function Notifications({
             )}
           </div>
           <div className="odc-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain p-2">
-            {notifications.length ? (
+            {exportError ? (
+              <p role="status" className="p-5 text-sm text-muted-foreground">
+                Notifications are unavailable until financial records load successfully.
+              </p>
+            ) : notifications.length ? (
               <ul className="space-y-1">
                 {notifications.map((item) => {
                   const Icon = icons[item.kind];

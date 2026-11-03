@@ -1,4 +1,5 @@
 import type { FinanceData } from "@/domain/types";
+import { cashbookEvents } from "@/domain/cashbook";
 import { committedForLine, receiptUnmatched } from "@/domain/finance";
 import { displayDate, formatMoney } from "@/lib/utils";
 
@@ -59,63 +60,7 @@ export function buildReports(data: FinanceData, demo = true): ReportDefinition[]
         .reduce((sum, item) => sum + item.amount, 0),
     ),
   ]);
-  type CashEvent = {
-    date: string;
-    order: number;
-    reference: string;
-    description: string;
-    cashIn: number;
-    cashOut: number;
-    bankIn: number;
-    bankOut: number;
-  };
-  const events: CashEvent[] = [
-    ...collections.map((item) => ({
-      date: item.date,
-      order: 0,
-      reference: item.receiptNumber,
-      description: item.purpose,
-      cashIn: item.amount,
-      cashOut: 0,
-      bankIn: 0,
-      bankOut: 0,
-    })),
-    ...data.deposits.map((item) => ({
-      date: item.date,
-      order: 2,
-      reference: item.number,
-      description: `${item.kind === "deposit" ? "Deposit to" : "Remittance to"} ${item.bank}`,
-      cashIn: 0,
-      cashOut: item.amount,
-      bankIn: item.kind === "deposit" ? item.amount : 0,
-      bankOut: 0,
-    })),
-    ...paid.map((item) => ({
-      date: item.paidAt ?? item.date,
-      order: 3,
-      reference: item.number,
-      description: `Payment to ${item.payee}`,
-      cashIn: 0,
-      cashOut: 0,
-      bankIn: 0,
-      bankOut: item.amount,
-    })),
-    ...data.liquidationEntries
-      .filter((item) => item.kind === "refund")
-      .map((item) => ({
-        date: item.date,
-        order: 1,
-        reference: `REF-${item.id.slice(0, 8)}`,
-        description: `Advance refund: ${item.description}`,
-        cashIn: item.amount,
-        cashOut: 0,
-        bankIn: 0,
-        bankOut: 0,
-      })),
-  ].sort(
-    (a, b) =>
-      a.date.localeCompare(b.date) || a.order - b.order || a.reference.localeCompare(b.reference),
-  );
+  const events = cashbookEvents(data);
   let cash = data.cashOpening;
   let bank = data.bankOpening;
   const cashRows = [
@@ -132,7 +77,7 @@ export function buildReports(data: FinanceData, demo = true): ReportDefinition[]
       cash += item.cashIn - item.cashOut;
       bank += item.bankIn - item.bankOut;
       return [
-        displayDate(item.date),
+        item.date ? displayDate(item.date) : "Date unavailable",
         item.reference,
         item.description,
         formatMoney(item.cashIn || item.bankIn),
@@ -198,7 +143,7 @@ export function buildReports(data: FinanceData, demo = true): ReportDefinition[]
     {
       id: "cashbook",
       title: "Cashbook",
-      description: `Cash and bank movement from posted ${demo ? "demo" : "live"} records`,
+      description: `Cash and bank movement from posted ${demo ? "demo" : "live"} records, all loaded dates`,
       status: "preview",
       columns: ["Date", "Reference", "Particulars", "In", "Out", "Cash on hand", "Cash in bank"],
       rows: cashRows,

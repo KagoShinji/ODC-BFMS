@@ -126,3 +126,34 @@ test("advance liquidation and refund settle liability without a second expense o
   assert.equal(after.collected, baseline.collected);
   assert.equal(after.cash, baseline.cash + 10000);
 });
+
+test("current budget commitments exclude other budget years but retain settlements and outstanding receipts", () => {
+  const data = {
+    ...structuredClone(seedData),
+    budgetLines: [{ ...seedData.budgetLines[0], id: "current-line", appropriation: 1000000 }],
+    vouchers: [
+      {
+        ...seedData.vouchers[0],
+        id: "old",
+        budgetLineId: "old-line",
+        amount: 100000,
+        status: "paid",
+        date: "2025-12-20",
+      },
+      {
+        ...seedData.vouchers[0],
+        id: "current",
+        budgetLineId: "current-line",
+        amount: 200000,
+        status: "submitted",
+        date: "2026-11-03",
+      },
+    ],
+  };
+  const totals = dashboardTotals(data);
+  assert.equal(totals.obligated, 200000);
+  assert.equal(totals.available, 800000);
+  assert.equal(totals.paid, 100000);
+  assert.equal(totals.available, availableForLine(data, "current-line"));
+  assert.equal(receiptUnmatched(data, "c2"), 7500);
+});

@@ -183,7 +183,7 @@ export function ExpenseCasesView({ kind }: { kind?: ExpenseKind }) {
           <div>
             <CardTitle>{kind ? `${kindLabel[kind]} records` : "All expense cases"}</CardTitle>
             <p className="mt-1 text-xs text-muted-foreground">
-              {cases.length} records · FY {data.fiscalYear}
+              {cases.length} records · All recorded dates
             </p>
           </div>
           <SearchField
