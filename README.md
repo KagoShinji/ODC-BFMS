@@ -78,6 +78,15 @@ Apply [the Super admin workflow migration](supabase/migrations/202611040001_supe
 
 Apply [the audit actor identity migration](supabase/migrations/202611050001_audit_actor_identity.sql) after the Super admin workflow migration to enable account identity for all authorized audit viewers. New events capture the actor’s name and email in the database; events recorded before the migration resolve current profile/account details when available. The scoped read function allows only events in a barangay where the caller has Audit trail access, without opening the staff directory or Auth user table. Before migration, the app uses the existing RLS audit read and resolves only profiles already visible to that viewer, with the account ID retained when a profile cannot be read. The isolated [audit identity regression](supabase/tests/audit_actor_identity.sql) checks snapshots, legacy lookup, spoof prevention, missing profiles and role/barangay boundaries; it rolls back its fixtures. This migration is included in the repository and must be installed in the connected database separately.
 
+### Free-tier keepalive workflow
+
+To prevent a free-tier Supabase project from pausing after 7 days of inactivity, apply [the keepalive migration](supabase/migrations/202611190001_supabase_keepalive.sql) after the idempotency migration and configure two repository secrets in GitHub (**Settings → Secrets and variables → Actions**):
+
+- `NEXT_PUBLIC_SUPABASE_URL`: your Supabase project URL
+- `SUPABASE_SECRET_KEY`: your Supabase server secret key (`sb_secret_...` or service role key)
+
+The [Supabase Keepalive workflow](.github/workflows/supabase-keepalive.yml) runs [scripts/supabase-keepalive.mjs](scripts/supabase-keepalive.mjs) every 5 days (`17 2 */5 * *`) and supports manual runs via **Actions → Supabase Keepalive → Run workflow**. It upserts a single bounded heartbeat row in `public.supabase_keepalive` (locked to `service_role` via RLS).
+
 ### Barangay subdomains
 
 Set `NEXT_PUBLIC_ROOT_DOMAIN` (for example `bfms.example.ph`) before building to give each barangay its own address, such as `san-isidro.bfms.example.ph`. The subdomain picks the barangay's branding on the sign-in page and fixes the barangay shown after sign-in; `/b/<slug>` links then redirect to it. Production needs a wildcard DNS record (`*.bfms.example.ph`) pointed at the host, a wildcard domain configured on the hosting platform, and `https://*.bfms.example.ph/**` in Supabase Auth's redirect URLs. Sign-in sessions are per subdomain. Locally, set it to `localhost:3000` and open `http://<slug>.localhost:3000`. Leave it blank to use `/b/<slug>` links only. It grants read access across barangays but no financial posting or approval authority. Apply it before assigning a user to `system_admins`. Creating an Auth user or assigning this role requires a trusted Supabase admin connection; never put a secret key or password in the repository or `NEXT_PUBLIC_` variables.
